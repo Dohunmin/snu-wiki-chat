@@ -557,12 +557,12 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
         <p className="mt-2.5 text-base leading-relaxed text-gray-500">
           평의원회, 이사회, 대학운영계획, 중장기발전계획 자료를 바탕으로 질문에 답합니다.
         </p>
-        <div className="mt-7 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {EXAMPLE_QUESTIONS.map(q => (
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm"
+              className="rounded-2xl border border-gray-200 bg-white px-6 py-5 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed"
             >
               {q}
             </button>

@@ -82,27 +82,44 @@ export class WikiAgent implements AgentPlugin {
     const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
 
     const allowedSources = data.sources.filter(s => isSensitiveAllowed || !s.sensitive);
+    const allowedSourceIds = new Set(allowedSources.map(s => s.id));
+
+    // ─── Entity/Topic 역참조: 쿼리 단어가 entity·topic 이름과 일치하면
+    //     해당 entity·topic에 연결된 모든 소스를 보장 후보로 수집
+    const guaranteedIds = new Set<string>();
+
+    for (const entity of data.entities) {
+      const names = [entity.name, entity.id, ...entity.aliases].map(n => n.toLowerCase());
+      if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n)))) {
+        entity.sources.filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
+      }
+    }
+    for (const topic of data.topics) {
+      const names = [topic.name, topic.id].map(n => n.toLowerCase());
+      if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n)))) {
+        topic.sources.filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
+      }
+    }
 
     // ─── 소스 단위 관련성 점수 ─────────────────────────────────────
     const sourcesWithScore = allowedSources.map(source => {
       let score = 0;
 
-      // topic 매칭 (이름이 쿼리에 포함 or 쿼리 단어가 topic명에 포함)
+      // entity/topic 역참조로 보장된 소스는 기본 점수 부여
+      if (guaranteedIds.has(source.id)) score += 5;
+
       for (const t of source.topics) {
         const tl = t.toLowerCase();
         if (queryLower.includes(tl) || queryWords.some(w => tl.includes(w))) score += 3;
       }
-      // entity 매칭
       for (const e of source.entities) {
         const el = e.toLowerCase();
         if (queryLower.includes(el) || queryWords.some(w => el.includes(w))) score += 2;
       }
-      // tags 매칭
       for (const tag of source.tags) {
         const tl = tag.toLowerCase();
         if (queryWords.some(w => tl.includes(w) || w.includes(tl))) score += 2;
       }
-      // 본문 단어 매칭
       const contentLower = source.content.toLowerCase();
       for (const word of queryWords) {
         if (contentLower.includes(word)) score += 1;
@@ -122,9 +139,12 @@ export class WikiAgent implements AgentPlugin {
     }[] = [];
 
     for (const source of sourcesToProcess) {
+      const isGuaranteed = guaranteedIds.has(source.id);
       const chunks = splitIntoChunks(source.content);
       for (const chunk of chunks) {
-        const score = scoreChunk(chunk, queryWords);
+        let score = scoreChunk(chunk, queryWords);
+        // entity/topic 역참조 소스는 텍스트 매칭 없어도 기본 포함 + 점수 부스트
+        if (isGuaranteed) score = score * 2 + 1;
         if (score > 0) {
           scoredChunks.push({
             title: source.title,
