@@ -4,6 +4,8 @@ import type { AgentConfig, AgentContext, AgentPlugin, WikiData, WikiSource } fro
 import type { Role } from '@/lib/auth/roles';
 import { canAccessSensitive } from '@/lib/auth/roles';
 
+const MAX_SOURCES = 2;
+
 export class WikiAgent implements AgentPlugin {
   config: AgentConfig;
   private data: WikiData | null = null;
@@ -16,14 +18,7 @@ export class WikiAgent implements AgentPlugin {
     if (this.data) return this.data;
     const dataPath = path.join(process.cwd(), 'data', this.config.dataFile);
     if (!fs.existsSync(dataPath)) {
-      return {
-        id: this.config.id,
-        name: this.config.name,
-        sources: [],
-        topics: [],
-        entities: [],
-        index: '',
-      };
+      return { id: this.config.id, name: this.config.name, sources: [], topics: [], entities: [], index: '' };
     }
     this.data = JSON.parse(fs.readFileSync(dataPath, 'utf-8')) as WikiData;
     return this.data;
@@ -33,31 +28,40 @@ export class WikiAgent implements AgentPlugin {
     const data = this.loadData();
     const isSensitiveAllowed = canAccessSensitive(userRole);
 
-    // 쿼리와 관련된 source 검색
     const queryLower = query.toLowerCase();
-    const relevantSources: WikiSource[] = [];
+    // 단어 단위 매칭 (2자 이상 단어만)
+    const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
+
+    const scored: { source: WikiSource; score: number }[] = [];
 
     for (const source of data.sources) {
-      // 2순위는 민감 토픽 소스 제외
       if (!isSensitiveAllowed && source.sensitive) continue;
 
-      const isTopicMatch = source.topics.some(t =>
-        queryLower.includes(t.toLowerCase()) || t.toLowerCase().includes(queryLower)
-      );
-      const isEntityMatch = source.entities.some(e =>
-        queryLower.includes(e.toLowerCase())
-      );
-      const isContentMatch = source.content.toLowerCase().includes(queryLower);
+      const contentLower = source.content.toLowerCase();
+      let score = 0;
 
-      if (isTopicMatch || isEntityMatch || isContentMatch) {
-        relevantSources.push(source);
+      // topic/entity 매칭 (높은 점수)
+      for (const t of source.topics) {
+        if (queryLower.includes(t.toLowerCase())) score += 3;
       }
+      for (const e of source.entities) {
+        if (queryLower.includes(e.toLowerCase())) score += 2;
+      }
+      // 단어별 본문 매칭
+      for (const word of queryWords) {
+        if (contentLower.includes(word)) score += 1;
+      }
+
+      if (score > 0) scored.push({ source, score });
     }
 
-    // 관련 소스가 없으면 최근 5개 소스를 fallback으로 사용
-    const sourcesToUse = relevantSources.length > 0
-      ? relevantSources.slice(0, 5)
-      : data.sources.filter(s => isSensitiveAllowed || !s.sensitive).slice(-5);
+    // 점수 내림차순 정렬
+    scored.sort((a, b) => b.score - a.score);
+
+    const allowedSources = data.sources.filter(s => isSensitiveAllowed || !s.sensitive);
+    const sourcesToUse: WikiSource[] = scored.length > 0
+      ? scored.slice(0, MAX_SOURCES).map(s => s.source)
+      : allowedSources.slice(-MAX_SOURCES);
 
     const relevantData = sourcesToUse
       .map(s => `## ${s.title} (${s.id})\n${s.content}`)
@@ -74,7 +78,7 @@ export class WikiAgent implements AgentPlugin {
       agentName: this.config.name,
       relevantData,
       sources,
-      confidence: relevantSources.length > 0 ? 0.8 : 0.3,
+      confidence: scored.length > 0 ? 0.8 : 0.3,
     };
   }
 }
