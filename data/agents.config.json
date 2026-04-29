@@ -1,0 +1,48 @@
+{
+  "agents": [
+    {
+      "id": "senate",
+      "name": "평의원회",
+      "type": "wiki",
+      "dataFile": "senate.json",
+      "enabled": true,
+      "keywords": ["평의원", "심의", "학칙", "정책연구", "상임위", "교육위", "부결", "의결", "교원", "겸임"],
+      "sensitiveTopics": ["총장추천위", "인사-비공개"],
+      "description": "서울대학교 평의원회 회의록 기반 질의응답 (17·18·19기, 53건)"
+    },
+    {
+      "id": "board",
+      "name": "이사회",
+      "type": "wiki",
+      "dataFile": "board.json",
+      "enabled": true,
+      "keywords": ["이사", "정관", "임원", "감사", "재산", "차입", "출연", "법인", "이사장", "소위원회"],
+      "sensitiveTopics": ["총장-선출", "이사-선임", "감사-선임"],
+      "description": "서울대학교 이사회 의사록 기반 질의응답 (2023~2026, 26건)"
+    },
+    {
+      "id": "plan",
+      "name": "대학운영계획",
+      "type": "wiki",
+      "dataFile": "plan.json",
+      "enabled": true,
+      "keywords": ["운영계획", "사업계획", "실행과제", "부서별", "연도별", "성과지표", "미션"],
+      "sensitiveTopics": [],
+      "description": "2026년도 대학운영계획 기반 질의응답 (12개 실행과제)"
+    },
+    {
+      "id": "vision",
+      "name": "중장기발전계획",
+      "type": "wiki",
+      "dataFile": "vision.json",
+      "enabled": true,
+      "keywords": ["중장기", "비전", "전략", "KPI", "발전계획", "로드맵", "2040", "핵심과제"],
+      "sensitiveTopics": [],
+      "description": "SNU 2040 비전 보고서 기반 질의응답 (7대 핵심과제)"
+    }
+  ],
+  "routing": {
+    "globalKeywords": ["전체", "종합", "요약", "총장이 알아야 할", "모든"],
+    "fallbackToLLM": true
+  }
+}
