@@ -7,7 +7,21 @@ import { eq } from 'drizzle-orm';
 import type { Role } from './roles';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: 'jwt' },
+  session: {
+    strategy: 'jwt',
+    maxAge: 60 * 60 * 8, // JWT 최대 8시간
+  },
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        // maxAge 없음 → 브라우저 종료 시 쿠키 자동 삭제
+      },
+    },
+  },
   pages: {
     signIn: '/login',
   },
