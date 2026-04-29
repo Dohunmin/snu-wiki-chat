@@ -158,43 +158,34 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
-    const hasEntityMatch = guaranteedIds.size > 0;
-    const chunkCap = hasEntityMatch ? MAX_CHUNKS_ENTITY : MAX_CHUNKS;
+    const chunkCap = guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY : MAX_CHUNKS;
 
-    let chunksToUse;
-    if (scoredChunks.length > 0) {
-      if (hasEntityMatch) {
-        // entity 매칭 시: 각 보장 소스에서 첫 청크 반드시 포함 → 소스 커버리지 확보
-        const coveredIds = new Set<string>();
-        const firstChunks: typeof scoredChunks = [];
-        const restChunks: typeof scoredChunks = [];
+    const chunksToUse = scoredChunks.length > 0
+      ? scoredChunks.sort((a, b) => b.score - a.score).slice(0, chunkCap)
+      : sourcesToProcess.map(source => ({
+          title: source.title,
+          id: source.id,
+          topic: source.topics[0] ?? source.tags[0] ?? '',
+          chunk: splitIntoChunks(source.content)[0],
+          score: 0,
+        })).slice(0, chunkCap);
 
-        // 보장 소스의 첫 청크 우선 수집
-        for (const sid of guaranteedIds) {
-          const first = scoredChunks.find(c => c.id === sid);
-          if (first) { firstChunks.push(first); coveredIds.add(sid); }
-        }
-        // 나머지 청크 (점수순)
-        for (const c of scoredChunks.sort((a, b) => b.score - a.score)) {
-          if (!firstChunks.includes(c)) restChunks.push(c);
-        }
-        chunksToUse = [...firstChunks, ...restChunks].slice(0, chunkCap);
-      } else {
-        chunksToUse = scoredChunks.sort((a, b) => b.score - a.score).slice(0, chunkCap);
+    // entity 매칭 시: 매칭된 entity 페이지 내용을 앞에 추가 (이미 정리된 합성 정보)
+    const entityBlocks: string[] = [];
+    for (const entity of data.entities) {
+      const names = [entity.name, entity.id, ...entity.aliases].map(n => n.toLowerCase());
+      if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n))) && entity.content.trim()) {
+        entityBlocks.push(`## [${entity.entityType || 'entity'}] ${entity.name}\n${entity.content}`);
       }
-    } else {
-      chunksToUse = sourcesToProcess.map(source => ({
-        title: source.title,
-        id: source.id,
-        topic: source.topics[0] ?? source.tags[0] ?? '',
-        chunk: splitIntoChunks(source.content)[0],
-        score: 0,
-      })).slice(0, chunkCap);
     }
 
-    const relevantData = chunksToUse
+    const sourceBlocks = chunksToUse
       .map(c => `## ${c.title} (${c.id})\n${c.chunk}`)
       .join('\n\n---\n\n');
+
+    const relevantData = entityBlocks.length > 0
+      ? `${entityBlocks.join('\n\n---\n\n')}\n\n---\n\n${sourceBlocks}`
+      : sourceBlocks;
 
     // 소스 메타데이터 중복 제거
     const seenIds = new Set<string>();
