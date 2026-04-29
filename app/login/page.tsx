@@ -41,7 +41,7 @@ export default function LoginPage() {
             <span className="text-white font-bold text-lg">SNU</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">거버넌스 위키</h1>
-          <p className="text-gray-500 text-sm mt-1">총장 캠프 전용 서비스</p>
+          <p className="text-gray-500 text-sm mt-1">서울대학교 거버넌스 자료 검색 서비스</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">

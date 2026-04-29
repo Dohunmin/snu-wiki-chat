@@ -21,10 +21,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         if (credentials.email === '1234' && credentials.password === '1234') {
+          const masterId = 'master-admin';
+          const [existingMaster] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, masterId))
+            .limit(1);
+
+          if (!existingMaster) {
+            await db.insert(users).values({
+              id: masterId,
+              email: 'master-admin@snu.local',
+              passwordHash: await bcrypt.hash('1234', 12),
+              name: '관리자',
+              role: 'admin',
+              approvedAt: new Date(),
+            });
+          }
+
           return {
-            id: 'master-admin',
-            email: '1234',
-            name: 'Master Admin',
+            id: masterId,
+            email: 'master-admin@snu.local',
+            name: '관리자',
             role: 'admin' satisfies Role,
           };
         }

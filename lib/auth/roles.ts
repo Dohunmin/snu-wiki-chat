@@ -2,8 +2,8 @@ export type Role = 'admin' | 'tier1' | 'tier2' | 'pending';
 
 export const ROLE_LABELS: Record<Role, string> = {
   admin: '관리자',
-  tier1: '1순위 (캠프 내부)',
-  tier2: '2순위 (일반 캠프)',
+  tier1: '1차 접근',
+  tier2: '2차 접근',
   pending: '승인 대기',
 };
 
