@@ -61,6 +61,16 @@ export default function ChatPage({ user }: { user: User }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  async function deleteConversation(convId: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    await fetch(`/api/conversations/${convId}`, { method: 'DELETE' });
+    setConversations(prev => prev.filter(c => c.id !== convId));
+    if (currentConvId === convId) {
+      setCurrentConvId(undefined);
+      setMessages([]);
+    }
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -269,17 +279,28 @@ export default function ChatPage({ user }: { user: User }) {
           ) : (
             <div className="space-y-0.5">
               {conversations.map(conv => (
-                <button
+                <div
                   key={conv.id}
-                  onClick={() => loadConversation(conv.id)}
-                  className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    currentConvId === conv.id
-                      ? 'bg-blue-50 text-blue-700 font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
+                  className={`group flex items-center rounded-lg transition-colors ${
+                    currentConvId === conv.id ? 'bg-blue-50' : 'hover:bg-gray-100'
                   }`}
                 >
-                  {conv.title}
-                </button>
+                  <button
+                    onClick={() => loadConversation(conv.id)}
+                    className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm ${
+                      currentConvId === conv.id ? 'text-blue-700 font-medium' : 'text-gray-600'
+                    }`}
+                  >
+                    {conv.title}
+                  </button>
+                  <button
+                    onClick={(e) => deleteConversation(conv.id, e)}
+                    className="mr-1.5 hidden shrink-0 rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 group-hover:flex"
+                    title="삭제"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
               ))}
             </div>
           )}
@@ -348,8 +369,8 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-4 md:px-8">
-          <div className="mx-auto max-w-3xl">
+        <div className="shrink-0 border-t border-gray-100 bg-white py-4">
+          <div className="mx-auto w-full max-w-3xl px-5 md:px-8">
             <div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm focus-within:border-gray-300 focus-within:shadow-md transition-shadow">
               {canUpload(user.role) && (
                 <button
@@ -665,6 +686,14 @@ function MessageBubble({ message }: { message: Message }) {
         )}
       </div>
     </div>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

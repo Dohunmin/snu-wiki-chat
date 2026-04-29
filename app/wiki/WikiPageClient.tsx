@@ -39,10 +39,20 @@ export default function WikiPageClient() {
   return (
     <div className="flex h-screen bg-white">
       {/* 좌측 네비게이션 */}
-      <div className="w-64 border-r border-gray-200 flex flex-col bg-gray-50 shrink-0">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <span className="font-semibold text-gray-800 text-sm">SNU 거버넌스 위키</span>
-          <Link href="/" className="text-xs text-blue-600 hover:underline">채팅</Link>
+      <div className="w-80 border-r border-gray-200 flex flex-col bg-gray-50 shrink-0">
+        <div className="px-5 py-4 border-b border-gray-200 bg-white">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-bold text-gray-900 text-base">SNU 거버넌스 위키</span>
+          </div>
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            채팅으로 돌아가기
+          </Link>
         </div>
         <WikiNav wikis={wikis} selected={selected} onSelect={handleSelect} />
       </div>
