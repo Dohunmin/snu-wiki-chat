@@ -37,17 +37,37 @@ export interface WikiSource {
   id: string;
   title: string;
   date?: string;
+  tags: string[];
   topics: string[];
   entities: string[];
   content: string;
   sensitive: boolean;
 }
 
+export interface WikiTopic {
+  id: string;
+  name: string;
+  category?: string;
+  tags: string[];
+  sources: string[];
+  content: string;
+}
+
+export interface WikiEntity {
+  id: string;
+  name: string;
+  entityType: string;
+  aliases: string[];
+  tags: string[];
+  sources: string[];
+  content: string;
+}
+
 export interface WikiData {
   id: string;
   name: string;
   sources: WikiSource[];
-  topics: string[];
-  entities: string[];
+  topics: WikiTopic[];
+  entities: WikiEntity[];
   index: string;
 }
