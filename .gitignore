@@ -2,6 +2,5 @@
 .env.local
 .next/
 node_modules/
-data/*.json
-!data/agents.config.json
+!data/*.json
 drizzle/

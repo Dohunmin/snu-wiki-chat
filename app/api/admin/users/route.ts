@@ -30,6 +30,11 @@ export async function PATCH(req: NextRequest) {
   const result = await requireAdmin(req);
   if (result instanceof NextResponse) return result;
   const session = result as Session;
+  const approverId = session.user?.id;
+
+  if (!approverId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const body = await req.json();
   const parsed = approveSchema.safeParse(body);
@@ -43,7 +48,7 @@ export async function PATCH(req: NextRequest) {
       .update(users)
       .set({
         role,
-        approvedBy: session.user.id,
+        approvedBy: approverId,
         approvedAt: new Date(),
         updatedAt: new Date(),
       })
