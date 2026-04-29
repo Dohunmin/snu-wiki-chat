@@ -678,7 +678,7 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
             {message.sources.slice(0, 8).map((s, i) => {
               const agentId = WIKI_ID_MAP[s.wiki];
               const href = agentId
-                ? `/wiki?agent=${agentId}&type=source&id=${encodeURIComponent(s.page)}`
+                ? `/wiki?agent=${agentId}&type=sources&id=${encodeURIComponent(s.page)}`
                 : null;
               return href ? (
                 <Link

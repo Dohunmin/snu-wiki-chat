@@ -10,9 +10,12 @@ export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const userId = (session.user as { id: string; role: Role }).id;
+
   const rows = await db
     .select()
     .from(syntheses)
+    .where(eq(syntheses.userId, userId))
     .orderBy(desc(syntheses.createdAt))
     .limit(50);
 
