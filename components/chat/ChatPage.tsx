@@ -360,8 +360,8 @@ export default function ChatPage({ user }: { user: User }) {
           ) : messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
-            <div className="w-full px-5 md:px-8 py-8">
-              <div className="mx-auto max-w-3xl flex flex-col gap-6">
+            <div className="w-full py-8">
+              <div className="mx-auto w-full max-w-2xl px-6 flex flex-col gap-6">
                 {messages.map((msg, i) => (
                   <MessageBubble
                     key={msg.id}
@@ -375,8 +375,8 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 md:px-8">
-          <div className="mx-auto max-w-3xl">
+        <div className="shrink-0 border-t border-gray-200 bg-white py-5">
+          <div className="mx-auto w-full max-w-2xl px-6">
             <div className="flex items-end gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 shadow-md focus-within:border-blue-400 focus-within:shadow-lg transition-all">
               {canUpload(user.role) && (
                 <button
@@ -562,7 +562,7 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-2xl border border-gray-200 bg-white px-6 py-5 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed"
+              className="rounded-2xl border border-gray-200 bg-white px-8 py-6 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed"
             >
               {q}
             </button>
@@ -622,7 +622,7 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[78%] rounded-2xl rounded-tr-sm bg-blue-600 px-4 py-3 text-base leading-relaxed text-white">
+        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-blue-600 px-6 py-4 text-base leading-relaxed text-white">
           {message.content}
         </div>
       </div>
