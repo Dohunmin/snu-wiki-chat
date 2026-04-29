@@ -360,17 +360,23 @@ export default function ChatPage({ user }: { user: User }) {
           ) : messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
-            <div className="mx-auto w-full max-w-3xl flex flex-col gap-6 px-5 py-8 md:px-8">
-              {messages.map(msg => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))}
-              <div ref={bottomRef} />
+            <div className="flex justify-center w-full px-5 md:px-8 py-8">
+              <div className="w-full max-w-3xl flex flex-col gap-6">
+                {messages.map((msg, i) => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    userQuery={msg.role === 'assistant' ? (messages[i - 1]?.content ?? '') : ''}
+                  />
+                ))}
+                <div ref={bottomRef} />
+              </div>
             </div>
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-100 bg-white py-4">
-          <div className="mx-auto w-full max-w-3xl px-5 md:px-8">
+        <div className="shrink-0 border-t border-gray-100 bg-white py-4 flex justify-center px-5 md:px-8">
+          <div className="w-full max-w-3xl">
             <div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm focus-within:border-gray-300 focus-within:shadow-md transition-shadow">
               {canUpload(user.role) && (
                 <button
@@ -567,21 +573,26 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
   );
 }
 
-function SynthesisSaveButton({ message }: { message: Message }) {
+function SynthesisSaveButton({ message, userQuery }: { message: Message; userQuery: string }) {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function save() {
     setSaving(true);
-    const routedTo = message.agentNames ?? [];
+    const routedTo = message.agentNames ?? message.routedAgents ?? [];
     const sources = message.sources ?? [];
     const sourcesText = sources.map(s => `- [${s.wiki}] ${s.page}`).join('\n');
-    const content = `## 답변\n\n${message.content}${sourcesText ? `\n\n## 출처\n\n${sourcesText}` : ''}`;
+    const content = [
+      userQuery ? `## 질문\n\n${userQuery}` : '',
+      `## 답변\n\n${message.content}`,
+      sourcesText ? `## 출처\n\n${sourcesText}` : '',
+    ].filter(Boolean).join('\n\n');
+
     await fetch('/api/wiki/syntheses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        query: '(이전 메시지 참조)',
+        query: userQuery || '질문 없음',
         answeredAt: new Date().toISOString().slice(0, 10),
         routedTo,
         content,
@@ -603,7 +614,7 @@ function SynthesisSaveButton({ message }: { message: Message }) {
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({ message, userQuery = '' }: { message: Message; userQuery?: string }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
@@ -682,7 +693,7 @@ function MessageBubble({ message }: { message: Message }) {
           </div>
         )}
         {!message.streaming && !message.error && message.content && (
-          <SynthesisSaveButton message={message} />
+          <SynthesisSaveButton message={message} userQuery={userQuery} />
         )}
       </div>
     </div>
