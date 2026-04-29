@@ -5,6 +5,7 @@ import type { Role } from '@/lib/auth/roles';
 import { canAccessSensitive } from '@/lib/auth/roles';
 
 const MAX_CHUNKS = 15;
+const MAX_CHUNKS_ENTITY = 30; // entity 매칭 시 더 넓은 커버리지 허용
 
 /** ## 헤더 단위로 분할, 최소 100자 미만 청크는 다음과 병합 */
 function splitIntoChunks(content: string): string[] {
@@ -157,16 +158,39 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
-    // 관련 청크 없으면 각 소스의 첫 청크를 fallback으로 사용
-    const chunksToUse = scoredChunks.length > 0
-      ? scoredChunks.sort((a, b) => b.score - a.score).slice(0, MAX_CHUNKS)
-      : sourcesToProcess.map(source => ({
-          title: source.title,
-          id: source.id,
-          topic: source.topics[0] ?? source.tags[0] ?? '',
-          chunk: splitIntoChunks(source.content)[0],
-          score: 0,
-        })).slice(0, MAX_CHUNKS);
+    const hasEntityMatch = guaranteedIds.size > 0;
+    const chunkCap = hasEntityMatch ? MAX_CHUNKS_ENTITY : MAX_CHUNKS;
+
+    let chunksToUse;
+    if (scoredChunks.length > 0) {
+      if (hasEntityMatch) {
+        // entity 매칭 시: 각 보장 소스에서 첫 청크 반드시 포함 → 소스 커버리지 확보
+        const coveredIds = new Set<string>();
+        const firstChunks: typeof scoredChunks = [];
+        const restChunks: typeof scoredChunks = [];
+
+        // 보장 소스의 첫 청크 우선 수집
+        for (const sid of guaranteedIds) {
+          const first = scoredChunks.find(c => c.id === sid);
+          if (first) { firstChunks.push(first); coveredIds.add(sid); }
+        }
+        // 나머지 청크 (점수순)
+        for (const c of scoredChunks.sort((a, b) => b.score - a.score)) {
+          if (!firstChunks.includes(c)) restChunks.push(c);
+        }
+        chunksToUse = [...firstChunks, ...restChunks].slice(0, chunkCap);
+      } else {
+        chunksToUse = scoredChunks.sort((a, b) => b.score - a.score).slice(0, chunkCap);
+      }
+    } else {
+      chunksToUse = sourcesToProcess.map(source => ({
+        title: source.title,
+        id: source.id,
+        topic: source.topics[0] ?? source.tags[0] ?? '',
+        chunk: splitIntoChunks(source.content)[0],
+        score: 0,
+      })).slice(0, chunkCap);
+    }
 
     const relevantData = chunksToUse
       .map(c => `## ${c.title} (${c.id})\n${c.chunk}`)

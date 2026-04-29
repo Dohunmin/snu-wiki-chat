@@ -360,8 +360,8 @@ export default function ChatPage({ user }: { user: User }) {
           ) : messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
-            <div className="flex justify-center w-full px-5 md:px-8 py-8">
-              <div className="w-full max-w-3xl flex flex-col gap-6">
+            <div className="w-full px-5 md:px-8 py-8">
+              <div className="mx-auto max-w-3xl flex flex-col gap-6">
                 {messages.map((msg, i) => (
                   <MessageBubble
                     key={msg.id}
@@ -375,9 +375,9 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-100 bg-white py-4 flex justify-center px-5 md:px-8">
-          <div className="w-full max-w-3xl">
-            <div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm focus-within:border-gray-300 focus-within:shadow-md transition-shadow">
+        <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 md:px-8">
+          <div className="mx-auto max-w-3xl">
+            <div className="flex items-end gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 shadow-md focus-within:border-blue-400 focus-within:shadow-lg transition-all">
               {canUpload(user.role) && (
                 <button
                   type="button"
@@ -396,7 +396,7 @@ export default function ChatPage({ user }: { user: User }) {
                 onKeyDown={handleKeyDown}
                 placeholder="SNU 거버넌스 자료에 대해 질문하세요"
                 rows={1}
-                className="max-h-36 min-h-9 flex-1 resize-none bg-transparent py-1.5 text-base leading-6 outline-none placeholder:text-gray-400"
+                className="max-h-36 min-h-[44px] flex-1 resize-none bg-transparent py-2 text-base leading-6 outline-none placeholder:text-gray-400"
               />
               <button
                 onClick={() => sendMessage()}
@@ -602,12 +602,16 @@ function SynthesisSaveButton({ message, userQuery }: { message: Message; userQue
     setSaving(false);
   }
 
-  if (saved) return <span className="text-xs text-green-600 mt-2 inline-block">위키에 저장됨</span>;
+  if (saved) return (
+    <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3.5 py-1.5 text-sm text-green-600">
+      위키에 저장됨
+    </span>
+  );
   return (
     <button
       onClick={save}
       disabled={saving}
-      className="mt-2 text-xs text-gray-400 hover:text-blue-600 transition-colors"
+      className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-sm text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-colors"
     >
       {saving ? '저장 중...' : '위키에 저장'}
     </button>
@@ -680,12 +684,12 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
                 <Link
                   key={`${s.wiki}-${s.page}-${i}`}
                   href={href}
-                  className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs text-blue-600 hover:bg-blue-100 transition-colors"
+                  className="rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1.5 text-sm text-blue-600 hover:bg-blue-100 transition-colors"
                 >
                   [{s.wiki}] {s.page}
                 </Link>
               ) : (
-                <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
+                <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-sm text-gray-500">
                   [{s.wiki}] {s.page}
                 </span>
               );
