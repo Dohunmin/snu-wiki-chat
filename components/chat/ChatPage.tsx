@@ -360,8 +360,8 @@ export default function ChatPage({ user }: { user: User }) {
           ) : messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
-            <div className="w-full py-8">
-              <div className="mx-auto w-full max-w-2xl px-6 flex flex-col gap-6">
+            <div className="w-full py-8 flex justify-center px-6">
+              <div className="w-full max-w-2xl flex flex-col gap-6">
                 {messages.map((msg, i) => (
                   <MessageBubble
                     key={msg.id}
@@ -375,8 +375,8 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-200 bg-white py-5">
-          <div className="mx-auto w-full max-w-2xl px-6">
+        <div className="shrink-0 border-t border-gray-200 bg-white py-5 flex justify-center px-6">
+          <div className="w-full max-w-2xl">
             <div className="flex items-end gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 shadow-md focus-within:border-blue-400 focus-within:shadow-lg transition-all">
               {canUpload(user.role) && (
                 <button
