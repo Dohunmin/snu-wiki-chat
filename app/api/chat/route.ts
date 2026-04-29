@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         const client = getAnthropicClient();
         let fullContent = '';
 
-        const anthropicStream = await client.messages.stream({
+        const anthropicStream = client.messages.stream({
           model: LLM_MODEL,
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
@@ -124,7 +124,8 @@ export async function POST(req: NextRequest) {
         send({ type: 'done', conversationId: convId });
       } catch (err) {
         console.error('Chat stream failed', err);
-        send({ type: 'error', message: '응답을 생성하지 못했습니다.' });
+        const errMsg = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+        send({ type: 'error', message: errMsg });
       } finally {
         controller.close();
       }

@@ -160,12 +160,7 @@ export default function ChatPage({ user }: { user: User }) {
       const message = err instanceof Error ? err.message : '오류가 발생했습니다.';
       setMessages(prev => prev.map(m =>
         m.id === assistantId
-          ? {
-              ...m,
-              content: `${message}\n\n환경변수, API 키, 또는 DB 연결 상태를 확인해 주세요.`,
-              streaming: false,
-              error: true,
-            }
+          ? { ...m, content: message, streaming: false, error: true }
           : m
       ));
     } finally {
@@ -194,22 +189,23 @@ export default function ChatPage({ user }: { user: User }) {
   }
 
   return (
-    <div className="flex h-screen bg-white text-gray-900">
-      <aside className="hidden md:flex w-72 shrink-0 flex-col border-r border-gray-200 bg-gray-50">
-        <div className="flex h-14 items-center gap-3 px-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
+    <div className="flex h-screen overflow-hidden bg-white text-gray-900">
+      {/* Sidebar */}
+      <aside className="hidden md:flex w-64 shrink-0 flex-col bg-gray-50 border-r border-gray-200">
+        <div className="flex h-14 items-center gap-2.5 px-4 border-b border-gray-200">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-[11px] font-bold text-white shrink-0">
             SNU
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">SNU 거버넌스 위키</p>
-            <p className="truncate text-xs text-gray-500">{ROLE_LABELS[user.role]}</p>
+            <p className="truncate text-sm font-semibold text-gray-900">SNU 거버넌스 위키</p>
+            <p className="truncate text-xs text-gray-400">{ROLE_LABELS[user.role]}</p>
           </div>
         </div>
 
-        <div className="px-3 py-2">
+        <div className="px-3 pt-3 pb-1">
           <button
             onClick={newConversation}
-            className="flex h-10 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-800 hover:bg-gray-200"
+            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
           >
             <PlusIcon />
             새 대화
@@ -217,18 +213,20 @@ export default function ChatPage({ user }: { user: User }) {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-2">
-          <p className="px-3 pb-2 text-xs font-medium text-gray-400">최근 대화</p>
+          {conversations.length > 0 && (
+            <p className="px-2 pb-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wide">최근 대화</p>
+          )}
           {conversations.length === 0 ? (
-            <p className="px-3 text-xs leading-5 text-gray-400">질문을 시작하면 대화가 여기에 표시됩니다.</p>
+            <p className="px-2 pt-1 text-xs text-gray-400 leading-5">질문을 시작하면 대화 목록이 표시됩니다.</p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {conversations.map(conv => (
                 <button
                   key={conv.id}
                   onClick={() => setCurrentConvId(conv.id)}
-                  className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm ${
+                  className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                     currentConvId === conv.id
-                      ? 'bg-gray-200 text-gray-950'
+                      ? 'bg-blue-50 text-blue-700 font-medium'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -239,25 +237,25 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="space-y-1 border-t border-gray-200 p-3">
+        <div className="border-t border-gray-200 p-3 space-y-0.5">
           {canUpload(user.role) && (
             <button
               onClick={openUpload}
-              className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-200"
+              className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <UploadIcon />
               자료 업로드
             </button>
           )}
           {canAccessAdmin(user.role) && (
-            <a href="/admin" className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-200">
+            <a href="/admin" className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
               <SettingsIcon />
               관리자
             </a>
           )}
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm text-gray-500 hover:bg-gray-200"
+            className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <LogoutIcon />
             로그아웃
@@ -265,30 +263,31 @@ export default function ChatPage({ user }: { user: User }) {
         </div>
       </aside>
 
-      <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4 md:px-6">
+      {/* Main */}
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-5 md:px-8">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white md:hidden">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-[11px] font-bold text-white md:hidden">
               SNU
             </div>
-            <h1 className="text-sm font-semibold md:text-base">SNU 거버넌스 위키</h1>
+            <h1 className="text-sm font-semibold text-gray-900">SNU 거버넌스 위키</h1>
           </div>
-          <div className="truncate text-xs text-gray-500 md:text-sm">
-            {user.name || '사용자'}
-          </div>
+          <span className="text-xs text-gray-400">{user.name || '사용자'}</span>
         </header>
 
         {notice && (
-          <div className="mx-auto mt-3 max-w-3xl rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
-            {notice}
+          <div className="mx-auto mt-3 w-full max-w-3xl px-5 md:px-8">
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
+              {notice}
+            </div>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto flex flex-col">
           {messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
-            <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 py-8 md:px-6">
+            <div className="mx-auto w-full max-w-3xl flex flex-col gap-6 px-5 py-8 md:px-8">
               {messages.map(msg => (
                 <MessageBubble key={msg.id} message={msg} />
               ))}
@@ -297,19 +296,20 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="shrink-0 bg-white px-4 pb-4 pt-2 md:px-6">
+        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-4 md:px-8">
           <div className="mx-auto max-w-3xl">
-            <div className="flex items-end gap-2 rounded-3xl border border-gray-200 bg-white p-2 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
-              <button
-                type="button"
-                onClick={openUpload}
-                disabled={!canUpload(user.role)}
-                className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-                title="자료 업로드"
-                aria-label="자료 업로드"
-              >
-                <PlusIcon />
-              </button>
+            <div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm focus-within:border-gray-300 focus-within:shadow-md transition-shadow">
+              {canUpload(user.role) && (
+                <button
+                  type="button"
+                  onClick={openUpload}
+                  className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                  title="자료 업로드"
+                  aria-label="자료 업로드"
+                >
+                  <PlusIcon />
+                </button>
+              )}
               <textarea
                 ref={inputRef}
                 value={input}
@@ -317,20 +317,20 @@ export default function ChatPage({ user }: { user: User }) {
                 onKeyDown={handleKeyDown}
                 placeholder="SNU 거버넌스 자료에 대해 질문하세요"
                 rows={1}
-                className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 outline-none placeholder:text-gray-400"
+                className="max-h-36 min-h-9 flex-1 resize-none bg-transparent py-1.5 text-sm leading-6 outline-none placeholder:text-gray-400"
               />
               <button
                 onClick={() => sendMessage()}
                 disabled={loading || !input.trim()}
-                className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-white transition hover:bg-gray-700 disabled:bg-gray-200 disabled:text-gray-400"
+                className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed"
                 title="전송"
                 aria-label="전송"
               >
                 {loading ? <SpinnerIcon /> : <ArrowUpIcon />}
               </button>
             </div>
-            <p className="mt-2 text-center text-xs text-gray-400">
-              Enter로 전송, Shift+Enter로 줄바꿈
+            <p className="mt-2 text-center text-[11px] text-gray-400">
+              Enter로 전송 · Shift+Enter로 줄바꿈
             </p>
           </div>
         </div>
@@ -469,26 +469,26 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
 
 function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) => void }) {
   return (
-    <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center px-4 py-12 text-center">
-      <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white shadow-sm">
-        SNU
-      </div>
-      <h2 className="text-2xl font-semibold tracking-normal text-gray-950 md:text-3xl">
-        무엇을 확인할까요?
-      </h2>
-      <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
-        평의원회, 이사회, 대학운영계획, 중장기발전계획 자료를 바탕으로 질문에 답합니다.
-      </p>
-      <div className="mt-8 grid w-full grid-cols-1 gap-2 md:grid-cols-2">
-        {EXAMPLE_QUESTIONS.map(q => (
-          <button
-            key={q}
-            onClick={() => onPickQuestion(q)}
-            className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left text-sm text-gray-700 shadow-sm hover:border-gray-300 hover:bg-gray-50"
-          >
-            {q}
-          </button>
-        ))}
+    <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
+      <div className="w-full max-w-xl text-center">
+        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-sm font-bold text-white shadow-sm">
+          SNU
+        </div>
+        <h2 className="text-2xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
+        <p className="mt-2.5 text-sm leading-relaxed text-gray-500">
+          평의원회, 이사회, 대학운영계획, 중장기발전계획 자료를 바탕으로 질문에 답합니다.
+        </p>
+        <div className="mt-7 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {EXAMPLE_QUESTIONS.map(q => (
+            <button
+              key={q}
+              onClick={() => onPickQuestion(q)}
+              className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -498,40 +498,61 @@ function MessageBubble({ message }: { message: Message }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-3xl bg-gray-100 px-5 py-3 text-sm leading-6 text-gray-900">
+        <div className="max-w-[78%] rounded-2xl rounded-tr-sm bg-blue-600 px-4 py-3 text-sm leading-relaxed text-white">
           {message.content}
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="flex gap-4">
-      <div className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-        message.error ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-700'
-      }`}>
-        {message.error ? '!' : 'S'}
+  if (message.error) {
+    return (
+      <div className="flex gap-3">
+        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-500">
+          !
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+            <p className="text-sm font-medium text-red-700 mb-1">응답 오류</p>
+            <p className="text-sm text-red-600 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          </div>
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
+    );
+  }
+
+  return (
+    <div className="flex gap-3">
+      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white">
+        S
+      </div>
+      <div className="min-w-0 flex-1 pt-0.5">
         {message.agentNames && message.agentNames.length > 0 && (
-          <div className="mb-2 flex flex-wrap gap-1">
+          <div className="mb-2.5 flex flex-wrap gap-1.5">
             {message.agentNames.map(name => (
-              <span key={name} className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+              <span key={name} className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
                 {name}
               </span>
             ))}
           </div>
         )}
-        <div className={`prose prose-sm max-w-none leading-7 ${
-          message.error ? 'text-red-700' : 'text-gray-800'
-        }`}>
+        <div className="md-body text-sm">
           {message.content ? <ReactMarkdown>{message.content}</ReactMarkdown> : null}
-          {message.streaming && <span className="ml-1 inline-block h-4 w-1 animate-pulse rounded bg-gray-400 align-middle" />}
+          {message.streaming && !message.content && (
+            <span className="inline-flex gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+          )}
+          {message.streaming && message.content && (
+            <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse rounded-full bg-gray-400 align-middle" />
+          )}
         </div>
         {message.sources && message.sources.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {message.sources.slice(0, 8).map((s, i) => (
-              <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-500">
+              <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
                 [{s.wiki}] {s.page}
               </span>
             ))}
