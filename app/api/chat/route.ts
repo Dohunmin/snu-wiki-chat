@@ -6,7 +6,7 @@ import { routeQuery } from '@/lib/agents/router';
 import { buildSystemPrompt, buildUserMessage } from '@/lib/llm/prompts';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
 import { db } from '@/lib/db/client';
-import { messages, conversations } from '@/lib/db/schema';
+import { conversations, messages, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -16,54 +16,64 @@ const chatSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  // 인증 확인
   const session = await auth();
   if (!session?.user) {
-    return new Response(JSON.stringify({ error: '로그인이 필요합니다' }), { status: 401 });
-  }
-  const role = (session.user as { role: Role }).role;
-  if (!canChat(role)) {
-    return new Response(JSON.stringify({ error: '승인 대기 중입니다' }), { status: 403 });
+    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
-  // 요청 파싱
+  const role = session.user.role as Role;
+  if (!canChat(role)) {
+    return Response.json({ error: '채팅 권한이 없습니다.' }, { status: 403 });
+  }
+
   const body = await req.json();
   const parsed = chatSchema.safeParse(body);
   if (!parsed.success) {
-    return new Response(JSON.stringify({ error: '잘못된 요청입니다' }), { status: 400 });
+    return Response.json({ error: '질문 형식이 올바르지 않습니다.' }, { status: 400 });
   }
+
   const { message, conversationId } = parsed.data;
-  const userId = session.user.id!;
+  const userId = session.user.id;
 
-  // 라우팅 실행
-  const routing = await routeQuery(message, role);
-
-  // 시스템 프롬프트 + 사용자 메시지 구성
-  const systemPrompt = buildSystemPrompt(routing.contexts, role);
-  const userMessage = buildUserMessage(message, routing.contexts);
-
-  // 대화 저장 (conversationId 없으면 새로 생성)
-  let convId = conversationId;
-  if (!convId) {
-    convId = crypto.randomUUID();
-    await db.insert(conversations).values({
-      id: convId,
-      userId,
-      title: message.slice(0, 50),
-    });
+  try {
+    await ensureUserExists(userId, session.user.name, role);
+  } catch (err) {
+    console.error('Failed to ensure chat user exists', err);
+    return Response.json({ error: '사용자 정보를 준비하지 못했습니다.' }, { status: 500 });
   }
 
-  // 사용자 메시지 저장
-  await db.insert(messages).values({
-    id: crypto.randomUUID(),
-    conversationId: convId,
-    role: 'user',
-    content: message,
-    routedAgents: routing.selectedAgentIds,
-    sources: null,
-  });
+  let routing;
+  let systemPrompt;
+  let userMessage;
+  let convId = conversationId;
 
-  // SSE 스트리밍 응답
+  try {
+    routing = await routeQuery(message, role);
+    systemPrompt = buildSystemPrompt(routing.contexts, role);
+    userMessage = buildUserMessage(message, routing.contexts);
+
+    if (!convId) {
+      convId = crypto.randomUUID();
+      await db.insert(conversations).values({
+        id: convId,
+        userId,
+        title: message.slice(0, 50),
+      });
+    }
+
+    await db.insert(messages).values({
+      id: crypto.randomUUID(),
+      conversationId: convId,
+      role: 'user',
+      content: message,
+      routedAgents: routing.selectedAgentIds,
+      sources: null,
+    });
+  } catch (err) {
+    console.error('Failed to prepare chat response', err);
+    return Response.json({ error: '대화를 저장하거나 자료를 찾는 중 오류가 발생했습니다.' }, { status: 500 });
+  }
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -72,7 +82,6 @@ export async function POST(req: NextRequest) {
       };
 
       try {
-        // 라우팅 정보 전송
         send({
           type: 'routing',
           agents: routing.selectedAgentIds,
@@ -80,18 +89,17 @@ export async function POST(req: NextRequest) {
           conversationId: convId,
         });
 
-        // Claude API 스트리밍 호출
         const client = getAnthropicClient();
         let fullContent = '';
 
-        const stream = await client.messages.stream({
+        const anthropicStream = await client.messages.stream({
           model: LLM_MODEL,
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
           messages: [{ role: 'user', content: userMessage }],
         });
 
-        for await (const chunk of stream) {
+        for await (const chunk of anthropicStream) {
           if (
             chunk.type === 'content_block_delta' &&
             chunk.delta.type === 'text_delta'
@@ -101,14 +109,12 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // 출처 수집
         const allSources = routing.contexts.flatMap(c => c.sources);
         send({ type: 'sources', refs: allSources });
 
-        // 어시스턴트 메시지 저장
         await db.insert(messages).values({
           id: crypto.randomUUID(),
-          conversationId: convId,
+          conversationId: convId!,
           role: 'assistant',
           content: fullContent,
           routedAgents: routing.selectedAgentIds,
@@ -117,7 +123,8 @@ export async function POST(req: NextRequest) {
 
         send({ type: 'done', conversationId: convId });
       } catch (err) {
-        send({ type: 'error', message: '답변 생성 중 오류가 발생했습니다' });
+        console.error('Chat stream failed', err);
+        send({ type: 'error', message: '응답을 생성하지 못했습니다.' });
       } finally {
         controller.close();
       }
@@ -130,5 +137,28 @@ export async function POST(req: NextRequest) {
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
     },
+  });
+}
+
+async function ensureUserExists(userId: string, name: string | null | undefined, role: Role) {
+  const [existing] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (existing) return;
+
+  if (userId !== 'master-admin') {
+    throw new Error(`Session user does not exist in DB: ${userId}`);
+  }
+
+  await db.insert(users).values({
+    id: userId,
+    email: 'master-admin@snu.local',
+    passwordHash: 'master-login',
+    name: name || '관리자',
+    role,
+    approvedAt: new Date(),
   });
 }

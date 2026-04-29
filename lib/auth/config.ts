@@ -80,7 +80,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub as string;
-        session.user.role = token.role as Role;
+        const [currentUser] = await db
+          .select({ role: users.role, name: users.name, email: users.email })
+          .from(users)
+          .where(eq(users.id, session.user.id))
+          .limit(1);
+
+        if (currentUser) {
+          session.user.role = currentUser.role as Role;
+          session.user.name = currentUser.name;
+          session.user.email = currentUser.email;
+        } else {
+          session.user.role = token.role as Role;
+        }
       }
       return session;
     },

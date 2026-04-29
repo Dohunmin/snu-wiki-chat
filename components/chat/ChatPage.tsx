@@ -36,12 +36,21 @@ const EXAMPLE_QUESTIONS = [
   '평의원회와 이사회 쟁점을 비교해줘',
 ];
 
+const AGENT_OPTIONS = [
+  { id: 'senate', label: '평의원회' },
+  { id: 'board', label: '이사회' },
+  { id: 'plan', label: '대학운영계획' },
+  { id: 'vision', label: '중장기발전계획' },
+] as const;
+
 export default function ChatPage({ user }: { user: User }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConvId, setCurrentConvId] = useState<string | undefined>();
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [notice, setNotice] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -179,6 +188,11 @@ export default function ChatPage({ user }: { user: User }) {
     inputRef.current?.focus();
   }
 
+  function openUpload() {
+    if (!canUpload(user.role)) return;
+    setUploadOpen(true);
+  }
+
   return (
     <div className="flex h-screen bg-white text-gray-900">
       <aside className="hidden md:flex w-72 shrink-0 flex-col border-r border-gray-200 bg-gray-50">
@@ -227,7 +241,10 @@ export default function ChatPage({ user }: { user: User }) {
 
         <div className="space-y-1 border-t border-gray-200 p-3">
           {canUpload(user.role) && (
-            <button className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-200">
+            <button
+              onClick={openUpload}
+              className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-200"
+            >
               <UploadIcon />
               자료 업로드
             </button>
@@ -261,6 +278,12 @@ export default function ChatPage({ user }: { user: User }) {
           </div>
         </header>
 
+        {notice && (
+          <div className="mx-auto mt-3 max-w-3xl rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
+            {notice}
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
@@ -279,9 +302,11 @@ export default function ChatPage({ user }: { user: User }) {
             <div className="flex items-end gap-2 rounded-3xl border border-gray-200 bg-white p-2 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
               <button
                 type="button"
-                className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
-                title="자료 추가"
-                aria-label="자료 추가"
+                onClick={openUpload}
+                disabled={!canUpload(user.role)}
+                className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                title="자료 업로드"
+                aria-label="자료 업로드"
               >
                 <PlusIcon />
               </button>
@@ -310,6 +335,134 @@ export default function ChatPage({ user }: { user: User }) {
           </div>
         </div>
       </main>
+
+      {uploadOpen && (
+        <UploadModal
+          onClose={() => setUploadOpen(false)}
+          onUploaded={(message) => {
+            setNotice(message);
+            setUploadOpen(false);
+            window.setTimeout(() => setNotice(''), 4000);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded: (message: string) => void }) {
+  const [agentId, setAgentId] = useState<(typeof AGENT_OPTIONS)[number]['id']>('senate');
+  const [fileName, setFileName] = useState('');
+  const [content, setContent] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError('');
+    setFileName(file.name);
+    try {
+      setContent(await file.text());
+    } catch {
+      setError('파일을 읽지 못했습니다. 텍스트 파일인지 확인해 주세요.');
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/uploads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, fileName: fileName.trim(), content: content.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || '자료 업로드에 실패했습니다.');
+      onUploaded(data.message || '자료가 업로드되었습니다.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '자료 업로드에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">자료 업로드</h2>
+          <button type="button" onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="닫기">
+            <CloseIcon />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">분류</label>
+            <select
+              value={agentId}
+              onChange={e => setAgentId(e.target.value as typeof agentId)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {AGENT_OPTIONS.map(option => (
+                <option key={option.id} value={option.id}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">파일</label>
+            <input
+              type="file"
+              accept=".md,.txt,.json,.csv,text/*"
+              onChange={handleFileChange}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:text-gray-700"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">파일명</label>
+            <input
+              value={fileName}
+              onChange={e => setFileName(e.target.value)}
+              placeholder="예: board-note.md"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">내용</label>
+            <textarea
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              placeholder="파일을 선택하거나 내용을 직접 붙여넣으세요."
+              rows={8}
+              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+        </div>
+
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
+            취소
+          </button>
+          <button
+            type="submit"
+            disabled={loading || !fileName.trim() || !content.trim()}
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+          >
+            {loading ? '업로드 중...' : '업로드'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -435,6 +588,14 @@ function LogoutIcon() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M10 17l5-5-5-5M15 12H3M21 19V5a2 2 0 00-2-2h-5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
     </svg>
   );
 }
