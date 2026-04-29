@@ -15,19 +15,22 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   const globalKeywords: string[] = agentsConfig.routing.globalKeywords;
   const agents = registry.getAll();
 
-  // Tier 0: 글로벌 키워드 → 전체 에이전트
-  const isGlobal = globalKeywords.some(kw => queryLower.includes(kw));
-  if (isGlobal) {
+  // Tier 1: keywords 배열 매칭 (자동보강 포함) — 먼저 시도
+  const tier1Matches = agents.filter(agent =>
+    agent.config.keywords.some(kw => queryLower.includes(kw.toLowerCase()))
+  );
+
+  // Tier 0: 글로벌 키워드 → Tier 1 미매칭일 때만 전체 호출
+  // (특정 에이전트가 이미 매칭됐다면 글로벌 키워드 무시: "이사회 전체 요약" → board만)
+  const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
+  if (hasGlobalKeyword && tier1Matches.length === 0) {
     const contexts = await Promise.all(agents.map(a => a.getContext(query, userRole)));
     return { selectedAgentIds: contexts.map(c => c.agentId), contexts, isGlobal: true };
   }
 
-  // Tier 1: keywords 배열 매칭 (자동보강 포함)
-  let selectedAgents = agents.filter(agent =>
-    agent.config.keywords.some(kw => queryLower.includes(kw.toLowerCase()))
-  );
+  let selectedAgents = tier1Matches;
 
-  // Tier 2: 키워드 미매칭 → 메타데이터 경량 스캔
+  // Tier 2: Tier 1 미매칭 → 메타데이터 경량 스캔
   if (selectedAgents.length === 0) {
     selectedAgents = agents.filter(agent =>
       agent instanceof WikiAgent && agent.preScore(query, userRole)

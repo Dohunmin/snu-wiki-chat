@@ -63,11 +63,22 @@ export interface WikiEntity {
   content: string;
 }
 
+export interface WikiSynthesis {
+  id: string;
+  query: string;
+  answeredAt: string;
+  routedTo: string[];
+  tags: string[];
+  content: string;
+  source: 'obsidian' | 'chat';
+}
+
 export interface WikiData {
   id: string;
   name: string;
   sources: WikiSource[];
   topics: WikiTopic[];
   entities: WikiEntity[];
+  syntheses: WikiSynthesis[];
   index: string;
 }

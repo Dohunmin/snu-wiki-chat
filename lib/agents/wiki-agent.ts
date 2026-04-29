@@ -68,7 +68,7 @@ export class WikiAgent implements AgentPlugin {
     if (this.data) return this.data;
     const dataPath = path.join(process.cwd(), 'data', this.config.dataFile);
     if (!fs.existsSync(dataPath)) {
-      return { id: this.config.id, name: this.config.name, sources: [], topics: [], entities: [], index: '' };
+      return { id: this.config.id, name: this.config.name, sources: [], topics: [], entities: [], syntheses: [], index: '' };
     }
     this.data = JSON.parse(fs.readFileSync(dataPath, 'utf-8')) as WikiData;
     return this.data;

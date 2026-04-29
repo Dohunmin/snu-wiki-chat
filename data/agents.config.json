@@ -630,14 +630,12 @@
   "routing": {
     "globalKeywords": [
       "전체",
-      "종합",
-      "요약",
-      "총장이 알아야 할",
+      "전체적",
+      "전반적",
       "모든",
-      "비교",
-      "와 이사회",
-      "와 평의원회"
+      "종합",
+      "총장이 알아야 할"
     ],
-    "fallbackToLLM": true
+    "fallbackToLLM": false
   }
 }

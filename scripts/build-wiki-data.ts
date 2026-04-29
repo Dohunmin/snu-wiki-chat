@@ -40,12 +40,23 @@ interface WikiEntity {
   content: string;
 }
 
+interface WikiSynthesis {
+  id: string;
+  query: string;
+  answeredAt: string;
+  routedTo: string[];
+  tags: string[];
+  content: string;
+  source: 'obsidian' | 'chat';
+}
+
 interface WikiData {
   id: string;
   name: string;
   sources: WikiSource[];
   topics: WikiTopic[];
   entities: WikiEntity[];
+  syntheses: WikiSynthesis[];
   index: string;
 }
 
@@ -131,7 +142,7 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
 
   if (!fs.existsSync(wikiPath)) {
     console.warn(`  ⚠️  폴더 없음: ${wikiPath}`);
-    return { id: wikiConfig.id, name: wikiConfig.name, sources: [], topics: [], entities: [], index: '' };
+    return { id: wikiConfig.id, name: wikiConfig.name, sources: [], topics: [], entities: [], syntheses: [], index: '' };
   }
 
   // index.md
@@ -230,7 +241,26 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
     });
   }
 
-  console.log(`  ✅ ${wikiConfig.name}: sources ${sources.length}개, topics ${topics.length}개, entities ${entities.length}개`);
+  // ─── Syntheses ─────────────────────────────────────────────────
+  const synthesisDir = path.join(wikiPath, 'wiki', 'syntheses');
+  const syntheses: WikiSynthesis[] = [];
+
+  for (const { id: synthId, content } of collectMdFiles(synthesisDir)) {
+    const { meta, body } = parseFrontmatter(content);
+    if (meta.type !== 'synthesis') continue;
+
+    syntheses.push({
+      id: synthId,
+      query: (meta.query as string) || synthId,
+      answeredAt: (meta.answered_at as string) || '',
+      routedTo: (meta.routed_to as string[] | undefined) || [],
+      tags: (meta.tags as string[] | undefined) || [],
+      content: body,
+      source: 'obsidian',
+    });
+  }
+
+  console.log(`  ✅ ${wikiConfig.name}: sources ${sources.length}개, topics ${topics.length}개, entities ${entities.length}개, syntheses ${syntheses.length}개`);
 
   return {
     id: wikiConfig.id,
@@ -238,6 +268,7 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
     sources,
     topics,
     entities,
+    syntheses,
     index: indexContent,
   };
 }

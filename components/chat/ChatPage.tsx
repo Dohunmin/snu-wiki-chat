@@ -7,6 +7,11 @@ import remarkGfm from 'remark-gfm';
 import type { Role } from '@/lib/auth/roles';
 import { canUpload, canAccessAdmin, ROLE_LABELS } from '@/lib/auth/roles';
 import type { SourceRef } from '@/lib/agents/types';
+import Link from 'next/link';
+
+const WIKI_ID_MAP: Record<string, string> = {
+  '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan', '중장기발전계획': 'vision',
+};
 
 interface Message {
   id: string;
@@ -238,7 +243,7 @@ export default function ChatPage({ user }: { user: User }) {
           </div>
         </div>
 
-        <div className="px-3 pt-3 pb-1">
+        <div className="px-3 pt-3 pb-1 flex flex-col gap-1">
           <button
             onClick={newConversation}
             className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
@@ -246,6 +251,13 @@ export default function ChatPage({ user }: { user: User }) {
             <PlusIcon />
             새 대화
           </button>
+          <Link
+            href="/wiki"
+            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+          >
+            <BookIcon />
+            위키 탐색
+          </Link>
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-2">
@@ -534,6 +546,42 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
   );
 }
 
+function SynthesisSaveButton({ message }: { message: Message }) {
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    const routedTo = message.agentNames ?? [];
+    const sources = message.sources ?? [];
+    const sourcesText = sources.map(s => `- [${s.wiki}] ${s.page}`).join('\n');
+    const content = `## 답변\n\n${message.content}${sourcesText ? `\n\n## 출처\n\n${sourcesText}` : ''}`;
+    await fetch('/api/wiki/syntheses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: '(이전 메시지 참조)',
+        answeredAt: new Date().toISOString().slice(0, 10),
+        routedTo,
+        content,
+      }),
+    });
+    setSaved(true);
+    setSaving(false);
+  }
+
+  if (saved) return <span className="text-xs text-green-600 mt-2 inline-block">위키에 저장됨</span>;
+  return (
+    <button
+      onClick={save}
+      disabled={saving}
+      className="mt-2 text-xs text-gray-400 hover:text-blue-600 transition-colors"
+    >
+      {saving ? '저장 중...' : '위키에 저장'}
+    </button>
+  );
+}
+
 function MessageBubble({ message }: { message: Message }) {
   if (message.role === 'user') {
     return (
@@ -591,15 +639,41 @@ function MessageBubble({ message }: { message: Message }) {
         </div>
         {message.sources && message.sources.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {message.sources.slice(0, 8).map((s, i) => (
-              <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
-                [{s.wiki}] {s.page}
-              </span>
-            ))}
+            {message.sources.slice(0, 8).map((s, i) => {
+              const agentId = WIKI_ID_MAP[s.wiki];
+              const href = agentId
+                ? `/wiki?agent=${agentId}&type=source&id=${encodeURIComponent(s.page)}`
+                : null;
+              return href ? (
+                <Link
+                  key={`${s.wiki}-${s.page}-${i}`}
+                  href={href}
+                  className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs text-blue-600 hover:bg-blue-100 transition-colors"
+                >
+                  [{s.wiki}] {s.page}
+                </Link>
+              ) : (
+                <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
+                  [{s.wiki}] {s.page}
+                </span>
+              );
+            })}
           </div>
+        )}
+        {!message.streaming && !message.error && message.content && (
+          <SynthesisSaveButton message={message} />
         )}
       </div>
     </div>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

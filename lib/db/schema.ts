@@ -42,6 +42,18 @@ export const uploads = pgTable('uploads', {
   reviewedAt:  timestamp('reviewed_at'),
 });
 
+export const syntheses = pgTable('syntheses', {
+  id:             text('id').primaryKey(),
+  userId:         text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  conversationId: text('conversation_id').references(() => conversations.id, { onDelete: 'set null' }),
+  query:          text('query').notNull(),
+  answeredAt:     text('answered_at').notNull(),
+  routedTo:       text('routed_to').array(),
+  tags:           text('tags').array(),
+  content:        text('content').notNull(),
+  createdAt:      timestamp('created_at').defaultNow().notNull(),
+});
+
 export const sensitiveTopics = pgTable('sensitive_topics', {
   id:        text('id').primaryKey(),
   agentId:   text('agent_id').notNull(),
