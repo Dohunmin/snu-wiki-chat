@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Role } from '@/lib/auth/roles';
 import { canUpload, canAccessAdmin, ROLE_LABELS } from '@/lib/auth/roles';
 import type { SourceRef } from '@/lib/agents/types';
@@ -51,6 +52,7 @@ export default function ChatPage({ user }: { user: User }) {
   const [currentConvId, setCurrentConvId] = useState<string | undefined>();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [notice, setNotice] = useState('');
+  const [convLoading, setConvLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -64,6 +66,40 @@ export default function ChatPage({ user }: { user: User }) {
     textarea.style.height = 'auto';
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [input]);
+
+  useEffect(() => {
+    fetch('/api/conversations')
+      .then(r => r.json())
+      .then((rows: { id: string; title: string | null }[]) => {
+        if (Array.isArray(rows)) {
+          setConversations(rows.map(r => ({ id: r.id, title: r.title || '대화' })));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function loadConversation(convId: string) {
+    if (convId === currentConvId) return;
+    setConvLoading(true);
+    setCurrentConvId(convId);
+    try {
+      const res = await fetch(`/api/conversations/${convId}`);
+      const rows = await res.json();
+      if (Array.isArray(rows)) {
+        setMessages(rows.map((r: { id: string; role: string; content: string; routedAgents?: string[] | null; sources?: { wiki: string; page: string; topic?: string }[] | null }) => ({
+          id: r.id,
+          role: r.role as 'user' | 'assistant',
+          content: r.content,
+          routedAgents: r.routedAgents ?? undefined,
+          sources: (r.sources as SourceRef[] | null) ?? undefined,
+        })));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setConvLoading(false);
+    }
+  }
 
   async function sendMessage(messageText = input) {
     const trimmed = messageText.trim();
@@ -223,7 +259,7 @@ export default function ChatPage({ user }: { user: User }) {
               {conversations.map(conv => (
                 <button
                   key={conv.id}
-                  onClick={() => setCurrentConvId(conv.id)}
+                  onClick={() => loadConversation(conv.id)}
                   className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                     currentConvId === conv.id
                       ? 'bg-blue-50 text-blue-700 font-medium'
@@ -284,7 +320,11 @@ export default function ChatPage({ user }: { user: User }) {
         )}
 
         <div className="flex-1 overflow-y-auto flex flex-col">
-          {messages.length === 0 ? (
+          {convLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <SpinnerIcon />
+            </div>
+          ) : messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
             <div className="mx-auto w-full max-w-3xl flex flex-col gap-6 px-5 py-8 md:px-8">
@@ -317,7 +357,7 @@ export default function ChatPage({ user }: { user: User }) {
                 onKeyDown={handleKeyDown}
                 placeholder="SNU 거버넌스 자료에 대해 질문하세요"
                 rows={1}
-                className="max-h-36 min-h-9 flex-1 resize-none bg-transparent py-1.5 text-sm leading-6 outline-none placeholder:text-gray-400"
+                className="max-h-36 min-h-9 flex-1 resize-none bg-transparent py-1.5 text-base leading-6 outline-none placeholder:text-gray-400"
               />
               <button
                 onClick={() => sendMessage()}
@@ -474,8 +514,8 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
         <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-sm font-bold text-white shadow-sm">
           SNU
         </div>
-        <h2 className="text-2xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
-        <p className="mt-2.5 text-sm leading-relaxed text-gray-500">
+        <h2 className="text-3xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
+        <p className="mt-2.5 text-base leading-relaxed text-gray-500">
           평의원회, 이사회, 대학운영계획, 중장기발전계획 자료를 바탕으로 질문에 답합니다.
         </p>
         <div className="mt-7 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -483,7 +523,7 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm"
+              className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm"
             >
               {q}
             </button>
@@ -498,7 +538,7 @@ function MessageBubble({ message }: { message: Message }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[78%] rounded-2xl rounded-tr-sm bg-blue-600 px-4 py-3 text-sm leading-relaxed text-white">
+        <div className="max-w-[78%] rounded-2xl rounded-tr-sm bg-blue-600 px-4 py-3 text-base leading-relaxed text-white">
           {message.content}
         </div>
       </div>
@@ -513,8 +553,8 @@ function MessageBubble({ message }: { message: Message }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
-            <p className="text-sm font-medium text-red-700 mb-1">응답 오류</p>
-            <p className="text-sm text-red-600 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            <p className="text-base font-medium text-red-700 mb-1">응답 오류</p>
+            <p className="text-base text-red-600 leading-relaxed whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
       </div>
@@ -536,8 +576,8 @@ function MessageBubble({ message }: { message: Message }) {
             ))}
           </div>
         )}
-        <div className="md-body text-sm">
-          {message.content ? <ReactMarkdown>{message.content}</ReactMarkdown> : null}
+        <div className="md-body text-base">
+          {message.content ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown> : null}
           {message.streaming && !message.content && (
             <span className="inline-flex gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
