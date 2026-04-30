@@ -7,7 +7,7 @@ import { buildSystemPrompt, buildUserMessage } from '@/lib/llm/prompts';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
 import { db } from '@/lib/db/client';
 import { conversations, messages, users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { z } from 'zod';
 
 const chatSchema = z.object({
@@ -92,11 +92,32 @@ export async function POST(req: NextRequest) {
         const client = getAnthropicClient();
         let fullContent = '';
 
+        // 직전 1회 교환(user + assistant 쌍)만 전문 포함
+        // 토큰 증가 최소화하면서 직전 답변 맥락 완전 보존
+        type AnthropicMessage = { role: 'user' | 'assistant'; content: string };
+        const history: AnthropicMessage[] = [];
+        if (convId) {
+          const allPrev = await db
+            .select({ role: messages.role, content: messages.content })
+            .from(messages)
+            .where(eq(messages.conversationId, convId))
+            .orderBy(asc(messages.createdAt));
+
+          // 현재 저장된 user 메시지 제외 (마지막 1개)
+          // 그 이전 마지막 2개 = 직전 assistant 답변 + 직전 user 질문
+          const prev = allPrev.slice(0, -1).slice(-2);
+          for (const m of prev) {
+            if (m.role === 'user' || m.role === 'assistant') {
+              history.push({ role: m.role, content: m.content });
+            }
+          }
+        }
+
         const anthropicStream = client.messages.stream({
           model: LLM_MODEL,
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
-          messages: [{ role: 'user', content: userMessage }],
+          messages: [...history, { role: 'user', content: userMessage }],
         });
 
         for await (const chunk of anthropicStream) {
