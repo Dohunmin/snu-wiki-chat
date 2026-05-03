@@ -58,6 +58,7 @@ export default function ChatPage({ user }: { user: User }) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [notice, setNotice] = useState('');
   const [convLoading, setConvLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -95,6 +96,7 @@ export default function ChatPage({ user }: { user: User }) {
 
   async function loadConversation(convId: string) {
     if (convId === currentConvId) return;
+    setSidebarOpen(false);
     setConvLoading(true);
     setCurrentConvId(convId);
     try {
@@ -231,6 +233,7 @@ export default function ChatPage({ user }: { user: User }) {
     setMessages([]);
     setCurrentConvId(undefined);
     setInput('');
+    setSidebarOpen(false);
     inputRef.current?.focus();
   }
 
@@ -241,8 +244,21 @@ export default function ChatPage({ user }: { user: User }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-white text-gray-900">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 shrink-0 flex-col bg-gray-50 border-r border-gray-200">
+      <aside className={`
+        fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-gray-50 border-r border-gray-200
+        transform transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:relative md:translate-x-0 md:flex
+      `}>
         <div className="flex h-14 items-center gap-2.5 px-4 border-b border-gray-200">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-[11px] font-bold text-white shrink-0">
             SNU
@@ -334,11 +350,15 @@ export default function ChatPage({ user }: { user: User }) {
 
       {/* Main */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-5 md:px-8">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4 md:px-8">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-[11px] font-bold text-white md:hidden">
-              SNU
-            </div>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 md:hidden"
+              aria-label="메뉴 열기"
+            >
+              <HamburgerIcon />
+            </button>
             <h1 className="text-sm font-semibold text-gray-900">SNU 거버넌스 위키</h1>
           </div>
           <span className="text-xs text-gray-400">{user.name || '사용자'}</span>
@@ -775,6 +795,14 @@ function CloseIcon() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function HamburgerIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
     </svg>
   );
 }
