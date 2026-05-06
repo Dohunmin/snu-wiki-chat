@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import WikiNav from '@/components/wiki/WikiNav';
 import WikiViewer from '@/components/wiki/WikiViewer';
 
@@ -44,15 +43,15 @@ export default function WikiPageClient() {
           <div className="flex items-center justify-between mb-3">
             <span className="font-bold text-gray-900 text-base">SNU 거버넌스 위키</span>
           </div>
-          <Link
-            href="/"
+          <button
+            onClick={() => router.back()}
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             채팅으로 돌아가기
-          </Link>
+          </button>
         </div>
         <WikiNav wikis={wikis} selected={selected} onSelect={handleSelect} />
       </div>

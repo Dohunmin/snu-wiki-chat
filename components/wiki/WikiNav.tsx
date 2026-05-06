@@ -70,7 +70,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       <div className="px-5 py-4 border-b border-gray-200">
-        <p className="text-xs text-gray-400 mt-0.5">위키를 클릭해 소스·토픽·엔티티를 탐색하세요</p>
+        <p className="text-xs text-gray-400 mt-0.5">위키를 클릭해 소스·팩트·입장 등을 탐색하세요</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -82,13 +82,16 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
             >
               <div>
                 <span className="text-sm font-semibold text-gray-800">{wiki.name}</span>
-                <div className="flex gap-2 mt-1">
-                  <span className="text-xs text-gray-400">소스 {wiki.counts.sources}</span>
-                  <span className="text-xs text-gray-300">·</span>
-                  <span className="text-xs text-gray-400">토픽 {wiki.counts.topics}</span>
-                  <span className="text-xs text-gray-300">·</span>
-                  <span className="text-xs text-gray-400">엔티티 {wiki.counts.entities}</span>
-                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {[
+                    wiki.counts.sources > 0 ? `소스 ${wiki.counts.sources}` : null,
+                    wiki.counts.topics > 0 ? `토픽 ${wiki.counts.topics}` : null,
+                    wiki.counts.entities > 0 ? `엔티티 ${wiki.counts.entities}` : null,
+                    (wiki.counts.facts ?? 0) > 0 ? `팩트 ${wiki.counts.facts}` : null,
+                    (wiki.counts.stances ?? 0) > 0 ? `입장 ${wiki.counts.stances}` : null,
+                    (wiki.counts.overviews ?? 0) > 0 ? `개요 ${wiki.counts.overviews}` : null,
+                  ].filter(Boolean).join(' · ')}
+                </p>
               </div>
               <span className="text-gray-400 text-lg">{expanded === wiki.id ? '▲' : '▼'}</span>
             </button>

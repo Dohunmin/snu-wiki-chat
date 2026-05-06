@@ -23,7 +23,7 @@ function getPageType(id: string): string {
 
 function linkifyCitations(content: string): string {
   const wikiNames = Object.keys(WIKI_ID_MAP).join('|');
-  const pattern = new RegExp(`\\[(${wikiNames})\\]\\s+([\\w가-힣·\\-.]+)`, 'g');
+  const pattern = new RegExp(`\\[(${wikiNames})\\]\\s+([\\w가-힣·\\-]+(?:\\.(?:fact|stance|overview))?)`, 'g');
   return content.replace(pattern, (_, wikiName: string, docId: string) => {
     const agentId = WIKI_ID_MAP[wikiName];
     if (!agentId) return `[${wikiName}] ${docId}`;
