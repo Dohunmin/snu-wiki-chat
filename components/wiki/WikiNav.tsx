@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface WikiMeta {
   id: string;
   name: string;
-  counts: { sources: number; topics: number; entities: number; syntheses: number };
+  counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number };
 }
 
 interface WikiNavProps {
@@ -19,6 +19,9 @@ const TABS = [
   { key: 'topics', label: '토픽', color: 'bg-purple-100 text-purple-700' },
   { key: 'entities', label: '엔티티', color: 'bg-green-100 text-green-700' },
   { key: 'syntheses', label: 'Synthesis', color: 'bg-amber-100 text-amber-700' },
+  { key: 'facts', label: '팩트', color: 'bg-orange-100 text-orange-700' },
+  { key: 'stances', label: '입장', color: 'bg-pink-100 text-pink-700' },
+  { key: 'overviews', label: '개요', color: 'bg-teal-100 text-teal-700' },
 ] as const;
 
 const WIKI_COLORS: Record<string, string> = {
@@ -52,6 +55,9 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
         topics: data.topics ?? [],
         entities: data.entities ?? [],
         syntheses: data.syntheses ?? [],
+        facts: data.facts ?? [],
+        stances: data.stances ?? [],
+        overviews: data.overviews ?? [],
       },
     }));
     setLoading(null);
@@ -90,8 +96,8 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
             {expanded === wiki.id && (
               <div className="border-t border-gray-100 bg-gray-50">
                 {/* 탭 */}
-                <div className="flex gap-1.5 px-4 py-3">
-                  {TABS.map(tab => (
+                <div className="flex flex-wrap gap-1.5 px-4 py-3">
+                  {TABS.filter(tab => (wiki.counts[tab.key as keyof typeof wiki.counts] ?? 0) > 0).map(tab => (
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(p => ({ ...p, [wiki.id]: tab.key }))}

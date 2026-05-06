@@ -9,7 +9,7 @@ import WikiViewer from '@/components/wiki/WikiViewer';
 interface WikiMeta {
   id: string;
   name: string;
-  counts: { sources: number; topics: number; entities: number; syntheses: number };
+  counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number };
 }
 
 export default function WikiPageClient() {

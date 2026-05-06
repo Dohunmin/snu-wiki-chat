@@ -23,6 +23,9 @@ export async function GET() {
           topics: data.topics.length,
           entities: data.entities.length,
           syntheses: data.syntheses.length,
+          facts: (data.facts ?? []).length,
+          stances: (data.stances ?? []).length,
+          overviews: (data.overviews ?? []).length,
         },
       };
     })

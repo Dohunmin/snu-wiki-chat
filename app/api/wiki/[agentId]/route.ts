@@ -28,6 +28,14 @@ export async function GET(
     ? data.sources
     : data.sources.filter(s => !s.sensitive);
 
+  const facts = isSensitiveAllowed
+    ? (data.facts ?? [])
+    : (data.facts ?? []).filter(f => !f.sensitive);
+
+  const stances = isSensitiveAllowed
+    ? (data.stances ?? [])
+    : (data.stances ?? []).filter(s => !s.sensitive);
+
   return NextResponse.json({
     id: data.id,
     name: data.name,
@@ -35,5 +43,8 @@ export async function GET(
     topics: data.topics,
     entities: data.entities,
     syntheses: data.syntheses,
+    facts: facts.map(f => ({ id: f.id, title: f.title, category: f.category, yearsCovered: f.yearsCovered, unit: f.unit, tags: f.tags, content: f.content })),
+    stances: stances.map(s => ({ id: s.id, title: s.title, holder: s.holder, topic: s.topic, tags: s.tags, content: s.content })),
+    overviews: (data.overviews ?? []).map(o => ({ id: o.id, title: o.title, 편: o.편, 시기: o.시기, tags: o.tags, content: o.content })),
   });
 }

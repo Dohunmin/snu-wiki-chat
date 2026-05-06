@@ -14,13 +14,21 @@ const WIKI_ID_MAP: Record<string, string> = {
   '70년역사': 'history', '대학현황': 'status', '유홍림총장연설': 'yhl-speeches', '재무정보공시': 'finance',
 };
 
+function getPageType(id: string): string {
+  if (id.endsWith('.fact')) return 'facts';
+  if (id.endsWith('.stance')) return 'stances';
+  if (id.endsWith('.overview')) return 'overviews';
+  return 'sources';
+}
+
 function linkifyCitations(content: string): string {
   const wikiNames = Object.keys(WIKI_ID_MAP).join('|');
-  const pattern = new RegExp(`\\[(${wikiNames})\\]\\s+([\\w가-힣·\\-]+)`, 'g');
+  const pattern = new RegExp(`\\[(${wikiNames})\\]\\s+([\\w가-힣·\\-.]+)`, 'g');
   return content.replace(pattern, (_, wikiName: string, docId: string) => {
     const agentId = WIKI_ID_MAP[wikiName];
     if (!agentId) return `[${wikiName}] ${docId}`;
-    const href = `/wiki?agent=${agentId}&type=sources&id=${encodeURIComponent(docId)}`;
+    const type = getPageType(docId);
+    const href = `/wiki?agent=${agentId}&type=${type}&id=${encodeURIComponent(docId)}`;
     return `[${wikiName} ${docId}](${href})`;
   });
 }
@@ -87,6 +95,7 @@ export default function ChatPage({ user }: { user: User }) {
     if (currentConvId === convId) {
       setCurrentConvId(undefined);
       setMessages([]);
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }
 
@@ -121,19 +130,22 @@ export default function ChatPage({ user }: { user: User }) {
       .catch(() => {});
   }, []);
 
-  // URL에서 대화 복원 (위키 페이지 뒤로가기 등)
+  // URL에서 대화 복원 + 뒤로가기(popstate) 대응
   useEffect(() => {
-    const convId = new URLSearchParams(window.location.search).get('conv');
-    if (convId) loadConversation(convId);
+    const restore = () => {
+      const convId = new URLSearchParams(window.location.search).get('conv');
+      if (convId) loadConversation(convId);
+    };
+    restore();
+    window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // currentConvId 변경 시 URL 동기화
+  // currentConvId → URL 동기화 (클리어는 명시적 삭제 시에만)
   useEffect(() => {
     if (currentConvId) {
       window.history.replaceState({}, '', `?conv=${currentConvId}`);
-    } else {
-      window.history.replaceState({}, '', window.location.pathname);
     }
   }, [currentConvId]);
 
