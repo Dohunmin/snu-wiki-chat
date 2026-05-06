@@ -77,6 +77,8 @@ export default function ChatPage({ user }: { user: User }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const userScrolledUp = useRef(false);
 
   async function deleteConversation(convId: string, e: React.MouseEvent) {
     e.stopPropagation();
@@ -89,8 +91,17 @@ export default function ChatPage({ user }: { user: User }) {
   }
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!userScrolledUp.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
+
+  function handleScrollContainer() {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    userScrolledUp.current = distFromBottom > 100;
+  }
 
   useEffect(() => {
     const textarea = inputRef.current;
@@ -144,6 +155,7 @@ export default function ChatPage({ user }: { user: User }) {
       content: trimmed,
     };
 
+    userScrolledUp.current = false;
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
@@ -388,7 +400,7 @@ export default function ChatPage({ user }: { user: User }) {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto flex flex-col">
+        <div ref={scrollContainerRef} onScroll={handleScrollContainer} className="flex-1 overflow-y-auto flex flex-col">
           {convLoading ? (
             <div className="flex-1 flex items-center justify-center">
               <SpinnerIcon />
