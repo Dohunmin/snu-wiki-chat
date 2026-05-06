@@ -28,14 +28,13 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
     return { selectedAgentIds: contexts.map(c => c.agentId), contexts, isGlobal: true };
   }
 
-  let selectedAgents = tier1Matches;
-
-  // Tier 2: Tier 1 미매칭 → 메타데이터 경량 스캔
-  if (selectedAgents.length === 0) {
-    selectedAgents = agents.filter(agent =>
-      agent instanceof WikiAgent && agent.preScore(query, userRole)
-    );
-  }
+  // Tier 2: Tier 1에서 잡히지 않은 에이전트도 메타데이터 스캔으로 추가 검토
+  // (Tier 1이 일부만 매칭해도 나머지 에이전트를 놓치지 않기 위해)
+  const nonTier1Agents = agents.filter(a => !tier1Matches.includes(a));
+  const tier2Additional = nonTier1Agents.filter(agent =>
+    agent instanceof WikiAgent && agent.preScore(query, userRole)
+  );
+  let selectedAgents = [...tier1Matches, ...tier2Additional];
 
   // Fallback-of-last-resort: 모두 score=0 → 전체 호출 (완전 미지 쿼리)
   if (selectedAgents.length === 0) {
