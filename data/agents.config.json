@@ -625,6 +625,47 @@
       ],
       "sensitiveTopics": [],
       "description": "SNU 2040 비전 보고서 기반 질의응답 (7대 핵심과제)"
+    },
+    {
+      "id": "history",
+      "name": "70년역사",
+      "type": "wiki",
+      "dataFile": "history.json",
+      "enabled": true,
+      "keywords": [],
+      "sensitiveTopics": [],
+      "description": "서울대학교 70년 역사 기반 질의응답"
+    },
+    {
+      "id": "status",
+      "name": "대학현황",
+      "type": "wiki",
+      "dataFile": "status.json",
+      "enabled": true,
+      "alwaysContext": true,
+      "keywords": [],
+      "sensitiveTopics": [],
+      "description": "서울대학교 대학현황 기반 질의응답 (학생·교원·시설 통계)"
+    },
+    {
+      "id": "yhl-speeches",
+      "name": "유홍림총장연설",
+      "type": "wiki",
+      "dataFile": "yhl-speeches.json",
+      "enabled": true,
+      "keywords": [],
+      "sensitiveTopics": [],
+      "description": "유홍림 총장 연설문·발언 기반 질의응답"
+    },
+    {
+      "id": "finance",
+      "name": "재무정보공시",
+      "type": "wiki",
+      "dataFile": "finance.json",
+      "enabled": true,
+      "keywords": [],
+      "sensitiveTopics": [],
+      "description": "서울대학교 재무정보공시 기반 질의응답"
     }
   ],
   "routing": {

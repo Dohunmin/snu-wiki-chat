@@ -1,6 +1,7 @@
 import type { Role } from '@/lib/auth/roles';
 
 export type AgentType = 'wiki' | 'task';
+export type PageType = 'source' | 'topic' | 'entity' | 'synthesis' | 'fact' | 'stance' | 'overview';
 
 export interface AgentConfig {
   id: string;
@@ -11,6 +12,12 @@ export interface AgentConfig {
   keywords: string[];
   sensitiveTopics: string[];
   description: string;
+  alwaysContext?: boolean;
+}
+
+export interface GetContextOptions {
+  chunkCap?: number;
+  guaranteedPageIds?: Set<string>;
 }
 
 export interface SourceRef {
@@ -29,7 +36,7 @@ export interface AgentContext {
 
 export interface AgentPlugin {
   config: AgentConfig;
-  getContext(query: string, userRole: Role, isGlobal?: boolean): Promise<AgentContext>;
+  getContext(query: string, userRole: Role, isGlobal?: boolean, options?: GetContextOptions): Promise<AgentContext>;
 }
 
 // wiki JSON 데이터 형식
@@ -73,6 +80,42 @@ export interface WikiSynthesis {
   source: 'obsidian' | 'chat';
 }
 
+export interface WikiFact {
+  id: string;
+  title: string;
+  category: string;
+  sources: string[];
+  unit?: string;
+  yearsCovered?: string;
+  metricScope?: string;
+  verifiedAt?: string;
+  tags: string[];
+  content: string;
+  sensitive: boolean;
+}
+
+export interface WikiStance {
+  id: string;
+  title: string;
+  holder: string;
+  topic: string;
+  sources: string[];
+  tags: string[];
+  content: string;
+  sensitive: boolean;
+}
+
+export interface WikiOverview {
+  id: string;
+  title: string;
+  편: string;
+  시기?: [number, number];
+  관련_stance?: Record<string, string[]>;
+  tags: string[];
+  content: string;
+  sensitive: boolean;
+}
+
 export interface WikiData {
   id: string;
   name: string;
@@ -80,5 +123,22 @@ export interface WikiData {
   topics: WikiTopic[];
   entities: WikiEntity[];
   syntheses: WikiSynthesis[];
+  facts: WikiFact[];
+  stances: WikiStance[];
+  overviews: WikiOverview[];
   index: string;
+}
+
+export interface ConceptEntry {
+  wikis: string[];
+  aliases: string[];
+  linkedPages: {
+    wiki: string;
+    type: 'entity' | 'topic' | 'stance' | 'source' | 'fact' | 'overview';
+    id: string;
+  }[];
+}
+
+export interface ConceptIndex {
+  [conceptName: string]: ConceptEntry;
 }

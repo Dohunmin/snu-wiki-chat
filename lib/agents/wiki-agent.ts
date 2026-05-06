@@ -1,11 +1,11 @@
 import path from 'path';
 import fs from 'fs';
-import type { AgentConfig, AgentContext, AgentPlugin, WikiData } from './types';
+import type { AgentConfig, AgentContext, AgentPlugin, WikiData, GetContextOptions } from './types';
 import type { Role } from '@/lib/auth/roles';
 import { canAccessSensitive } from '@/lib/auth/roles';
 
 const MAX_CHUNKS = 15;
-const MAX_CHUNKS_ENTITY = 30; // entity 매칭 시 더 넓은 커버리지 허용
+const MAX_CHUNKS_ENTITY = 30;
 
 /** ## 헤더 단위로 분할, 최소 100자 미만 청크는 다음과 병합 */
 function splitIntoChunks(content: string): string[] {
@@ -54,6 +54,13 @@ export class WikiAgent implements AgentPlugin {
         if (queryWords.some(w => fl.includes(w) || w.includes(fl))) return true;
       }
     }
+    // 신규 타입 메타데이터도 스캔
+    for (const s of (data.stances ?? [])) {
+      if (queryWords.some(w => s.holder.toLowerCase().includes(w) || s.topic.toLowerCase().includes(w))) return true;
+    }
+    for (const f of (data.facts ?? [])) {
+      if (queryWords.some(w => f.category.toLowerCase().includes(w))) return true;
+    }
     return false;
   }
 
@@ -69,13 +76,29 @@ export class WikiAgent implements AgentPlugin {
     if (this.data) return this.data;
     const dataPath = path.join(process.cwd(), 'data', this.config.dataFile);
     if (!fs.existsSync(dataPath)) {
-      return { id: this.config.id, name: this.config.name, sources: [], topics: [], entities: [], syntheses: [], index: '' };
+      return {
+        id: this.config.id, name: this.config.name,
+        sources: [], topics: [], entities: [], syntheses: [],
+        facts: [], stances: [], overviews: [], index: '',
+      };
     }
-    this.data = JSON.parse(fs.readFileSync(dataPath, 'utf-8')) as WikiData;
+    const raw = JSON.parse(fs.readFileSync(dataPath, 'utf-8')) as WikiData;
+    // 기존 JSON에 신규 필드 없으면 빈 배열로 보정 (후방 호환)
+    this.data = {
+      ...raw,
+      facts: raw.facts ?? [],
+      stances: raw.stances ?? [],
+      overviews: raw.overviews ?? [],
+    };
     return this.data;
   }
 
-  async getContext(query: string, userRole: Role, isGlobal = false): Promise<AgentContext> {
+  async getContext(
+    query: string,
+    userRole: Role,
+    isGlobal = false,
+    options: GetContextOptions = {},
+  ): Promise<AgentContext> {
     const data = this.loadData();
     const isSensitiveAllowed = canAccessSensitive(userRole);
 
@@ -85,8 +108,7 @@ export class WikiAgent implements AgentPlugin {
     const allowedSources = data.sources.filter(s => isSensitiveAllowed || !s.sensitive);
     const allowedSourceIds = new Set(allowedSources.map(s => s.id));
 
-    // ─── Entity/Topic 역참조: 쿼리 단어가 entity·topic 이름과 일치하면
-    //     해당 entity·topic에 연결된 모든 소스를 보장 후보로 수집
+    // ─── Entity/Topic 역참조 ────────────────────────────────────────
     const guaranteedIds = new Set<string>();
 
     for (const entity of data.entities) {
@@ -101,14 +123,17 @@ export class WikiAgent implements AgentPlugin {
         topic.sources.filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
       }
     }
+    // concept-index에서 온 강제 포함 페이지 ID 추가
+    if (options.guaranteedPageIds) {
+      for (const pid of options.guaranteedPageIds) {
+        if (allowedSourceIds.has(pid)) guaranteedIds.add(pid);
+      }
+    }
 
     // ─── 소스 단위 관련성 점수 ─────────────────────────────────────
     const sourcesWithScore = allowedSources.map(source => {
       let score = 0;
-
-      // entity/topic 역참조로 보장된 소스는 기본 점수 부여
       if (guaranteedIds.has(source.id)) score += 5;
-
       for (const t of source.topics) {
         const tl = t.toLowerCase();
         if (queryLower.includes(tl) || queryWords.some(w => tl.includes(w))) score += 3;
@@ -125,7 +150,6 @@ export class WikiAgent implements AgentPlugin {
       for (const word of queryWords) {
         if (contentLower.includes(word)) score += 1;
       }
-
       return { source, score };
     });
 
@@ -134,9 +158,11 @@ export class WikiAgent implements AgentPlugin {
       ? candidateSources.map(s => s.source)
       : allowedSources;
 
-    // ─── 청크 단위 점수 계산 ────────────────────────────────────────
+    // ─── 청크 단위 점수 계산 (source 페이지) ───────────────────────
     const scoredChunks: {
-      title: string; id: string; topic: string; date?: string; chunk: string; score: number;
+      type: 'source';
+      title: string; id: string; topic: string; date?: string;
+      chunk: string; score: number;
     }[] = [];
 
     for (const source of sourcesToProcess) {
@@ -144,10 +170,10 @@ export class WikiAgent implements AgentPlugin {
       const chunks = splitIntoChunks(source.content);
       for (const chunk of chunks) {
         let score = scoreChunk(chunk, queryWords);
-        // entity/topic 역참조 소스는 텍스트 매칭 없어도 기본 포함 + 점수 부스트
         if (isGuaranteed) score = score * 2 + 1;
         if (score > 0) {
           scoredChunks.push({
+            type: 'source',
             title: source.title,
             id: source.id,
             topic: source.topics[0] ?? source.tags[0] ?? '',
@@ -159,23 +185,76 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
-    // 글로벌 쿼리("전체", "모든" 등): 소스 수 제한 없이 전 소스 커버
-    // entity 매칭: 관련 소스 넓게 커버
-    // 일반: 기본 15개
-    const chunkCap = isGlobal
-      ? allowedSources.length  // 전체 소스 수 = 사실상 무제한
-      : guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY : MAX_CHUNKS;
+    // ─── 신규 페이지 타입 점수 계산 (청크 분할 없이 통째로) ────────
+    type LabeledItem = {
+      type: 'stance' | 'fact' | 'overview';
+      id: string; title: string; chunk: string;
+      meta: string; score: number;
+    };
+    const labeledItems: LabeledItem[] = [];
 
-    // 소스 커버리지 균등화: 점수순 상위 chunks 선택 시
-    // 각 소스에서 최소 첫 청크를 확보하고 나머지를 점수순으로 채움
-    let chunksToUse;
-    if (scoredChunks.length > 0) {
-      const sorted = scoredChunks.sort((a, b) => b.score - a.score);
+    for (const s of data.stances) {
+      if (!isSensitiveAllowed && s.sensitive) continue;
+      let score = scoreChunk(s.content + ' ' + s.holder + ' ' + s.topic, queryWords);
+      if (options.guaranteedPageIds?.has(s.id)) score += 5;
+      if (queryWords.some(w => s.holder.toLowerCase().includes(w))) score += 3;
+      if (queryWords.some(w => s.topic.toLowerCase().includes(w))) score += 3;
+      if (score > 0) {
+        labeledItems.push({
+          type: 'stance', id: s.id, title: s.title,
+          chunk: s.content,
+          meta: `holder: ${s.holder} / topic: ${s.topic}`,
+          score,
+        });
+      }
+    }
+
+    for (const f of data.facts) {
+      if (!isSensitiveAllowed && f.sensitive) continue;
+      let score = scoreChunk(f.content + ' ' + f.category, queryWords);
+      if (options.guaranteedPageIds?.has(f.id)) score += 5;
+      if (queryWords.some(w => f.category.toLowerCase().includes(w))) score += 3;
+      if (score > 0) {
+        labeledItems.push({
+          type: 'fact', id: f.id, title: f.title,
+          chunk: f.content,
+          meta: `category: ${f.category}${f.yearsCovered ? ` / years: ${f.yearsCovered}` : ''}${f.unit ? ` / unit: ${f.unit}` : ''}`,
+          score,
+        });
+      }
+    }
+
+    for (const o of data.overviews) {
+      if (!isSensitiveAllowed && o.sensitive) continue;
+      let score = scoreChunk(o.content + ' ' + o.편, queryWords);
+      if (options.guaranteedPageIds?.has(o.id)) score += 5;
+      if (queryWords.some(w => o.편.toLowerCase().includes(w))) score += 3;
+      if (score > 0) {
+        labeledItems.push({
+          type: 'overview', id: o.id, title: o.title,
+          chunk: o.content,
+          meta: `편: ${o.편}${o.시기 ? ` / 시기: ${o.시기[0]}~${o.시기[1]}` : ''}`,
+          score,
+        });
+      }
+    }
+
+    // ─── chunk cap 결정 ────────────────────────────────────────────
+    const chunkCap = options.chunkCap ?? (
+      isGlobal ? allowedSources.length
+        : guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY : MAX_CHUNKS
+    );
+
+    // ─── 소스 커버리지 균등화 후 labeled items 합산 ────────────────
+    type AnyItem = typeof scoredChunks[0] | (LabeledItem & { topic?: string; date?: string });
+
+    let chunksToUse: AnyItem[];
+    if (scoredChunks.length > 0 || labeledItems.length > 0) {
+      const sorted = [...scoredChunks].sort((a, b) => b.score - a.score);
       const coveredSources = new Set<string>();
       const firstChunks: typeof scoredChunks = [];
       const restChunks: typeof scoredChunks = [];
 
-      // 각 소스의 가장 높은 점수 청크를 먼저 확보 (소스별 최소 1개 보장)
       for (const c of sorted) {
         if (!coveredSources.has(c.id)) {
           coveredSources.add(c.id);
@@ -184,10 +263,18 @@ export class WikiAgent implements AgentPlugin {
           restChunks.push(c);
         }
       }
-      // firstChunks(소스별 대표 청크) + 점수 높은 추가 청크
-      chunksToUse = [...firstChunks, ...restChunks].slice(0, chunkCap);
+
+      // source 대표청크 + labeled items + 나머지 source 청크, 점수순 병합
+      const combined: AnyItem[] = [
+        ...firstChunks,
+        ...labeledItems,
+        ...restChunks,
+      ].sort((a, b) => b.score - a.score);
+
+      chunksToUse = combined.slice(0, chunkCap);
     } else {
       chunksToUse = sourcesToProcess.map(source => ({
+        type: 'source' as const,
         title: source.title,
         id: source.id,
         topic: source.topics[0] ?? source.tags[0] ?? '',
@@ -197,35 +284,44 @@ export class WikiAgent implements AgentPlugin {
       })).slice(0, chunkCap);
     }
 
-    // entity 매칭 시: 매칭된 entity 페이지 내용을 앞에 추가 (이미 정리된 합성 정보)
+    // ─── entity 블록 (기존 유지) ───────────────────────────────────
     const entityBlocks: string[] = [];
     for (const entity of data.entities) {
       const names = [entity.name, entity.id, ...entity.aliases].map(n => n.toLowerCase());
       if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n))) && entity.content.trim()) {
-        entityBlocks.push(`## [${entity.entityType || 'entity'}] ${entity.name}\n${entity.content}`);
+        entityBlocks.push(`## [entity] ${entity.name}\n${entity.content}`);
       }
     }
 
-    const sourceBlocks = chunksToUse
-      .map(c => `## ${c.title} (${c.id})${c.date ? ` | 회의일: ${c.date}` : ''}\n${c.chunk}`)
-      .join('\n\n---\n\n');
+    // ─── 출력 포맷 (타입 라벨링) ───────────────────────────────────
+    const sourceBlocks = chunksToUse.map(item => {
+      if (item.type === 'source') {
+        return `## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${item.chunk}`;
+      } else {
+        const labeled = item as LabeledItem;
+        return `## [${labeled.type}] ${labeled.title} (${labeled.id}) | ${labeled.meta}\n${labeled.chunk}`;
+      }
+    }).join('\n\n---\n\n');
 
     const relevantData = entityBlocks.length > 0
       ? `${entityBlocks.join('\n\n---\n\n')}\n\n---\n\n${sourceBlocks}`
       : sourceBlocks;
 
-    // 소스 메타데이터 중복 제거
     const seenIds = new Set<string>();
     const sources = chunksToUse
       .filter(c => { if (seenIds.has(c.id)) return false; seenIds.add(c.id); return true; })
-      .map(c => ({ wiki: this.config.name, page: c.id, topic: c.topic }));
+      .map(c => ({
+        wiki: this.config.name,
+        page: c.id,
+        topic: c.type === 'source' ? (c as typeof scoredChunks[0]).topic : c.type,
+      }));
 
     return {
       agentId: this.config.id,
       agentName: this.config.name,
       relevantData,
       sources,
-      confidence: scoredChunks.length > 0 ? 0.8 : 0.3,
+      confidence: (scoredChunks.length > 0 || labeledItems.length > 0) ? 0.8 : 0.3,
     };
   }
 }
