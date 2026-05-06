@@ -100,7 +100,7 @@ export default function ChatPage({ user }: { user: User }) {
     const el = scrollContainerRef.current;
     if (!el) return;
     const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    userScrolledUp.current = distFromBottom > 100;
+    if (distFromBottom > 100) userScrolledUp.current = true;
   }
 
   useEffect(() => {
@@ -120,6 +120,22 @@ export default function ChatPage({ user }: { user: User }) {
       })
       .catch(() => {});
   }, []);
+
+  // URL에서 대화 복원 (위키 페이지 뒤로가기 등)
+  useEffect(() => {
+    const convId = new URLSearchParams(window.location.search).get('conv');
+    if (convId) loadConversation(convId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // currentConvId 변경 시 URL 동기화
+  useEffect(() => {
+    if (currentConvId) {
+      window.history.replaceState({}, '', `?conv=${currentConvId}`);
+    } else {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [currentConvId]);
 
   async function loadConversation(convId: string) {
     if (convId === currentConvId) return;
