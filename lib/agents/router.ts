@@ -101,11 +101,8 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   const agents = registry.getAll();
 
   // === Tier 0: 글로벌 키워드 → 전체 위키 full coverage ===
-  const tier1Matches = agents.filter(agent =>
-    agent.config.keywords.some(kw => queryLower.includes(kw.toLowerCase()))
-  );
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
-  if (hasGlobalKeyword && tier1Matches.length === 0) {
+  if (hasGlobalKeyword) {
     const contexts = await Promise.all(
       agents.map(a => a.getContext(query, userRole, true))
     );
