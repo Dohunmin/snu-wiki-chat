@@ -26,6 +26,10 @@ const WIKI_COLORS: Record<string, string> = {
   board: 'border-l-purple-500',
   plan: 'border-l-green-500',
   vision: 'border-l-amber-500',
+  history: 'border-l-orange-500',
+  status: 'border-l-teal-500',
+  'yhl-speeches': 'border-l-rose-500',
+  finance: 'border-l-indigo-500',
 };
 
 export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {

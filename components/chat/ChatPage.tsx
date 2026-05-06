@@ -11,6 +11,7 @@ import Link from 'next/link';
 
 const WIKI_ID_MAP: Record<string, string> = {
   '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan', '중장기발전계획': 'vision', '중장기': 'vision',
+  '70년역사': 'history', '대학현황': 'status', '유홍림총장연설': 'yhl-speeches', '재무정보공시': 'finance',
 };
 
 function linkifyCitations(content: string): string {
@@ -58,6 +59,10 @@ const AGENT_OPTIONS = [
   { id: 'board', label: '이사회' },
   { id: 'plan', label: '대학운영계획' },
   { id: 'vision', label: '중장기발전계획' },
+  { id: 'history', label: '70년역사' },
+  { id: 'status', label: '대학현황' },
+  { id: 'yhl-speeches', label: '유홍림총장연설' },
+  { id: 'finance', label: '재무정보공시' },
 ] as const;
 
 export default function ChatPage({ user }: { user: User }) {
