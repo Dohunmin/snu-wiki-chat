@@ -34,7 +34,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        if (credentials.email === '1234' && credentials.password === '1234') {
+        const masterEmail = process.env.MASTER_ADMIN_EMAIL;
+        const masterPassword = process.env.MASTER_ADMIN_PASSWORD;
+
+        if (
+          masterEmail &&
+          masterPassword &&
+          credentials.email === masterEmail &&
+          credentials.password === masterPassword
+        ) {
           const masterId = 'master-admin';
           const [existingMaster] = await db
             .select()
@@ -45,8 +53,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!existingMaster) {
             await db.insert(users).values({
               id: masterId,
-              email: 'master-admin@snu.local',
-              passwordHash: await bcrypt.hash('1234', 12),
+              email: masterEmail,
+              passwordHash: await bcrypt.hash(masterPassword, 12),
               name: '관리자',
               role: 'admin',
               approvedAt: new Date(),
@@ -55,7 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           return {
             id: masterId,
-            email: 'master-admin@snu.local',
+            email: masterEmail,
             name: '관리자',
             role: 'admin' satisfies Role,
           };
