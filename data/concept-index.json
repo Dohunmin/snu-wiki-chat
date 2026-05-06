@@ -1,0 +1,3952 @@
+{
+  "기획재정위원회": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [
+      "기획재정위"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "기획재정위원회"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-10차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-15차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-18차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-4차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-14차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-4차"
+      }
+    ]
+  },
+  "평의원회": {
+    "wikis": [
+      "senate",
+      "board",
+      "status"
+    ],
+    "aliases": [
+      "서울대학교 평의원회"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "평의원회"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-12차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-1차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-14차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "평의원회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      },
+      {
+        "wiki": "status",
+        "type": "entity",
+        "id": "평의원회"
+      },
+      {
+        "wiki": "status",
+        "type": "source",
+        "id": "snu-overview-2026"
+      }
+    ]
+  },
+  "강병철": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "강병철"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-17차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-20차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-22차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-4차"
+      }
+    ]
+  },
+  "김규홍": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김규홍"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-8차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-11차"
+      }
+    ]
+  },
+  "김도순": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김도순"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-3차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-4차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-5차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-6차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-7차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-8차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-9차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-10차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-11차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-12차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-13차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-17차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-18차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-19차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-20차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-1차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-1차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-2차"
+      }
+    ]
+  },
+  "김동욱": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김동욱"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-15차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-16차임시"
+      }
+    ]
+  },
+  "김병문": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김병문"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-14차"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김병문"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "김성철": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김성철"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-12차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-16차임시"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-1차"
+      }
+    ]
+  },
+  "김영오": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김영오"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-8차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-10차"
+      }
+    ]
+  },
+  "김용진": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김용진"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-3차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-4차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-6차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-7차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-8차"
+      }
+    ]
+  },
+  "김우진": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김우진"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-14차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김우진"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      }
+    ]
+  },
+  "김은미": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "김은미"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-4차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-6차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-8차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-10차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-14차"
+      }
+    ]
+  },
+  "박원호": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "박원호"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-15차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-18차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-10차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-14차"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "박원호"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "안동환": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "안동환"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-14차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-19차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "안동환"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "오병권": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "오병권"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-15차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-17차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-18차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-19차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-20차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-21차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-22차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-23차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-7차임시"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "오병권"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      }
+    ]
+  },
+  "유준희": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "유준희"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-21차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-22차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-10차"
+      }
+    ]
+  },
+  "이경미": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "이경미"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-22차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-23차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-4차"
+      }
+    ]
+  },
+  "이현숙": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "이현숙"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-8차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-12차"
+      }
+    ]
+  },
+  "정봉문": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "정봉문"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-12차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-19차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-10차"
+      }
+    ]
+  },
+  "최희정": {
+    "wikis": [
+      "senate"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "entity",
+        "id": "최희정"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-9차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "17기-10차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-2차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "18기-9차"
+      }
+    ]
+  },
+  "AI 대학원": {
+    "wikis": [
+      "senate",
+      "board",
+      "plan"
+    ],
+    "aliases": [
+      "AI대학원",
+      "AI 대학원"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "AI-대학원"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "AI-대학원"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "AI-대학원"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제1"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "SNU 그랜드퀘스트": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "SNU-그랜드퀘스트"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "SNU-그랜드퀘스트"
+      }
+    ]
+  },
+  "공통교육위원회": {
+    "wikis": [
+      "senate",
+      "plan"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "공통교육위원회"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "공통교육위원회"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제1"
+      }
+    ]
+  },
+  "국가미래전략원": {
+    "wikis": [
+      "senate",
+      "plan"
+    ],
+    "aliases": [
+      "국가미래전략원"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "국가미래전략원"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "국가미래전략원"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제10"
+      }
+    ]
+  },
+  "대학운영계획": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "대학운영계획"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "대학운영계획"
+      }
+    ]
+  },
+  "미래연구진흥센터": {
+    "wikis": [
+      "senate",
+      "board",
+      "plan"
+    ],
+    "aliases": [
+      "미래연구진흥센터",
+      "선도연구진흥센터"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "미래연구진흥센터"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "미래연구진흥센터"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "미래연구진흥센터"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제6"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "첨단융합학부": {
+    "wikis": [
+      "senate",
+      "board",
+      "plan"
+    ],
+    "aliases": [
+      "첨단융합학부"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "첨단융합학부"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "첨단융합학부"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "첨단융합학부"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제1"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "총장추천위원회": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [
+      "총장추천위"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "총장추천위원회"
+      },
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "총장추천위원회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "학부대학": {
+    "wikis": [
+      "senate",
+      "board",
+      "plan"
+    ],
+    "aliases": [
+      "학부대학"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "학부대학"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "학부대학"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "학부대학"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제1"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "학칙 개정": {
+    "wikis": [
+      "senate",
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "senate",
+        "type": "topic",
+        "id": "학칙-개정"
+      },
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "학칙-개정"
+      }
+    ]
+  },
+  "거버넌스-재정소위원회": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [
+      "거버넌스·재정소위원회"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "거버넌스-재정소위원회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "교육-연구소위원회": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [
+      "교육·연구소위원회"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "교육-연구소위원회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      }
+    ]
+  },
+  "발전재단": {
+    "wikis": [
+      "board",
+      "plan"
+    ],
+    "aliases": [
+      "서울대학교발전재단",
+      "발전재단"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "발전재단"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "발전재단"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제12"
+      }
+    ]
+  },
+  "운영소위원회": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [
+      "이사회 운영소위원회"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "운영소위원회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      }
+    ]
+  },
+  "이사회": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [
+      "서울대학교 이사회",
+      "국립대학법인 서울대학교 이사회"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이사회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "이사후보초빙위원회": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이사후보초빙위원회"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      }
+    ]
+  },
+  "고성천": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "고성천"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      }
+    ]
+  },
+  "권숙인": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "권숙인"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "권오곤": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "권오곤"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      }
+    ]
+  },
+  "권오현": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "권오현"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "권훈정": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "권훈정"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "김민수": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김민수"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      }
+    ]
+  },
+  "김병섭": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김병섭"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      }
+    ]
+  },
+  "김성규": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김성규"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "김종섭": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김종섭"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      }
+    ]
+  },
+  "김준기": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "김준기"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "마광열": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "마광열"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      }
+    ]
+  },
+  "성기학": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "성기학"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      }
+    ]
+  },
+  "성래은": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "성래은"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "신학철": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "신학철"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "염재호": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "염재호"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "우윤근": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "우윤근"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "유명희": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "유명희"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "유홍림": {
+    "wikis": [
+      "board",
+      "yhl-speeches"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "유홍림"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "entity",
+        "id": "유홍림"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "80주년-비전.유홍림.stance"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "AI시대대학역할.유홍림.stance"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "그랜드퀘스트.유홍림.stance"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "대전환의시대.유홍림.stance"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "도덕적역량.유홍림.stance"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "융합인재양성.유홍림.stance"
+      },
+      {
+        "wiki": "yhl-speeches",
+        "type": "stance",
+        "id": "자유와공동체.유홍림.stance"
+      }
+    ]
+  },
+  "윤석민": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "윤석민"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "윤영호": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "윤영호"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "이미옥": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이미옥"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "이석재": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이석재"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      }
+    ]
+  },
+  "이영웅": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이영웅"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "이정희": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이정희"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "이준정": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이준정"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "이효원": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "이효원"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "전현정": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "전현정"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      }
+    ]
+  },
+  "정철영": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "정철영"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      }
+    ]
+  },
+  "지은희": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "지은희"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      }
+    ]
+  },
+  "최창원": {
+    "wikis": [
+      "board"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "entity",
+        "id": "최창원"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2023-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-6차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2024-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-5차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-7차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-8차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-9차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2025-10차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-2차"
+      }
+    ]
+  },
+  "제도혁신위원회": {
+    "wikis": [
+      "board",
+      "plan"
+    ],
+    "aliases": [
+      "제도혁신위원회"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "board",
+        "type": "topic",
+        "id": "제도혁신위원회"
+      },
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "제도혁신위원회"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제11"
+      }
+    ]
+  },
+  "LnL (Living & Learning)": {
+    "wikis": [
+      "plan"
+    ],
+    "aliases": [
+      "LnL",
+      "Living and Learning",
+      "리빙앤러닝"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "LnL"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제2"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "SNU Commons": {
+    "wikis": [
+      "plan"
+    ],
+    "aliases": [
+      "SNU Commons",
+      "스누커먼스"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "SNU-Commons"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제1"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제12"
+      }
+    ]
+  },
+  "탄소중립캠퍼스추진단": {
+    "wikis": [
+      "plan"
+    ],
+    "aliases": [
+      "탄소중립캠퍼스추진단"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "plan",
+        "type": "entity",
+        "id": "탄소중립캠퍼스추진단"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-운영계획-실행과제11"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "단과대 발전재단": {
+    "wikis": [
+      "finance"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "finance",
+        "type": "entity",
+        "id": "단과대발전재단"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2017-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2018-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2019-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2020-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2021-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2022-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2023-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2024-종합재무제표.md"
+      }
+    ]
+  },
+  "법인 서울대학교": {
+    "wikis": [
+      "finance"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "finance",
+        "type": "entity",
+        "id": "법인-서울대학교"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2017-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2018-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2019-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2020-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2021-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2022-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2023-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2024-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2017-법인회계결산.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2024-법인회계결산.md"
+      }
+    ]
+  },
+  "산학협력단": {
+    "wikis": [
+      "finance"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "finance",
+        "type": "entity",
+        "id": "산학협력단"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2017-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2018-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2019-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2020-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2021-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2022-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2023-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2024-종합재무제표.md"
+      }
+    ]
+  },
+  "(재)서울대발전재단": {
+    "wikis": [
+      "finance"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "finance",
+        "type": "entity",
+        "id": "서울대발전재단"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2017-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2018-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2019-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2020-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2021-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2022-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2023-종합재무제표.md"
+      },
+      {
+        "wiki": "finance",
+        "type": "source",
+        "id": "wiki/sources/2024-종합재무제표.md"
+      }
+    ]
+  },
+  "수입·비용": {
+    "wikis": [
+      "finance"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "finance",
+        "type": "fact",
+        "id": "법인회계-운영계산서.fact"
+      },
+      {
+        "wiki": "finance",
+        "type": "fact",
+        "id": "주체별-당기운영차익.fact"
+      },
+      {
+        "wiki": "finance",
+        "type": "fact",
+        "id": "주체별-운영수익.fact"
+      }
+    ]
+  }
+}
