@@ -29,7 +29,7 @@ export interface AgentContext {
 
 export interface AgentPlugin {
   config: AgentConfig;
-  getContext(query: string, userRole: Role): Promise<AgentContext>;
+  getContext(query: string, userRole: Role, isGlobal?: boolean): Promise<AgentContext>;
 }
 
 // wiki JSON 데이터 형식

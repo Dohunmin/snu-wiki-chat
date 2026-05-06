@@ -10,8 +10,19 @@ import type { SourceRef } from '@/lib/agents/types';
 import Link from 'next/link';
 
 const WIKI_ID_MAP: Record<string, string> = {
-  '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan', '중장기발전계획': 'vision',
+  '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan', '중장기발전계획': 'vision', '중장기': 'vision',
 };
+
+function linkifyCitations(content: string): string {
+  const wikiNames = Object.keys(WIKI_ID_MAP).join('|');
+  const pattern = new RegExp(`\\[(${wikiNames})\\]\\s+([\\w가-힣·\\-]+)`, 'g');
+  return content.replace(pattern, (_, wikiName: string, docId: string) => {
+    const agentId = WIKI_ID_MAP[wikiName];
+    if (!agentId) return `[${wikiName}] ${docId}`;
+    const href = `/wiki?agent=${agentId}&type=sources&id=${encodeURIComponent(docId)}`;
+    return `[${wikiName} ${docId}](${href})`;
+  });
+}
 
 interface Message {
   id: string;
@@ -681,7 +692,28 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
           </div>
         )}
         <div className="md-body text-base">
-          {message.content ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown> : null}
+          {message.content ? (
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                a: ({ href, children }) => {
+                  if (href?.startsWith('/wiki?')) {
+                    return (
+                      <Link
+                        href={href}
+                        className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors no-underline mx-0.5"
+                      >
+                        {children}
+                      </Link>
+                    );
+                  }
+                  return <a href={href}>{children}</a>;
+                },
+              }}
+            >
+              {linkifyCitations(message.content)}
+            </ReactMarkdown>
+          ) : null}
           {message.streaming && !message.content && (
             <span className="inline-flex gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -693,29 +725,6 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
             <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse rounded-full bg-gray-400 align-middle" />
           )}
         </div>
-        {message.sources && message.sources.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {message.sources.map((s, i) => {
-              const agentId = WIKI_ID_MAP[s.wiki];
-              const href = agentId
-                ? `/wiki?agent=${agentId}&type=sources&id=${encodeURIComponent(s.page)}`
-                : null;
-              return href ? (
-                <Link
-                  key={`${s.wiki}-${s.page}-${i}`}
-                  href={href}
-                  className="rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1.5 text-sm text-blue-600 hover:bg-blue-100 transition-colors"
-                >
-                  [{s.wiki}] {s.page}
-                </Link>
-              ) : (
-                <span key={`${s.wiki}-${s.page}-${i}`} className="rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-sm text-gray-500">
-                  [{s.wiki}] {s.page}
-                </span>
-              );
-            })}
-          </div>
-        )}
         {!message.streaming && !message.error && message.content && (
           <SynthesisSaveButton message={message} userQuery={userQuery} />
         )}

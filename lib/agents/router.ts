@@ -24,7 +24,7 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   // (특정 에이전트가 이미 매칭됐다면 글로벌 키워드 무시: "이사회 전체 요약" → board만)
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
   if (hasGlobalKeyword && tier1Matches.length === 0) {
-    const contexts = await Promise.all(agents.map(a => a.getContext(query, userRole)));
+    const contexts = await Promise.all(agents.map(a => a.getContext(query, userRole, true)));
     return { selectedAgentIds: contexts.map(c => c.agentId), contexts, isGlobal: true };
   }
 
@@ -42,8 +42,9 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
     selectedAgents = agents;
   }
 
+  // "전체", "모든" 등 글로벌 키워드가 있으면 선택된 에이전트 내에서도 전 소스 커버
   const contexts = await Promise.all(
-    selectedAgents.map(agent => agent.getContext(query, userRole))
+    selectedAgents.map(agent => agent.getContext(query, userRole, hasGlobalKeyword))
   );
 
   // Tier 2 경유 시 confidence 기준 강화

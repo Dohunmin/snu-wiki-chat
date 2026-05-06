@@ -75,7 +75,7 @@ export class WikiAgent implements AgentPlugin {
     return this.data;
   }
 
-  async getContext(query: string, userRole: Role): Promise<AgentContext> {
+  async getContext(query: string, userRole: Role, isGlobal = false): Promise<AgentContext> {
     const data = this.loadData();
     const isSensitiveAllowed = canAccessSensitive(userRole);
 
@@ -136,7 +136,7 @@ export class WikiAgent implements AgentPlugin {
 
     // ─── 청크 단위 점수 계산 ────────────────────────────────────────
     const scoredChunks: {
-      title: string; id: string; topic: string; chunk: string; score: number;
+      title: string; id: string; topic: string; date?: string; chunk: string; score: number;
     }[] = [];
 
     for (const source of sourcesToProcess) {
@@ -151,6 +151,7 @@ export class WikiAgent implements AgentPlugin {
             title: source.title,
             id: source.id,
             topic: source.topics[0] ?? source.tags[0] ?? '',
+            date: source.date,
             chunk,
             score,
           });
@@ -158,17 +159,43 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
-    const chunkCap = guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY : MAX_CHUNKS;
+    // 글로벌 쿼리("전체", "모든" 등): 소스 수 제한 없이 전 소스 커버
+    // entity 매칭: 관련 소스 넓게 커버
+    // 일반: 기본 15개
+    const chunkCap = isGlobal
+      ? allowedSources.length  // 전체 소스 수 = 사실상 무제한
+      : guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY : MAX_CHUNKS;
 
-    const chunksToUse = scoredChunks.length > 0
-      ? scoredChunks.sort((a, b) => b.score - a.score).slice(0, chunkCap)
-      : sourcesToProcess.map(source => ({
-          title: source.title,
-          id: source.id,
-          topic: source.topics[0] ?? source.tags[0] ?? '',
-          chunk: splitIntoChunks(source.content)[0],
-          score: 0,
-        })).slice(0, chunkCap);
+    // 소스 커버리지 균등화: 점수순 상위 chunks 선택 시
+    // 각 소스에서 최소 첫 청크를 확보하고 나머지를 점수순으로 채움
+    let chunksToUse;
+    if (scoredChunks.length > 0) {
+      const sorted = scoredChunks.sort((a, b) => b.score - a.score);
+      const coveredSources = new Set<string>();
+      const firstChunks: typeof scoredChunks = [];
+      const restChunks: typeof scoredChunks = [];
+
+      // 각 소스의 가장 높은 점수 청크를 먼저 확보 (소스별 최소 1개 보장)
+      for (const c of sorted) {
+        if (!coveredSources.has(c.id)) {
+          coveredSources.add(c.id);
+          firstChunks.push(c);
+        } else {
+          restChunks.push(c);
+        }
+      }
+      // firstChunks(소스별 대표 청크) + 점수 높은 추가 청크
+      chunksToUse = [...firstChunks, ...restChunks].slice(0, chunkCap);
+    } else {
+      chunksToUse = sourcesToProcess.map(source => ({
+        title: source.title,
+        id: source.id,
+        topic: source.topics[0] ?? source.tags[0] ?? '',
+        date: source.date,
+        chunk: splitIntoChunks(source.content)[0],
+        score: 0,
+      })).slice(0, chunkCap);
+    }
 
     // entity 매칭 시: 매칭된 entity 페이지 내용을 앞에 추가 (이미 정리된 합성 정보)
     const entityBlocks: string[] = [];
@@ -180,7 +207,7 @@ export class WikiAgent implements AgentPlugin {
     }
 
     const sourceBlocks = chunksToUse
-      .map(c => `## ${c.title} (${c.id})\n${c.chunk}`)
+      .map(c => `## ${c.title} (${c.id})${c.date ? ` | 회의일: ${c.date}` : ''}\n${c.chunk}`)
       .join('\n\n---\n\n');
 
     const relevantData = entityBlocks.length > 0

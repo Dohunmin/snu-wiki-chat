@@ -13,4 +13,4 @@ export function getAnthropicClient(): Anthropic {
 }
 
 export const LLM_MODEL = 'claude-sonnet-4-6';
-export const MAX_TOKENS = 2048;
+export const MAX_TOKENS = 16000;
