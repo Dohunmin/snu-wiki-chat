@@ -37,17 +37,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const masterEmail = process.env.MASTER_ADMIN_EMAIL;
         const masterPassword = process.env.MASTER_ADMIN_PASSWORD;
 
-        // [DEBUG] 임시 진단 로그 — 확인 후 제거
-        console.log('[auth] env loaded?', {
-          emailSet: !!masterEmail,
-          passwordSet: !!masterPassword,
-          emailLen: masterEmail?.length ?? 0,
-          passwordLen: masterPassword?.length ?? 0,
-          inputEmail: credentials.email,
-          emailMatch: credentials.email === masterEmail,
-          passwordMatch: credentials.password === masterPassword,
-        });
-
         if (
           masterEmail &&
           masterPassword &&
@@ -113,19 +102,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub as string;
-        const [currentUser] = await db
-          .select({ role: users.role, name: users.name, email: users.email })
-          .from(users)
-          .where(eq(users.id, session.user.id))
-          .limit(1);
-
-        if (currentUser) {
-          session.user.role = currentUser.role as Role;
-          session.user.name = currentUser.name;
-          session.user.email = currentUser.email;
-        } else {
-          session.user.role = token.role as Role;
-        }
+        session.user.role = token.role as Role;
       }
       return session;
     },
