@@ -558,7 +558,11 @@ for (const wikiConfig of WIKI_MAP) {
 }
 
 console.log('\n🔗 Concept Index 생성 중...');
-const conceptIndex = buildConceptIndex(allWikis);
+// lensPersona 위키는 일반 라우팅에 노출되면 안 되므로 concept-index에서도 제외
+const agentsForIndex = JSON.parse(fs.readFileSync(agentsConfigPath, 'utf-8')).agents as Array<{ id: string; lensPersona?: boolean }>;
+const lensPersonaIds = new Set(agentsForIndex.filter(a => a.lensPersona).map(a => a.id));
+const indexableWikis = allWikis.filter(w => !lensPersonaIds.has(w.id));
+const conceptIndex = buildConceptIndex(indexableWikis);
 fs.writeFileSync(
   path.join(outputDir, 'concept-index.json'),
   JSON.stringify(conceptIndex, null, 2),
