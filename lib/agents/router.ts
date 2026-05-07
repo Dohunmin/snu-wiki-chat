@@ -94,11 +94,20 @@ function lookupConceptIndex(queryWords: string[]): {
   return { forcedWikis, guaranteedPages };
 }
 
+/** lensPersona는 일반 라우팅에서 항상 제외, adminOnly는 비admin에게 제외 */
+function getRoutableAgents(userRole: Role) {
+  return registry.getAll().filter(a => {
+    if (a.config.lensPersona) return false;
+    if (a.config.adminOnly && userRole !== 'admin') return false;
+    return true;
+  });
+}
+
 export async function routeQuery(query: string, userRole: Role): Promise<RoutingResult> {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
   const globalKeywords: string[] = agentsConfig.routing.globalKeywords;
-  const agents = registry.getAll();
+  const agents = getRoutableAgents(userRole);
 
   // === Tier 0: 글로벌 키워드 → 전체 위키 full coverage ===
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));

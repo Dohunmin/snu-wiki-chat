@@ -27,6 +27,7 @@ export const messages = pgTable('messages', {
   content:        text('content').notNull(),
   routedAgents:   text('routed_agents').array(),
   sources:        jsonb('sources'),
+  mode:           text('mode').notNull().default('normal'),  // 'normal' | 'lens:{personaId}'
   createdAt:      timestamp('created_at').defaultNow().notNull(),
 });
 

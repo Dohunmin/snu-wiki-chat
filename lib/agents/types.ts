@@ -13,6 +13,14 @@ export interface AgentConfig {
   sensitiveTopics: string[];
   description: string;
   alwaysContext?: boolean;
+  /** admin 외에는 wiki API·라우팅 어디서도 노출 안 됨 */
+  adminOnly?: boolean;
+  /** lens 페르소나 위키 — 일반 라우팅에서 항상 제외, lens 모드 전용 */
+  lensPersona?: boolean;
+  /** lens persona 식별자 (mode='lens:{personaId}') */
+  personaId?: string;
+  /** UI 표시명 (모드 메뉴·배지) */
+  displayName?: string;
 }
 
 export interface GetContextOptions {

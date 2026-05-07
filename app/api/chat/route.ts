@@ -3,7 +3,13 @@ import { auth } from '@/lib/auth/config';
 import { canChat } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
-import { buildSystemPrompt, buildUserMessage } from '@/lib/llm/prompts';
+import { loadPersonaContext } from '@/lib/agents/lens';
+import {
+  buildSystemPrompt,
+  buildUserMessage,
+  buildLensSystemPrompt,
+  buildLensUserMessage,
+} from '@/lib/llm/prompts';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
 import { db } from '@/lib/db/client';
 import { conversations, messages, users } from '@/lib/db/schema';
@@ -13,6 +19,7 @@ import { z } from 'zod';
 const chatSchema = z.object({
   message: z.string().min(1).max(2000),
   conversationId: z.string().optional(),
+  mode: z.string().regex(/^(normal|lens:[a-z0-9-]+)$/).default('normal'),
 });
 
 export async function POST(req: NextRequest) {
@@ -32,8 +39,13 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: '질문 형식이 올바르지 않습니다.' }, { status: 400 });
   }
 
-  const { message, conversationId } = parsed.data;
+  const { message, conversationId, mode } = parsed.data;
   const userId = session.user.id;
+
+  // lens 모드 권한 검증
+  if (mode.startsWith('lens:') && role !== 'admin') {
+    return Response.json({ error: '관리자 전용 모드입니다.' }, { status: 403 });
+  }
 
   try {
     await ensureUserExists(userId, session.user.name, role);
@@ -45,12 +57,29 @@ export async function POST(req: NextRequest) {
   let routing;
   let systemPrompt;
   let userMessage;
+  let lensPersonaInfo: { id: string; displayName: string; insufficient: boolean } | undefined;
   let convId = conversationId;
 
   try {
     routing = await routeQuery(message, role);
-    systemPrompt = buildSystemPrompt(routing.contexts, role);
-    userMessage = buildUserMessage(message, routing.contexts);
+
+    if (mode.startsWith('lens:')) {
+      const personaId = mode.slice(5);
+      const persona = await loadPersonaContext(personaId, message, role);
+      if (!persona) {
+        return Response.json({ error: '존재하지 않는 페르소나입니다.' }, { status: 400 });
+      }
+      systemPrompt = buildLensSystemPrompt(routing.contexts, persona, role);
+      userMessage = buildLensUserMessage(message, routing.contexts, persona);
+      lensPersonaInfo = {
+        id: persona.id,
+        displayName: persona.displayName,
+        insufficient: persona.insufficient,
+      };
+    } else {
+      systemPrompt = buildSystemPrompt(routing.contexts, role);
+      userMessage = buildUserMessage(message, routing.contexts);
+    }
 
     if (!convId) {
       convId = crypto.randomUUID();
@@ -68,6 +97,7 @@ export async function POST(req: NextRequest) {
       content: message,
       routedAgents: routing.selectedAgentIds,
       sources: null,
+      mode,
     });
   } catch (err) {
     console.error('Failed to prepare chat response', err);
@@ -87,6 +117,7 @@ export async function POST(req: NextRequest) {
           agents: routing.selectedAgentIds,
           agentNames: routing.contexts.map(c => c.agentName),
           conversationId: convId,
+          lensPersona: lensPersonaInfo,
         });
 
         const client = getAnthropicClient();
@@ -140,6 +171,7 @@ export async function POST(req: NextRequest) {
           content: fullContent,
           routedAgents: routing.selectedAgentIds,
           sources: allSources,
+          mode,
         });
 
         send({ type: 'done', conversationId: convId });

@@ -5,6 +5,7 @@ import type { Role } from '@/lib/auth/roles';
 import path from 'path';
 import fs from 'fs';
 import type { WikiData } from '@/lib/agents/types';
+import agentsConfig from '@/data/agents.config.json';
 
 export async function GET(
   _req: Request,
@@ -14,13 +15,20 @@ export async function GET(
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { agentId } = await params;
+  const role = (session.user as { role: Role }).role;
+
+  // adminOnly 위키는 비admin에게 존재 자체를 부정 (404)
+  const agentMeta = agentsConfig.agents.find(a => a.id === agentId);
+  if (agentMeta?.adminOnly && role !== 'admin') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const filePath = path.join(process.cwd(), 'data', `${agentId}.json`);
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   const data = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as WikiData;
-  const role = (session.user as { role: Role }).role;
   const isSensitiveAllowed = canAccessSensitive(role);
 
   // 민감 소스 필터링

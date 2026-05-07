@@ -1,5 +1,6 @@
 import type { AgentContext } from '@/lib/agents/types';
 import type { Role } from '@/lib/auth/roles';
+import type { PersonaContext } from '@/lib/agents/lens';
 
 export function buildSystemPrompt(contexts: AgentContext[], userRole: Role): string {
   const agentList = contexts.map(c => `- ${c.agentName}`).join('\n');
@@ -78,4 +79,49 @@ export function buildUserMessage(query: string, contexts: AgentContext[]): strin
     .join('\n\n---\n\n');
 
   return `## 위키 자료\n\n${contextBlocks}\n\n---\n\n## 질문\n\n${query}`;
+}
+
+/**
+ * Lens 모드용 시스템 프롬프트.
+ * 일반 시스템 프롬프트에 페르소나 시각 가이드와 stance 자료를 덧붙인다.
+ */
+export function buildLensSystemPrompt(
+  contexts: AgentContext[],
+  persona: PersonaContext,
+  userRole: Role,
+): string {
+  const baseSystem = buildSystemPrompt(contexts, userRole);
+
+  const insufficientNotice = persona.insufficient
+    ? `\n\n## ⚠️ 자료 한계\n이 주제에 대한 ${persona.name}의 명시적 입장 자료가 없습니다. 답변 시작 부분에 "이 주제에 대한 ${persona.name}의 명시적 입장 자료가 없습니다. 일반 자료 기반으로 답변합니다."라고 명시한 뒤, ${persona.name}의 의견·추론을 생성하지 말고 일반 자료만으로 답변하세요.`
+    : '';
+
+  return `${baseSystem}
+
+## 🎯 Lens 모드 — ${persona.name}의 시각으로 분석
+
+위 자료들을 ${persona.name}의 시각으로 해석·답변하세요.
+
+### Lens 적용 원칙
+1. **명시적 입장 우선**: ${persona.name}이 직접 표명한 입장은 그대로 인용. 출처 형식: \`[${persona.name}-stance] {stanceId}\`
+2. **추론 표시 의무**: 명시적 입장이 없는 주제는 그의 가치 우선순위·관점에 비추어 추론하되, 답변 본문에 "(${persona.name}의 명시적 입장은 자료에 없으나, ~의 가치관에 비추어 보면...)" 같이 추론임을 명시
+3. **자료 외 생성 금지 (P1)**: 자료에 없는 의견·발언·수치를 생성하지 마세요. 일반 모드와 동일한 hallucination 금지 원칙 적용
+4. **이중 출처 표기**: 일반 자료 인용은 \`[위키명] 문서ID\` 형식 그대로 유지. 페르소나 출처와 일반 자료 출처가 답변에서 명확히 구분되어야 함
+5. **자연스러운 톤**: 답변 시작에 "이석재의 시각:" 같은 라벨 자동 삽입 안 함. 일반 답변처럼 자연스럽게 작성하되, 출처 표기로 lens인지 자료인지 구분 가능
+
+### ${persona.name}의 입장 자료
+${persona.stanceBlock || '(매칭된 stance 자료 없음)'}${insufficientNotice}`;
+}
+
+/**
+ * Lens 모드용 user 메시지.
+ * 현재는 buildUserMessage와 동일하지만, 추후 lens 전용 컨텍스트 분리 시 확장 지점.
+ */
+export function buildLensUserMessage(
+  query: string,
+  contexts: AgentContext[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _persona: PersonaContext,
+): string {
+  return buildUserMessage(query, contexts);
 }

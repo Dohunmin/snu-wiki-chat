@@ -910,6 +910,20 @@
       ],
       "sensitiveTopics": [],
       "description": "서울대학교 재무정보공시 기반 질의응답"
+    },
+    {
+      "id": "leesj",
+      "name": "이석재 후보",
+      "type": "wiki",
+      "dataFile": "leesj.json",
+      "enabled": true,
+      "adminOnly": true,
+      "lensPersona": true,
+      "personaId": "leesj",
+      "displayName": "이석재 후보",
+      "keywords": [],
+      "sensitiveTopics": [],
+      "description": "이석재 후보 stance·발언 자료 (관리자 전용 lens 페르소나)"
     }
   ],
   "routing": {

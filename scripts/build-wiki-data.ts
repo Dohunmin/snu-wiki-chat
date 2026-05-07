@@ -162,6 +162,12 @@ const WIKI_MAP = [
     folder: 'SNU_재무정보공시_LLM_Wiki',
     sensitiveTopics: [],
   },
+  {
+    id: 'leesj',
+    name: '이석재 후보',
+    folder: 'SNU_후보 철학_LLM_Wiki',
+    sensitiveTopics: [],
+  },
 ];
 
 function parseFrontmatter(raw: string): { meta: Record<string, unknown>; body: string } {
@@ -474,6 +480,9 @@ function updateAgentKeywords(
   const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   const agent = config.agents.find((a: { id: string }) => a.id === agentId);
   if (!agent) return;
+
+  // lensPersona agents는 일반 라우팅에서 제외되므로 키워드 자동 채움 불필요
+  if (agent.lensPersona) return;
 
   const keywordSet = new Set<string>(agent.keywords as string[]);
 
