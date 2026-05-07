@@ -47,7 +47,12 @@ interface Message {
 interface Conversation {
   id: string;
   title: string;
+  mode?: string;  // 'normal' | 'lens:{personaId}'
 }
+
+const LENS_PERSONAS: { id: string; displayName: string }[] = [
+  { id: 'leesj', displayName: '이석재 후보' },
+];
 
 interface User {
   id: string;
@@ -88,6 +93,12 @@ export default function ChatPage({ user }: { user: User }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef(false);
 
+  const [chatMode, setChatMode] = useState<string>('normal');
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const [lensInsufficient, setLensInsufficient] = useState<string | null>(null);
+  const modeMenuRef = useRef<HTMLDivElement>(null);
+  const isAdmin = canAccessAdmin(user.role);
+
   async function deleteConversation(convId: string, e: React.MouseEvent) {
     e.stopPropagation();
     await fetch(`/api/conversations/${convId}`, { method: 'DELETE' });
@@ -122,9 +133,13 @@ export default function ChatPage({ user }: { user: User }) {
   useEffect(() => {
     fetch('/api/conversations')
       .then(r => r.json())
-      .then((rows: { id: string; title: string | null }[]) => {
+      .then((rows: { id: string; title: string | null; mode?: string | null }[]) => {
         if (Array.isArray(rows)) {
-          setConversations(rows.map(r => ({ id: r.id, title: r.title || '대화' })));
+          setConversations(rows.map(r => ({
+            id: r.id,
+            title: r.title || '대화',
+            mode: r.mode ?? 'normal',
+          })));
         }
       })
       .catch(() => {});
@@ -149,11 +164,32 @@ export default function ChatPage({ user }: { user: User }) {
     }
   }, [currentConvId]);
 
+  // 모드 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!modeMenuOpen) return;
+    function onClickOutside(e: MouseEvent) {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
+        setModeMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [modeMenuOpen]);
+
   async function loadConversation(convId: string) {
     if (convId === currentConvId) return;
     setSidebarOpen(false);
     setConvLoading(true);
     setCurrentConvId(convId);
+    setLensInsufficient(null);
+
+    // 해당 대화의 mode가 있으면 입력 모드를 그대로 이어받음 (admin만)
+    const conv = conversations.find(c => c.id === convId);
+    if (conv?.mode?.startsWith('lens:') && isAdmin) {
+      setChatMode(conv.mode);
+    } else {
+      setChatMode('normal');
+    }
     try {
       const res = await fetch(`/api/conversations/${convId}`);
       const rows = await res.json();
@@ -184,6 +220,7 @@ export default function ChatPage({ user }: { user: User }) {
     };
 
     userScrolledUp.current = false;
+    setLensInsufficient(null);
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
@@ -198,7 +235,7 @@ export default function ChatPage({ user }: { user: User }) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, conversationId: currentConvId }),
+        body: JSON.stringify({ message: trimmed, conversationId: currentConvId, mode: chatMode }),
       });
 
       if (!res.ok || !res.body) {
@@ -235,10 +272,14 @@ export default function ChatPage({ user }: { user: User }) {
                 : m
             ));
 
+            if (data.lensPersona?.insufficient) {
+              setLensInsufficient(data.lensPersona.displayName);
+            }
+
             if (!currentConvId && data.conversationId) {
               setCurrentConvId(data.conversationId);
               setConversations(prev => [
-                { id: data.conversationId, title: trimmed.slice(0, 32) },
+                { id: data.conversationId, title: trimmed.slice(0, 32), mode: chatMode },
                 ...prev,
               ]);
             }
@@ -350,20 +391,28 @@ export default function ChatPage({ user }: { user: User }) {
             <p className="px-2 pt-1 text-xs text-gray-400 leading-5">질문을 시작하면 대화 목록이 표시됩니다.</p>
           ) : (
             <div className="space-y-0.5">
-              {conversations.map(conv => (
+              {conversations.map(conv => {
+                const isLens = conv.mode?.startsWith('lens:');
+                const isCurrent = currentConvId === conv.id;
+                return (
                 <div
                   key={conv.id}
-                  className={`group flex items-center rounded-lg transition-colors ${
-                    currentConvId === conv.id ? 'bg-blue-50' : 'hover:bg-gray-100'
+                  className={`group flex items-center rounded-lg transition-colors border-l-2 ${
+                    isCurrent
+                      ? 'bg-blue-50 border-l-blue-400'
+                      : isLens
+                      ? 'bg-emerald-50 hover:bg-emerald-100 border-l-emerald-400'
+                      : 'border-l-transparent hover:bg-gray-100'
                   }`}
                 >
                   <button
                     onClick={() => loadConversation(conv.id)}
-                    className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm ${
-                      currentConvId === conv.id ? 'text-blue-700 font-medium' : 'text-gray-600'
+                    className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm flex items-center gap-1.5 ${
+                      isCurrent ? 'text-blue-700 font-medium' : 'text-gray-600'
                     }`}
                   >
-                    {conv.title}
+                    {isLens && <span className="text-xs shrink-0">🎯</span>}
+                    <span className="truncate">{conv.title}</span>
                   </button>
                   <button
                     onClick={(e) => deleteConversation(conv.id, e)}
@@ -373,7 +422,8 @@ export default function ChatPage({ user }: { user: User }) {
                     <TrashIcon />
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -453,18 +503,115 @@ export default function ChatPage({ user }: { user: User }) {
 
         <div className="shrink-0 border-t border-gray-200 bg-white py-5 flex justify-center px-6">
           <div className="w-full max-w-2xl">
+            {/* Lens 자료 부족 알림 */}
+            {lensInsufficient && (
+              <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                ⚠️ <strong>{lensInsufficient}</strong>의 명시적 입장 자료가 이 주제에 대해 없습니다. 일반 자료 기반으로 답변되었습니다.
+              </div>
+            )}
+
+            {/* 활성 모드 배지 */}
+            {chatMode.startsWith('lens:') && (
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs">
+                <span>🎯</span>
+                <span className="font-medium text-emerald-700">
+                  {LENS_PERSONAS.find(p => p.id === chatMode.slice(5))?.displayName ?? chatMode.slice(5)} 시각으로 분석
+                </span>
+                <button
+                  onClick={() => setChatMode('normal')}
+                  className="ml-1 text-emerald-600 hover:text-emerald-900"
+                  aria-label="lens 모드 해제"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <div className="flex items-end gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 shadow-md focus-within:border-blue-400 focus-within:shadow-lg transition-all">
-              {canUpload(user.role) && (
+              {/* 통합 + 메뉴 (자료 업로드 + 모드 전환) */}
+              <div ref={modeMenuRef} className="relative">
                 <button
                   type="button"
-                  onClick={openUpload}
+                  onClick={() => setModeMenuOpen(o => !o)}
                   className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                  title="자료 업로드"
-                  aria-label="자료 업로드"
+                  title="옵션"
+                  aria-label="옵션 메뉴 열기"
                 >
                   <PlusIcon />
                 </button>
-              )}
+
+                {modeMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-2 w-72 rounded-xl border border-gray-200 bg-white shadow-lg py-1.5 z-20">
+                    <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">응답 모드</div>
+                    <button
+                      onClick={() => { setChatMode('normal'); setModeMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2.5 hover:bg-gray-50 flex items-start gap-2.5"
+                    >
+                      <span className="text-base">💬</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                          {chatMode === 'normal' && <span className="text-emerald-600">✓</span>}
+                          질문 모드
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">기본 자료 검색·답변</p>
+                      </div>
+                    </button>
+
+                    {LENS_PERSONAS.map(persona => {
+                      const personaMode = `lens:${persona.id}`;
+                      const isActive = chatMode === personaMode;
+                      return (
+                        <button
+                          key={persona.id}
+                          onClick={() => {
+                            if (!isAdmin) {
+                              setNotice('관리자 전용 기능입니다.');
+                              setTimeout(() => setNotice(''), 3000);
+                              setModeMenuOpen(false);
+                              return;
+                            }
+                            setChatMode(personaMode);
+                            setModeMenuOpen(false);
+                          }}
+                          disabled={!isAdmin}
+                          className={`w-full text-left px-3 py-2.5 flex items-start gap-2.5 ${
+                            isAdmin ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                          }`}
+                        >
+                          <span className="text-base">🎯</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                              {isActive && <span className="text-emerald-600">✓</span>}
+                              후보 lens 모드 ({persona.displayName})
+                              {!isAdmin && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">관리자 전용</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">{persona.displayName} 시각으로 자료 분석</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+
+                    {canUpload(user.role) && (
+                      <>
+                        <div className="my-1 h-px bg-gray-100" />
+                        <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">자료</div>
+                        <button
+                          onClick={() => { openUpload(); setModeMenuOpen(false); }}
+                          className="w-full text-left px-3 py-2.5 hover:bg-gray-50 flex items-start gap-2.5"
+                        >
+                          <span className="text-base">📎</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900">자료 업로드</div>
+                            <p className="text-xs text-gray-500 mt-0.5">새로운 자료 파일 추가</p>
+                          </div>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               <textarea
                 ref={inputRef}
                 value={input}
