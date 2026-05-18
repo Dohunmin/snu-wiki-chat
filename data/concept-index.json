@@ -1,4 +1,48 @@
 {
+  "장학금": {
+    "wikis": [
+      "finance",
+      "plan",
+      "vision",
+      "senate"
+    ],
+    "aliases": [
+      "학생경비",
+      "학문후속세대 지원금",
+      "학문후속세대",
+      "학생 지원금",
+      "등록금 면제",
+      "장학",
+      "지원금"
+    ],
+    "linkedPages": [
+      {
+        "wiki": "finance",
+        "type": "fact",
+        "id": "비용구조.fact"
+      },
+      {
+        "wiki": "finance",
+        "type": "fact",
+        "id": "예산-세출구조.fact"
+      },
+      {
+        "wiki": "finance",
+        "type": "topic",
+        "id": "등록금정책분석"
+      },
+      {
+        "wiki": "plan",
+        "type": "source",
+        "id": "2026-섹션3-추진성과및기본방향"
+      },
+      {
+        "wiki": "vision",
+        "type": "source",
+        "id": "중장기-제2장-학생지원"
+      }
+    ]
+  },
   "기획재정위원회": {
     "wikis": [
       "senate"
