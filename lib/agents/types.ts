@@ -21,6 +21,13 @@ export interface AgentConfig {
   personaId?: string;
   /** UI 표시명 (모드 메뉴·배지) */
   displayName?: string;
+  /**
+   * Design Ref: §2.3 — ragEnabled 플래그 패턴
+   * Plan SC: SC3 (RRF 융합 작동)
+   * true면 하이브리드 RAG (키워드 + 벡터). false/undefined면 기존 키워드만.
+   * PoC: finance만 true. Phase B에서 9개로 확장.
+   */
+  ragEnabled?: boolean;
 }
 
 export interface GetContextOptions {

@@ -3,12 +3,20 @@ import fs from 'fs';
 import type { AgentConfig, AgentContext, AgentPlugin, WikiData, GetContextOptions } from './types';
 import type { Role } from '@/lib/auth/roles';
 import { canAccessSensitive } from '@/lib/auth/roles';
+// Design Ref: §5 — RRF 통합 (단일 지점, ragEnabled 위키만)
+import { searchVector } from '@/lib/embed/search';
+import { rrfFuse, rrfStats } from '@/lib/embed/rrf';
+import type { KeywordRankedChunk, ChunkMetadata } from '@/lib/embed/types';
 
 const MAX_CHUNKS = 15;
 const MAX_CHUNKS_ENTITY = 30;
+const MAX_CHUNKS_RAG = 25;       // 🆕 ragEnabled 위키 — fused 결과 충분 활용
 
-/** ## 헤더 단위로 분할, 최소 100자 미만 청크는 다음과 병합 */
-function splitIntoChunks(content: string): string[] {
+/**
+ * Design Ref: §4.2 — chunker가 재사용 (lib/embed/chunker.ts에서 import)
+ * ## 헤더 단위로 분할, 최소 100자 미만 청크는 다음과 병합
+ */
+export function splitIntoChunks(content: string): string[] {
   const parts = content.split(/(?=^## )/m);
   const raw = parts.length > 1 ? parts : content.split(/\n{2,}/);
 
@@ -27,6 +35,21 @@ function splitIntoChunks(content: string): string[] {
   if (pending.trim().length >= 100) chunks.push(pending.trim());
 
   return chunks.length > 0 ? chunks : [content];
+}
+
+/**
+ * Design Ref: §5 — RRF에서 vector-only 결과의 ChunkMetadata를 labeledItem.meta 문자열로 변환.
+ * 페이지 타입별로 다른 메타 필드를 통일된 "key: value / ..." 포맷으로.
+ */
+function metaToString(meta?: ChunkMetadata): string {
+  if (!meta) return '';
+  const parts: string[] = [];
+  if (meta.holder) parts.push(`holder: ${meta.holder}`);
+  if (meta.topic) parts.push(`topic: ${meta.topic}`);
+  if (meta.category) parts.push(`category: ${meta.category}`);
+  if (meta.yearsCovered) parts.push(`years: ${meta.yearsCovered}`);
+  if (meta.편) parts.push(`편: ${meta.편}`);
+  return parts.join(' / ');
 }
 
 /** 청크 내 쿼리 단어 등장 횟수 합산 */
@@ -239,10 +262,80 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
+    // ─── 🆕 RRF 통합 (Design §5) — ragEnabled 위키만, 단일 지점 ──────
+    // 기존 키워드 결과(scoredChunks + labeledItems)와 벡터 결과를 RRF 융합.
+    // 실패 시 try/catch로 키워드 단독 fallback (회귀 안전).
+    if (this.config.ragEnabled) {
+      try {
+        // (1) 키워드 결과를 RRF 입력 형식으로 통합 + 점수순 정렬
+        const keywordCombined: KeywordRankedChunk[] = [
+          ...scoredChunks.map(c => ({
+            type: c.type, id: c.id, title: c.title, chunk: c.chunk, score: c.score,
+            topic: c.topic, date: c.date,
+          })),
+          ...labeledItems.map(l => ({
+            type: l.type, id: l.id, title: l.title, chunk: l.chunk, score: l.score,
+            meta: l.meta,
+          })),
+        ];
+        keywordCombined.sort((a, b) => b.score - a.score);
+
+        // (2) 벡터 검색 (Voyage 임베딩 + pgvector top-K)
+        const vectorTop = await searchVector(query, this.config.id, userRole, 30);
+
+        // (3) RRF 융합 (k=60 업계 표준)
+        const debug = process.env.RAG_DEBUG === 'true';
+        const fused = rrfFuse(keywordCombined, vectorTop, { k: 60, limit: 30, debug });
+
+        if (debug) {
+          const stats = rrfStats(fused);
+          console.log(
+            `[RAG ${this.config.id}] kw:${keywordCombined.length} vec:${vectorTop.length} ` +
+            `→ fused:${fused.length} (both:${stats.both}, kw-only:${stats.keywordOnly}, vec-only:${stats.vectorOnly})`,
+          );
+        }
+
+        // (4) 융합 결과를 scoredChunks/labeledItems로 재분리 (후속 로직 호환)
+        scoredChunks.length = 0;
+        labeledItems.length = 0;
+        for (const f of fused) {
+          if (f.type === 'source') {
+            scoredChunks.push({
+              type: 'source',
+              title: f.title,
+              id: f.id,
+              topic: typeof f.topic === 'string' ? f.topic : '',
+              date: typeof f.date === 'string' ? f.date : undefined,
+              chunk: f.chunk,
+              score: f.score,
+            });
+          } else {
+            const metaStr = typeof f.meta === 'string'
+              ? f.meta
+              : metaToString(f.meta as ChunkMetadata | undefined);
+            labeledItems.push({
+              type: f.type as 'stance' | 'fact' | 'overview',
+              id: f.id,
+              title: f.title,
+              chunk: f.chunk,
+              meta: metaStr,
+              score: f.score,
+            });
+          }
+        }
+      } catch (err) {
+        // Fallback: 벡터 검색 실패해도 키워드 결과로 계속 진행
+        console.error(`[RAG ${this.config.id}] vector search failed, falling back to keyword-only:`, err);
+      }
+    }
+    // ─── 🆕 RRF 통합 끝 ──────────────────────────────────────────
+
     // ─── chunk cap 결정 ────────────────────────────────────────────
     const chunkCap = options.chunkCap ?? (
       isGlobal ? allowedSources.length
-        : guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY : MAX_CHUNKS
+        : guaranteedIds.size > 0 ? MAX_CHUNKS_ENTITY
+        : this.config.ragEnabled ? MAX_CHUNKS_RAG       // 🆕 RAG 위키는 fused 결과 활용
+        : MAX_CHUNKS
     );
 
     // ─── 소스 커버리지 균등화 후 labeled items 합산 ────────────────

@@ -8,7 +8,9 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "wiki:build": "npx tsx scripts/build-wiki-data.ts"
+    "wiki:build": "npx tsx scripts/build-wiki-data.ts",
+    "embed:build": "npx tsx --env-file=.env.local scripts/build-embeddings.ts",
+    "qa:golden": "npx tsx --env-file=.env.local scripts/golden-qa.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",

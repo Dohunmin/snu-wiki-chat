@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, jsonb, integer, boolean, vector } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id:           text('id').primaryKey(),
@@ -61,4 +61,21 @@ export const sensitiveTopics = pgTable('sensitive_topics', {
   topic:     text('topic').notNull(),
   createdBy: text('created_by').notNull().references(() => users.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Design Ref: §3.1 Data Model — chunk_embeddings 테이블
+// Plan SC: SC1 (pgvector 설치 + chunk_embeddings 테이블 작동)
+// 기존 6개 테이블 영향 없음. ragEnabled 위키만 임베딩 저장.
+export const chunkEmbeddings = pgTable('chunk_embeddings', {
+  id:          text('id').primaryKey(),                              // {wikiId}:{pageType}:{pageId}:{chunkIdx}
+  wikiId:      text('wiki_id').notNull(),
+  pageType:    text('page_type').notNull(),                          // source | fact | stance | overview | topic | entity
+  pageId:      text('page_id').notNull(),
+  chunkIdx:    integer('chunk_idx').notNull(),
+  chunkText:   text('chunk_text').notNull(),
+  embedding:   vector('embedding', { dimensions: 1024 }).notNull(),  // Voyage 3 = 1024차원
+  sensitive:   boolean('sensitive').default(false).notNull(),
+  metadata:    jsonb('metadata'),                                    // { title, topic, holder, category, ... }
+  contentHash: text('content_hash').notNull(),                       // SHA-256 (증분 갱신용)
+  createdAt:   timestamp('created_at').defaultNow().notNull(),
 });

@@ -899,6 +899,7 @@
       "type": "wiki",
       "dataFile": "finance.json",
       "enabled": true,
+      "ragEnabled": true,
       "keywords": [
         "등록금정책분석",
         "등록금 정책 분석 (2017~2026)",
