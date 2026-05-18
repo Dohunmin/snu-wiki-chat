@@ -431,14 +431,25 @@ export interface ChunkMetadata {
 
 ### 10.2 Phase B (1주일 내) ⚡ **공격적**
 - 9개 위키 전체 RAG 활성화 (leesj 포함, 권한 다층 방어 검증 필수)
+- **★ Semantic Routing 도입 (Phase C → B 앞당김, 2026-05-19 사용자 결정)**
+  - `lib/embed/search.ts`에 `semanticRoutingHints()` 추가 — wiki_id 필터 없는 cross-wiki 벡터 검색
+  - `router.ts`에서 concept-index와 *병렬* 호출, forcedWikis에 union
+  - 효과: 동의어 의존 쿼리("장학금" ↔ "학생경비")에서 키워드 매칭 약해도 자동 라우팅 포함
+  - 데이터 측 수동 큐레이션 부담 ↓
 - 증분 갱신 도입 (content_hash 비교로 변경 청크만 재임베딩)
 - Vercel KV 캐싱 (자주 쿼리되는 결과)
-- Golden Q&A 셋을 50개로 확장 (위키별 5개씩)
+- Golden Q&A 셋을 50개로 확장 (위키별 5개씩) + end-to-end (`/api/chat`) 호출 방식
 
 ### 10.3 Phase C (1-2개월 내) ⚡
+
+> **북극성**: *"소스화된 위키 정보를 누락 없이, 필요한 만큼만 잘 가져온다."* (2026-05-19 사용자 명확화)
+> Phase C는 이 목표를 *측정 가능한 수준*으로 끌어올리는 단계.
+
 - Lens 모드(leesj)에 RAG 적용 (stance 의미 매칭)
-- concept-index를 임베딩 기반으로 자동 생성 (현재 수동 75개 → 자동 수백 개)
+- ~~concept-index를 임베딩 기반으로 자동 생성~~ → Phase B의 Semantic Routing이 사실상 대체. concept-index는 *수동 큐레이션 부스트*용으로만 유지
 - Obsidian watch → 자동 재빌드·재임베딩
+- **소스 단편화 보완** — 청크 매칭 시 *source 전체* 컨텍스트 옵션 (이미 entity 역참조에 있는 패턴을 벡터 매칭에도 확장). "수치는 잡았는데 단위 누락" 같은 청크 한계 해소
+- **End-to-end Golden Q&A 자동화** — `/api/chat` 호출로 실제 라우팅 포함 검증 (PoC의 약점 해소)
 
 ### 10.4 Phase D (1-2개월 내) ⚡
 - 답변 후 critic 에이전트 (출처 검증·할루시네이션 재검출)

@@ -81,3 +81,73 @@ export async function searchVector(
     similarity: 1 - Number(r.distance) / 2,  // 0~2 → 1~0 정규화
   }));
 }
+
+/**
+ * Semantic Routing — wiki_id 필터 *없이* 모든 임베딩된 위키에서 의미적 매칭.
+ * 라우터에서 forcedWikis 후보로 활용.
+ *
+ * 사용 시점: router.ts 의 Stage 1 (키워드 매칭) 직후, concept-index 조회와 병렬로.
+ * 효과: "장학금" 같은 동의어 의존 쿼리에서 finance가 키워드 매칭 약해도
+ *      벡터 유사도가 finance 청크들을 의미적으로 매칭 → 자동 라우팅 포함.
+ *
+ * @param query 사용자 질문
+ * @param userRole 권한 (sensitive 필터링)
+ * @param topK 검색할 최상위 청크 수 (기본 30)
+ * @param maxWikis 반환할 위키 수 상한 (기본 5)
+ * @param maxDistance distance 이내만 (0.85 이내면 의미 있는 매칭, 너무 멀면 노이즈)
+ * @returns 추천 위키 ID 집합 (forcedWikis와 합쳐서 사용)
+ */
+export async function semanticRoutingHints(
+  query: string,
+  userRole: Role,
+  opts: {
+    topK?: number;
+    maxWikis?: number;
+    maxDistance?: number;
+  } = {},
+): Promise<Set<string>> {
+  const { topK = 30, maxWikis = 5, maxDistance = 0.85 } = opts;
+
+  try {
+    // 1) 쿼리 임베딩
+    const queryEmbed = await embedOne(query, 'query');
+    const lit = `[${queryEmbed.join(',')}]`;
+    const sensitiveAllowed = canAccessSensitive(userRole);
+
+    // 2) 위키 단위로 최소 거리 집계 + 임계값 이내만
+    //    각 위키의 *가장 가까운 청크* 거리로 위키 관련성 판정.
+    //    GROUP BY wiki_id + MIN(distance) 로 위키별 best score.
+    const result = await db.execute(sql`
+      WITH ranked AS (
+        SELECT
+          wiki_id,
+          embedding <=> ${lit}::vector AS distance
+        FROM chunk_embeddings
+        WHERE (${sensitiveAllowed} OR sensitive = FALSE)
+        ORDER BY embedding <=> ${lit}::vector
+        LIMIT ${topK}
+      )
+      SELECT wiki_id, MIN(distance) AS min_dist
+      FROM ranked
+      GROUP BY wiki_id
+      HAVING MIN(distance) <= ${maxDistance}
+      ORDER BY min_dist
+      LIMIT ${maxWikis}
+    `);
+
+    const rows: Array<{ wiki_id: string; min_dist: number | string }> = Array.isArray(result)
+      ? (result as unknown as Array<{ wiki_id: string; min_dist: number | string }>)
+      : ((result as unknown as { rows?: Array<{ wiki_id: string; min_dist: number | string }> }).rows ?? []);
+
+    if (process.env.RAG_DEBUG === 'true') {
+      console.log(`[SemRoute] query="${query.slice(0, 40)}..." →`,
+        rows.map(r => `${r.wiki_id}(${Number(r.min_dist).toFixed(3)})`).join(', '));
+    }
+
+    return new Set(rows.map(r => r.wiki_id));
+  } catch (err) {
+    // Fallback: 의미 라우팅 실패해도 키워드/concept-index 라우팅으로 작동
+    console.error('[SemRoute] failed, falling back to keyword routing:', err);
+    return new Set();
+  }
+}

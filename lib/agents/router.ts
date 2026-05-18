@@ -5,6 +5,8 @@ import type { Role } from '@/lib/auth/roles';
 import { registry } from './registry';
 import { WikiAgent } from './wiki-agent';
 import agentsConfig from '@/data/agents.config.json';
+// Phase B — Semantic Routing (의미 기반 위키 후보 추천)
+import { semanticRoutingHints } from '@/lib/embed/search';
 
 export interface RoutingResult {
   selectedAgentIds: string[];
@@ -123,8 +125,22 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
     .map(agent => ({ agent, score: prefilterScore(agent, queryWords) }))
     .sort((a, b) => b.score - a.score);
 
-  // === Concept Index 조회 → forced wikis + guaranteed pages ===
-  const { forcedWikis, guaranteedPages } = lookupConceptIndex(queryWords);
+  // === Concept Index + Semantic Routing 병렬 조회 → forced wikis + guaranteed pages ===
+  // - lookupConceptIndex: 수동 큐레이션된 cross-wiki 개념 매핑 (즉시)
+  // - semanticRoutingHints: 임베딩 기반 의미 매칭 (Phase B, ~80ms)
+  //   동의어 의존 쿼리("장학금" ↔ "학생경비")에서 키워드 매칭 약해도
+  //   벡터 유사도로 위키를 자동 포함시킴.
+  const [conceptResult, semanticHints] = await Promise.all([
+    Promise.resolve(lookupConceptIndex(queryWords)),
+    semanticRoutingHints(query, userRole, { topK: 30, maxWikis: 5, maxDistance: 0.85 }),
+  ]);
+  const { guaranteedPages } = conceptResult;
+  // forcedWikis = concept-index hits + semantic routing hints (union)
+  //   단, 라우팅 가능한 위키(getRoutableAgents)에 한정 — adminOnly/lensPersona 자동 제외
+  const routableIds = new Set(agents.map(a => a.config.id));
+  const forcedWikis = new Set<string>();
+  for (const w of conceptResult.forcedWikis) if (routableIds.has(w)) forcedWikis.add(w);
+  for (const w of semanticHints) if (routableIds.has(w)) forcedWikis.add(w);
 
   const topScore = scored[0]?.score ?? 0;
   const relativeThreshold = topScore * RELATIVE_THRESHOLD;
