@@ -103,10 +103,13 @@ export async function semanticRoutingHints(
   opts: {
     topK?: number;
     maxWikis?: number;
-    maxDistance?: number;
+    /** top-1 위키는 무조건 포함하는 상한 (그 이상 멀면 진짜 무관) */
+    absoluteMax?: number;
+    /** top-2 이후 추가 위키의 거리 임계 (의미적으로 명확한 매칭만) */
+    tightMax?: number;
   } = {},
 ): Promise<Set<string>> {
-  const { topK = 30, maxWikis = 5, maxDistance = 0.85 } = opts;
+  const { topK = 50, maxWikis = 5, absoluteMax = 1.0, tightMax = 0.85 } = opts;
 
   try {
     // 1) 쿼리 임베딩
@@ -114,9 +117,7 @@ export async function semanticRoutingHints(
     const lit = `[${queryEmbed.join(',')}]`;
     const sensitiveAllowed = canAccessSensitive(userRole);
 
-    // 2) 위키 단위로 최소 거리 집계 + 임계값 이내만
-    //    각 위키의 *가장 가까운 청크* 거리로 위키 관련성 판정.
-    //    GROUP BY wiki_id + MIN(distance) 로 위키별 best score.
+    // 2) 위키 단위 min distance 집계 (임계값 필터 없이 — 후처리에서 결정)
     const result = await db.execute(sql`
       WITH ranked AS (
         SELECT
@@ -130,7 +131,6 @@ export async function semanticRoutingHints(
       SELECT wiki_id, MIN(distance) AS min_dist
       FROM ranked
       GROUP BY wiki_id
-      HAVING MIN(distance) <= ${maxDistance}
       ORDER BY min_dist
       LIMIT ${maxWikis}
     `);
@@ -139,12 +139,35 @@ export async function semanticRoutingHints(
       ? (result as unknown as Array<{ wiki_id: string; min_dist: number | string }>)
       : ((result as unknown as { rows?: Array<{ wiki_id: string; min_dist: number | string }> }).rows ?? []);
 
-    if (process.env.RAG_DEBUG === 'true') {
-      console.log(`[SemRoute] query="${query.slice(0, 40)}..." →`,
-        rows.map(r => `${r.wiki_id}(${Number(r.min_dist).toFixed(3)})`).join(', '));
+    if (rows.length === 0) {
+      if (process.env.RAG_DEBUG === 'true') {
+        console.log(`[SemRoute] query="${query.slice(0, 40)}..." → (no chunks in DB)`);
+      }
+      return new Set();
     }
 
-    return new Set(rows.map(r => r.wiki_id));
+    // 3) 계층적 필터링:
+    //    - top-1: 거리 ≤ absoluteMax(1.0)면 무조건 포함 (약한 매칭이라도 가장 가까운 건 살림)
+    //    - top-2 이후: 거리 ≤ tightMax(0.85)인 위키만 추가 (확실한 의미 매칭만)
+    const selected: typeof rows = [];
+    if (Number(rows[0].min_dist) <= absoluteMax) {
+      selected.push(rows[0]);
+    }
+    for (let i = 1; i < rows.length; i++) {
+      if (Number(rows[i].min_dist) <= tightMax) {
+        selected.push(rows[i]);
+      }
+    }
+
+    if (process.env.RAG_DEBUG === 'true') {
+      const debugAll = rows.map(r => `${r.wiki_id}(${Number(r.min_dist).toFixed(3)})`).join(', ');
+      const debugSel = selected.map(r => `${r.wiki_id}(${Number(r.min_dist).toFixed(3)})`).join(', ');
+      console.log(`[SemRoute] query="${query.slice(0, 40)}..."`);
+      console.log(`           top-${rows.length} (all):  ${debugAll}`);
+      console.log(`           selected:    ${debugSel || '(none)'}`);
+    }
+
+    return new Set(selected.map(r => r.wiki_id));
   } catch (err) {
     // Fallback: 의미 라우팅 실패해도 키워드/concept-index 라우팅으로 작동
     console.error('[SemRoute] failed, falling back to keyword routing:', err);

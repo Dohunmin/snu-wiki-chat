@@ -5,9 +5,11 @@ try { if (typeof process.loadEnvFile === 'function') process.loadEnvFile('.env.l
 import { routeQuery } from '@/lib/agents/router';
 
 const queries = [
+  '강사료가 어떻게 변했어',
+  '외국인 유치 노력',
+  '교원 처우 개선 공약',
   '대학원생 장학금이 최근 10년 사이에 증가했어?',
   '학생 1인당 지원금',
-  '강사료 변천',
 ];
 
 async function main() {

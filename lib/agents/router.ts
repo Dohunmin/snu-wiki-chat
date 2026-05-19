@@ -132,7 +132,9 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   //   벡터 유사도로 위키를 자동 포함시킴.
   const [conceptResult, semanticHints] = await Promise.all([
     Promise.resolve(lookupConceptIndex(queryWords)),
-    semanticRoutingHints(query, userRole, { topK: 30, maxWikis: 5, maxDistance: 0.85 }),
+    // 계층 필터: top-1은 absoluteMax(1.0)면 OK (약한 매칭이라도 살림),
+    //           top-2 이후는 tightMax(0.85)인 위키만 (명확한 매칭만 추가)
+    semanticRoutingHints(query, userRole, { topK: 50, maxWikis: 5, absoluteMax: 1.0, tightMax: 0.85 }),
   ]);
   const { guaranteedPages } = conceptResult;
   // forcedWikis = concept-index hits + semantic routing hints (union)
@@ -155,9 +157,24 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
     if (s.score < relativeThreshold) return false;
     if (i > gapCutoff) return false;
     return true;
-  }).slice(0, MAX_WIKIS);
+  });
 
-  const finalSelected = selected.length > 0 ? selected : scored.slice(0, MAX_WIKIS);
+  // === MAX_WIKIS cap: forced/always는 우선 보호 ===
+  // 기존: selected.slice(0, MAX_WIKIS) — 키워드 점수순으로 잘려 forced 위키가 누락될 수 있음
+  // 수정: forcedWikis + alwaysContext 위키가 cap 안에 우선 들어가고, 나머지가 빈 자리 채움
+  const forcedAndAlwaysSelected = selected.filter(s =>
+    forcedWikis.has(s.agent.config.id) || s.agent.config.alwaysContext,
+  );
+  const otherSelected = selected.filter(s =>
+    !forcedWikis.has(s.agent.config.id) && !s.agent.config.alwaysContext,
+  );
+  const remainingCapacity = Math.max(0, MAX_WIKIS - forcedAndAlwaysSelected.length);
+  const cappedSelected = [
+    ...forcedAndAlwaysSelected,        // 모든 forced/always 보존 (cap 초과해도)
+    ...otherSelected.slice(0, remainingCapacity),
+  ];
+
+  const finalSelected = cappedSelected.length > 0 ? cappedSelected : scored.slice(0, MAX_WIKIS);
 
   // === Stage 2: chunk cap 분배 ===
   const refCount = finalSelected.filter(s => s.agent.config.alwaysContext).length;
