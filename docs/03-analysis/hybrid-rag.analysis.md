@@ -1,4 +1,11 @@
-# Analysis: Hybrid RAG — Match Rate 93% (Session 1+2+3)
+# Analysis: Hybrid RAG — PoC 93% → Phase B 98%
+
+> **최신 상태 (2026-05-19)**: Phase B Overall **98%** — Critical 0건, Important 0건, Minor 4건
+> Phase C 진입 가능. 자세한 Phase B 분석은 본 문서 §"Phase B Analysis (2026-05-19)" 참조.
+
+---
+
+## Original PoC Analysis — Match Rate 93% (Session 1+2+3)
 
 > **Feature**: hybrid-rag
 > **Date**: 2026-05-19
@@ -124,3 +131,59 @@
 권장: B → A → D → C
   module-5로 회귀 검증 → 발견된 회귀 자동 수정 → Design 동기화 → 최종 보고서
 ```
+
+---
+
+# Phase B Analysis (2026-05-19)
+
+## 1. Overall Match Rate — **98%**
+
+| 축 | 점수 | 산출 근거 |
+|---|:---:|---|
+| Structural Match | **100%** | Plan §10.2.1 6개 ✅ 항목 모두 코드에 존재 |
+| Functional Depth | **97%** | Tiered thresholds, try/catch, 권한 다층 모두 정확 |
+| Contract Match | **100%** | Design §14.5 시그니처/SQL/Promise.all 일치 |
+| **Overall (가중)** | **98%** | Critical 0, Important 0, Minor 4 |
+
+## 2. Phase B Success Criteria — 4/4 PASS
+
+| # | 기준 | 결과 |
+|:--:|------|:----:|
+| SC11 | 8개 위키 임베딩 완료 (1,021 청크) | ✅ |
+| SC12 | Semantic Routing 작동 | ✅ |
+| SC13 | Forced wiki cap priority | ✅ |
+| SC14 | 5개 갭 쿼리 finance 포함 | ✅ |
+
+## 3. Decision Record Verification
+
+| 결정 | 출처 | 코드 검증 | 상태 |
+|---|---|---|:---:|
+| Phase B Pivot: router.ts additive 수정 | Design §14.5 | router.ts:9, 133-145, 165-177 | ✅ |
+| Bug fix: Forced cap priority | Design §14.5.4 | router.ts:162-177 | ✅ |
+| Tiered thresholds (1.0 / 0.85) | Design §14.5.2 | search.ts:112 + router.ts:137 | ✅ |
+| Scholarship 동의어 (defense in depth) | Design §14.5.5 | concept-index.json:2-44 + agents.config.json:910-916 | ✅ |
+| leesj는 Phase C에서 lens-specific 처리 | Design §14.5.1 | agents.config.json:992 ragEnabled 미설정 | ✅ |
+
+## 4. Minor 관찰 (Phase C 차단 사유 아님)
+
+| # | 항목 | 권장 조치 |
+|---|---|---|
+| M1 | Forced 위키 7개 이상 시 MAX_WIKIS=6 cap 초과 가능 (현재 최대 5) | Design §14.5.4에 "soft cap" 명시 |
+| M2 | semanticRoutingHints가 top-1 absoluteMax 초과 시 빈 Set 반환 | RAG_DEBUG 로그가 이미 가시화 — 추가 조치 불필요 |
+| M3 | Plan §10.2.1 1,021 청크 수치는 실측 | `SELECT COUNT(*) FROM chunk_embeddings GROUP BY wiki_id` 로 재검증 |
+| M4 | router.ts ~30줄 추가 (import + Promise.all + cap priority) — Option C "router 무변경" 부분 완화 | Plan §10.2 사용자 결정으로 정당화 완료 |
+
+## 5. Runtime Verification
+
+- L1 (DB): `SELECT wiki_id, COUNT(*) FROM chunk_embeddings GROUP BY wiki_id` — 8 wikis 합 1,021 expected
+- L2 (Routing): `npx tsx --env-file=.env.local scripts/debug-routing.ts` — 5/5 finance 포함 expected
+- L3 (SemRoute): `RAG_DEBUG=true ...` 로 distance 분포 가시화 — 0.6-0.8 강한 매칭, 0.95+ 노이즈 확인
+
+## 6. Phase C 진입 권장
+
+**차단 항목 없음.** Phase C 작업:
+1. Lens 모드 RAG (leesj stance 의미 매칭)
+2. concept-index 자동 생성 (Semantic Routing이 사실상 대체했으므로 우선순위 낮음)
+3. Obsidian watch → 자동 재빌드·재임베딩
+4. Parent Document Retriever 패턴 (청크 → source 전체 컨텍스트)
+5. Golden Q&A 50개 + end-to-end (Plan §10.2.1에서 이월)

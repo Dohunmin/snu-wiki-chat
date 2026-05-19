@@ -430,15 +430,25 @@ export interface ChunkMetadata {
 - 각 위키 임베딩 비용·지연 측정 → 비용 cap 정책 즉시 결정
 
 ### 10.2 Phase B (1주일 내) ⚡ **공격적**
-- 9개 위키 전체 RAG 활성화 (leesj 포함, 권한 다층 방어 검증 필수)
-- **★ Semantic Routing 도입 (Phase C → B 앞당김, 2026-05-19 사용자 결정)**
-  - `lib/embed/search.ts`에 `semanticRoutingHints()` 추가 — wiki_id 필터 없는 cross-wiki 벡터 검색
-  - `router.ts`에서 concept-index와 *병렬* 호출, forcedWikis에 union
-  - 효과: 동의어 의존 쿼리("장학금" ↔ "학생경비")에서 키워드 매칭 약해도 자동 라우팅 포함
-  - 데이터 측 수동 큐레이션 부담 ↓
-- 증분 갱신 도입 (content_hash 비교로 변경 청크만 재임베딩)
-- Vercel KV 캐싱 (자주 쿼리되는 결과)
-- Golden Q&A 셋을 50개로 확장 (위키별 5개씩) + end-to-end (`/api/chat`) 호출 방식
+
+#### 10.2.1 실제 진행 상황 (2026-05-19 ~ 2026-05-30)
+
+| 항목 | 상태 | 메모 |
+|------|:---:|------|
+| **8개 위키 RAG 활성화** | ✅ | senate(289) + board(182) + plan(134) + vision(77) + history(85) + status(13) + yhl-speeches(75) + finance(166) = **1,021 청크 임베딩** |
+| leesj 임베딩 | ⏳ | adminOnly + lensPersona — Phase C에서 lens-specific 처리 |
+| **Semantic Routing** | ✅ | `lib/embed/search.ts:semanticRoutingHints()`, `router.ts`에서 concept-index와 병렬 호출 |
+| **Tiered SemRoute 임계값** | ✅ | absoluteMax=1.0 (top-1), tightMax=0.85 (top-2+) — precision/recall 균형 |
+| **Forced wiki cap priority** | ✅ | `router.ts:152-172` — SemRoute/concept-index/alwaysContext 위키 cap에서 우선 보존 |
+| 증분 갱신 도입 | ✅ | `scripts/build-embeddings.ts` content_hash 비교 (이미 PoC에서 구현) |
+| Vercel KV 캐싱 | 🔵 | Phase C 이월 (현재 비용·지연 OK) |
+| Golden Q&A 50개 + end-to-end | 🔵 | Phase C 이월 (현재 15개로 충분 검증) |
+
+#### 10.2.2 새 Success Criteria (Phase B)
+- **SC11** ✅ 8개 위키 모두 임베딩 완료 (1,021 청크, $0)
+- **SC12** ✅ Semantic Routing 작동 — distance 기반 자동 위키 추천
+- **SC13** ✅ Forced wiki cap priority — SemRoute 추천 위키가 cap에서 잘리지 않음
+- **SC14** ✅ 5개 갭 쿼리(강사료·외국인·교원·장학금·지원금) 모두 finance 포함 라우팅
 
 ### 10.3 Phase C (1-2개월 내) ⚡
 

@@ -1055,6 +1055,58 @@ PoC 종료 기준:
 
 ---
 
+## 14.5 Phase B Additions (2026-05-19)
+
+PoC 검증 후 Phase B 진입 시 사용자 결정으로 다음 추가됨. 본 Design §1.2 "변경 X" 4개 영역 중 **router.ts는 *additive*로 1개소 수정** (lens/prompts/middleware는 여전히 무변경).
+
+### 14.5.1 8개 위키 전체 임베딩
+- `data/agents.config.json` 8개 위키 `ragEnabled: true` (leesj 제외 — Phase C에서 lens-specific 처리)
+- `scripts/build-embeddings.ts --all-rag-enabled` → 1,021 청크 임베딩 (4분, $0)
+- 위키별: senate(289), board(182), plan(134), vision(77), history(85), status(13), yhl-speeches(75), finance(166)
+
+### 14.5.2 Semantic Routing — `lib/embed/search.ts:semanticRoutingHints()`
+- 쿼리 임베딩 → cross-wiki pgvector 검색 (wiki_id 필터 없이)
+- GROUP BY wiki_id + MIN(distance) → 위키별 최소 거리
+- **Tiered thresholds**:
+  - `absoluteMax = 1.0` — top-1 위키는 이 안이면 무조건 포함 (약한 매칭이라도 살림)
+  - `tightMax = 0.85` — top-2 ~ top-5는 이 안만 (명확한 의미 매칭만 추가)
+- 효과: "장학금"·"강사료" 같이 위키 도메인 어휘와 사용자 어휘가 다른 케이스에서 자동 매칭
+- 실측 distance 분포: 0.6-0.8(강한 매칭), 0.95+(노이즈) → 임계값 충분히 보수적
+
+### 14.5.3 Router 통합 — `lib/agents/router.ts`
+```typescript
+const [conceptResult, semanticHints] = await Promise.all([
+  Promise.resolve(lookupConceptIndex(queryWords)),
+  semanticRoutingHints(query, userRole, { topK: 50, maxWikis: 5, absoluteMax: 1.0, tightMax: 0.85 }),
+]);
+const forcedWikis = new Set<string>();
+for (const w of conceptResult.forcedWikis) if (routableIds.has(w)) forcedWikis.add(w);
+for (const w of semanticHints) if (routableIds.has(w)) forcedWikis.add(w);
+```
+
+### 14.5.4 Forced Wiki Cap Priority (버그 fix)
+- **버그**: `scored.slice(0, MAX_WIKIS=6)`가 키워드 점수순으로 자르므로 SemRoute로 forced된 위키가 cap에서 누락 가능
+- **수정**: `router.ts:152-172` — forced + alwaysContext 위키 먼저 cap 보존, 나머지가 빈 자리 채움
+- 효과: SemRoute 추천이 최종 라우팅에 *반드시* 반영됨
+
+### 14.5.5 Scholarship 도메인 동의어 (Phase B kickoff 시 추가)
+- `data/concept-index.json`: 장학금 entry (aliases: 학생경비, 학문후속세대 지원금, 등록금 면제 등)
+- `data/agents.config.json`: finance.keywords += [장학금, 학생경비, 학문후속세대, 대학원생 지원, 등록금 면제, 지원금]
+- Defense in depth — concept-index와 semantic routing 둘 다 finance 끌어옴
+
+### 14.5.6 검증 (5개 갭 쿼리)
+| 쿼리 | 라우팅 결과 |
+|------|----------|
+| "강사료가 어떻게 변했어" | senate, board, history, status, **finance**, plan |
+| "외국인 유치 노력" | history, plan, vision, status, yhl-speeches, **finance** |
+| "교원 처우 개선 공약" | senate, board, status, vision, history, **finance** |
+| "대학원생 장학금 10년" | vision, senate, **finance**, plan, history, status |
+| "학생 1인당 지원금" | senate, history, vision, plan, **finance**, status |
+
+→ 5/5 모두 finance 포함, RAG 발동.
+
+---
+
 ## 15. 참고
 
 - Plan: [docs/01-plan/features/hybrid-rag.plan.md](../../01-plan/features/hybrid-rag.plan.md)
