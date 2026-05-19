@@ -998,9 +998,10 @@
       "lensPersona": true,
       "personaId": "leesj",
       "displayName": "이석재 후보",
+      "ragEnabled": true,
       "keywords": [],
       "sensitiveTopics": [],
-      "description": "이석재 후보 stance·발언 자료 (관리자 전용 lens 페르소나)"
+      "description": "이석재 후보 stance·발언 자료 (관리자 전용 lens 페르소나, RAG 활성)"
     }
   ],
   "routing": {

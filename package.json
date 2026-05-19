@@ -10,7 +10,8 @@
     "db:migrate": "drizzle-kit migrate",
     "wiki:build": "npx tsx scripts/build-wiki-data.ts",
     "embed:build": "npx tsx --env-file=.env.local scripts/build-embeddings.ts",
-    "qa:golden": "npx tsx --env-file=.env.local scripts/golden-qa.ts"
+    "qa:golden": "npx tsx --env-file=.env.local scripts/golden-qa.ts",
+    "watch": "npx tsx --env-file=.env.local scripts/watch.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",
@@ -30,6 +31,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "chokidar": "^5.0.0",
     "drizzle-kit": "^0.28.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",

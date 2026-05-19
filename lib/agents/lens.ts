@@ -11,6 +11,10 @@ import type { WikiData, AgentConfig } from './types';
 import type { Role } from '@/lib/auth/roles';
 import { canAccessSensitive } from '@/lib/auth/roles';
 import agentsConfig from '@/data/agents.config.json';
+// Phase C — Lens RAG: 의미 매칭으로 stance 회수 (키워드만으론 동의어/은유 놓침)
+import { searchVector } from '@/lib/embed/search';
+import { rrfFuse } from '@/lib/embed/rrf';
+import type { KeywordRankedChunk } from '@/lib/embed/types';
 
 export interface PersonaContext {
   id: string;
@@ -65,8 +69,8 @@ export async function loadPersonaContext(
     s => isSensitiveAllowed || !s.sensitive,
   );
 
-  // 쿼리 단어 빈도 + topic 매칭 가산점으로 스코어링
-  const scored = allowedStances
+  // 1단계 — 키워드 빈도 + topic/title 가산점으로 스코어링
+  const keywordScored = allowedStances
     .map(s => {
       let score = 0;
       const text = `${s.title} ${s.topic} ${s.content}`.toLowerCase();
@@ -79,9 +83,57 @@ export async function loadPersonaContext(
       if (queryWords.some(w => s.title.toLowerCase().includes(w))) score += 3;
       return { s, score };
     })
-    .filter(({ score }) => score >= MIN_SCORE)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, STANCE_LIMIT);
+    .sort((a, b) => b.score - a.score);
+
+  // 2단계 — RAG 활성화 시 벡터 검색 + RRF 융합 (의미적 매칭으로 동의어/은유 회수)
+  // 예: "교원 보수" ↔ "재정 운영 철학" 같은 의미 매칭은 키워드만으론 못 잡음
+  let finalScored: typeof keywordScored;
+
+  if (config.ragEnabled) {
+    try {
+      // 벡터 검색 — leesj 위키만, stance 타입만 필터링
+      const vectorAll = await searchVector(query, config.id, userRole, 30);
+      const vectorStances = vectorAll.filter(v => v.pageType === 'stance');
+
+      // RRF 입력 형식으로 변환
+      const keywordInput: KeywordRankedChunk[] = keywordScored
+        .filter(({ score }) => score > 0)  // score 0은 명백히 무관
+        .map(({ s, score }) => ({
+          type: 'stance' as const,
+          id: s.id,
+          title: s.title,
+          chunk: s.content,
+          score,
+        }));
+
+      // RRF 융합 — STANCE_LIMIT(8)개로 제한
+      const fused = rrfFuse(keywordInput, vectorStances, { k: 60, limit: STANCE_LIMIT });
+
+      if (process.env.RAG_DEBUG === 'true') {
+        console.log(
+          `[Lens RAG ${config.id}] kw:${keywordInput.length} vec:${vectorStances.length} → fused:${fused.length}`,
+        );
+      }
+
+      // fused 결과를 keywordScored 형식({s, score})으로 복원
+      const stanceMap = new Map(allowedStances.map(s => [s.id, s]));
+      finalScored = fused
+        .map(f => {
+          const stance = stanceMap.get(f.id);
+          return stance ? { s: stance, score: f.score } : null;
+        })
+        .filter((x): x is { s: typeof allowedStances[number]; score: number } => x !== null);
+    } catch (err) {
+      // Fallback: 벡터 검색 실패 시 키워드 결과만 사용
+      console.error(`[Lens RAG ${config.id}] vector search failed, falling back to keyword:`, err);
+      finalScored = keywordScored.filter(({ score }) => score >= MIN_SCORE).slice(0, STANCE_LIMIT);
+    }
+  } else {
+    // RAG 비활성 — 기존 키워드 단독 (PoC 호환)
+    finalScored = keywordScored.filter(({ score }) => score >= MIN_SCORE).slice(0, STANCE_LIMIT);
+  }
+
+  const scored = finalScored;
 
   const stanceBlock = scored
     .map(
