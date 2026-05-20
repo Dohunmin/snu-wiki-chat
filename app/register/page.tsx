@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,14 +15,12 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error || '가입 신청 중 문제가 발생했습니다.');
@@ -38,91 +35,85 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Image src="/snu-logo.png" alt="SNU" width={80} height={80} className="mx-auto mb-6 object-contain" />
-          <h1 className="text-2xl font-bold text-gray-900">가입 신청</h1>
-          <p className="text-gray-500 text-sm mt-1">관리자 승인 후 이용 가능합니다</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="bg-white rounded-2xl shadow-sm p-10 w-full max-w-sm">
+        {/* 로고 */}
+        <div className="flex justify-center mb-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/snu-logo.png" alt="SNU" width={72} height={72} style={{ objectFit: 'contain' }} />
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
+        <h1 className="text-2xl font-semibold text-center text-gray-900 mb-8">Sign Up</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-4 py-3">
+            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+            </svg>
             <input
               type="text"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="홍길동"
+              placeholder="Your name"
               required
+              className="flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+          <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-4 py-3">
+            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 7 10-7" />
+            </svg>
             <input
               type="email"
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="your@email.com"
+              placeholder="Your email"
               required
+              className="flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="w-full px-3 py-2 pr-11 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="8자 이상"
-                required
-                minLength={8}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(v => !v)}
-                className="absolute inset-y-0 right-0 w-10 flex items-center justify-center text-gray-400 hover:text-gray-600"
-                aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
-                title={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
-              >
-                {showPassword ? (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 3l18 18" />
-                    <path d="M10.6 10.6a2 2 0 002.8 2.8" />
-                    <path d="M9.9 4.2A10.4 10.4 0 0112 4c5 0 9 4.5 10 8a11.8 11.8 0 01-3.1 4.8" />
-                    <path d="M6.1 6.1A11.8 11.8 0 002 12c1 3.5 5 8 10 8 1.4 0 2.7-.3 3.9-.9" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
-            </div>
+          <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-4 py-3">
+            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              placeholder="Your Password"
+              required
+              minLength={8}
+              className="flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
+            />
+            <button type="button" onClick={() => setShowPassword(v => !v)} className="text-gray-400 hover:text-gray-600">
+              {showPassword ? (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8M9.9 4.2A10.4 10.4 0 0112 4c5 0 9 4.5 10 8a11.8 11.8 0 01-3.1 4.8M6.1 6.1A11.8 11.8 0 002 12c1 3.5 5 8 10 8 1.4 0 2.7-.3 3.9-.9" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12z" /><circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-xs">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="w-full mt-2 bg-black text-white py-3 rounded-lg text-xs font-bold tracking-widest uppercase hover:bg-gray-800 disabled:opacity-50 transition-colors"
           >
-            {loading ? '신청 중...' : '가입 신청'}
+            {loading ? '신청 중...' : 'SUBMIT'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-xs text-gray-400 mt-5">
           이미 계정이 있으신가요?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            로그인
-          </Link>
+          <Link href="/login" className="text-gray-600 hover:underline font-medium">로그인</Link>
         </p>
       </div>
     </div>
