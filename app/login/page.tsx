@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,10 +37,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <img src="/snu-logo.png" alt="SNU" className="w-16 h-16 mx-auto mb-4 object-contain" />
+        <div className="text-center mb-10">
+          <Image src="/snu-logo.png" alt="SNU" width={80} height={80} className="mx-auto mb-6 object-contain" />
           <h1 className="text-2xl font-bold text-gray-900">거버넌스 위키</h1>
-          <p className="text-gray-500 text-sm mt-1">서울대학교 거버넌스 자료 검색 서비스</p>
+          <p className="text-gray-500 text-sm mt-2">서울대학교 거버넌스 자료 검색 서비스</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
