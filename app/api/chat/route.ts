@@ -11,6 +11,7 @@ import {
   buildLensUserMessage,
 } from '@/lib/llm/prompts';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
+import { logQuestionToSheet } from '@/lib/google-sheets';
 import { db } from '@/lib/db/client';
 import { conversations, messages, users } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
@@ -99,6 +100,7 @@ export async function POST(req: NextRequest) {
       sources: null,
       mode,
     });
+
   } catch (err) {
     console.error('Failed to prepare chat response', err);
     return Response.json({ error: '대화를 저장하거나 자료를 찾는 중 오류가 발생했습니다.' }, { status: 500 });
@@ -173,6 +175,20 @@ export async function POST(req: NextRequest) {
           sources: allSources,
           mode,
         });
+
+        // Google Sheets 로깅 — 답변 완성 시에만, 오류 시 생략
+        if (fullContent.trim()) {
+          logQuestionToSheet({
+            name: session.user.name ?? '',
+            email: session.user.email ?? '',
+            role,
+            question: message,
+            answer: fullContent,
+            wikis: routing.selectedAgentIds?.join(', ') ?? '',
+            mode,
+            conversationId: convId!,
+          }).catch(err => console.error('[Sheets] log failed:', err));
+        }
 
         send({ type: 'done', conversationId: convId });
       } catch (err) {
