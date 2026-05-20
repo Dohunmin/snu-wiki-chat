@@ -3,15 +3,27 @@
  * 실행: npx tsx scripts/backfill-sheets.ts
  */
 import { loadEnvFile } from 'process';
+import fs from 'fs';
 try { loadEnvFile('.env.local'); } catch { /* 없으면 무시 */ }
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
+
+// 로컬 JSON 파일에서 직접 읽기 (Vercel env 없을 때 fallback)
+if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+  const jsonPath = 'C:/Users/USER/Desktop/Uxlab/총장에이전트/snu-wiki-qna-db-673d456b6db9.json';
+  if (fs.existsSync(jsonPath)) {
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON = fs.readFileSync(jsonPath, 'utf-8');
+  }
+}
+if (!process.env.GOOGLE_SHEET_ID) {
+  process.env.GOOGLE_SHEET_ID = '1LxIk7t-mU-BMCHFOqEErRipI649kFp8izMYI4XJ85Cc';
+}
+import { drizzle } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
 import { eq, asc } from 'drizzle-orm';
 import { messages, conversations, users } from '../lib/db/schema';
 import crypto from 'crypto';
 
-const sql = neon(process.env.POSTGRES_URL!);
-const db = drizzle(sql);
+const pool = new pg.Pool({ connectionString: process.env.POSTGRES_URL });
+const db = drizzle(pool);
 
 // ── Google Sheets JWT 인증 ─────────────────────────────────────
 async function getAccessToken(): Promise<string> {
