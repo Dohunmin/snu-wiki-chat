@@ -40,9 +40,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">SNU</span>
-          </div>
+          <img src="/snu-logo.png" alt="SNU" className="w-16 h-16 mx-auto mb-4 object-contain" />
           <h1 className="text-2xl font-bold text-gray-900">가입 신청</h1>
           <p className="text-gray-500 text-sm mt-1">관리자 승인 후 이용 가능합니다</p>
         </div>

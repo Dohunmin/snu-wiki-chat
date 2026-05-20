@@ -370,9 +370,7 @@ export default function ChatPage({ user }: { user: User }) {
         md:relative md:translate-x-0 md:flex
       `}>
         <div className="flex h-14 items-center gap-2.5 px-4 border-b border-gray-200">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-[11px] font-bold text-white shrink-0">
-            SNU
-          </div>
+          <img src="/snu-logo.png" alt="SNU" className="h-7 w-7 shrink-0 object-contain" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-gray-900">SNU 거버넌스 위키</p>
             <p className="truncate text-xs text-gray-400">{ROLE_LABELS[user.role]}</p>
@@ -918,9 +916,7 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
       <div className="w-full max-w-xl flex flex-col items-center text-center">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-xl font-bold text-white shadow-md">
-          SNU
-        </div>
+        <img src="/snu-logo.png" alt="SNU" className="mb-6 h-24 w-24 object-contain" />
         <h2 className="text-3xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
         <p className="mt-2.5 text-base leading-relaxed text-gray-500">
           평의원회, 이사회, 대학운영계획, 중장기발전계획 자료를 바탕으로 질문에 답합니다.
@@ -1015,9 +1011,7 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
 
   return (
     <div className="flex gap-3">
-      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white">
-        S
-      </div>
+      <img src="/snu-logo.png" alt="SNU" className="mt-0.5 h-7 w-7 shrink-0 object-contain" />
       <div className="min-w-0 flex-1 pt-0.5">
         {message.agentNames && message.agentNames.length > 0 && (
           <div className="mb-2.5 flex flex-wrap gap-1.5">

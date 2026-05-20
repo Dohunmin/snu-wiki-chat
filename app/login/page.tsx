@@ -37,9 +37,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">SNU</span>
-          </div>
+          <img src="/snu-logo.png" alt="SNU" className="w-16 h-16 mx-auto mb-4 object-contain" />
           <h1 className="text-2xl font-bold text-gray-900">거버넌스 위키</h1>
           <p className="text-gray-500 text-sm mt-1">서울대학교 거버넌스 자료 검색 서비스</p>
         </div>
