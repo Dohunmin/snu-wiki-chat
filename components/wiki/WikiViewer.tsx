@@ -28,8 +28,22 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
     fetch(`/api/wiki/${selected.agentId}`)
       .then(r => r.json())
       .then(data => {
-        const list = data[selected.type] as { id: string; title?: string; name?: string; query?: string; content: string; [key: string]: unknown }[];
-        const item = list?.find(i => i.id === selected.itemId);
+        type WikiItem = { id: string; title?: string; name?: string; query?: string; content: string; [key: string]: unknown };
+        const ALL_TYPES = ['sources', 'facts', 'stances', 'overviews', 'topics', 'entities', 'syntheses'];
+
+        const findItem = (type: string): WikiItem | undefined =>
+          (data[type] as WikiItem[] | undefined)?.find(i => i.id === selected.itemId);
+
+        let item = findItem(selected.type);
+        if (!item) {
+          // fallback: LLM이 타입 suffix 없이 인용한 경우 모든 타입에서 검색
+          for (const t of ALL_TYPES) {
+            if (t === selected.type) continue;
+            item = findItem(t);
+            if (item) break;
+          }
+        }
+
         if (!item) { setContent('항목을 찾을 수 없습니다.'); setTitle(''); return; }
         setTitle(item.title ?? item.name ?? item.query ?? item.id);
         setContent(item.content ?? '');

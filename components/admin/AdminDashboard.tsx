@@ -15,18 +15,16 @@ interface UserRecord {
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<UserRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   async function fetchUsers() {
     const res = await fetch('/api/admin/users');
     if (res.ok) setUsers(await res.json());
-    setLoading(false);
   }
 
   useEffect(() => { fetchUsers(); }, []);
 
-  async function handleApprove(userId: string, role: 'tier1' | 'tier2') {
+  async function handleApprove(userId: string, role: 'admin' | 'tier1' | 'tier2') {
     setActionLoading(userId + role);
     await fetch('/api/admin/users', {
       method: 'PATCH',
@@ -96,6 +94,13 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => handleApprove(u.id, 'admin')}
+                      disabled={actionLoading === u.id + 'admin'}
+                      className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                    >
+                      관리자 승인
+                    </button>
+                    <button
                       onClick={() => handleApprove(u.id, 'tier1')}
                       disabled={actionLoading === u.id + 'tier1'}
                       className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50"
@@ -157,18 +162,17 @@ export default function AdminDashboard() {
                       {u.approvedAt ? new Date(u.approvedAt).toLocaleDateString('ko-KR') : '-'}
                     </td>
                     <td className="px-4 py-3">
-                      {u.role !== 'admin' && (
-                        <select
-                          defaultValue={u.role}
-                          onChange={async e => {
-                            await handleApprove(u.id, e.target.value as 'tier1' | 'tier2');
-                          }}
-                          className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
-                        >
-                          <option value="tier1">1순위</option>
-                          <option value="tier2">2순위</option>
-                        </select>
-                      )}
+                      <select
+                        defaultValue={u.role}
+                        onChange={async e => {
+                          await handleApprove(u.id, e.target.value as 'admin' | 'tier1' | 'tier2');
+                        }}
+                        className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
+                      >
+                        <option value="admin">관리자</option>
+                        <option value="tier1">1순위</option>
+                        <option value="tier2">2순위</option>
+                      </select>
                     </td>
                   </tr>
                 ))}
