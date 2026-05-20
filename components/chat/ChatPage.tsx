@@ -698,15 +698,17 @@ export default function ChatPage({ user }: { user: User }) {
                   </div>
                 )}
               </div>
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="SNU 거버넌스 자료에 대해 질문하세요"
-                rows={1}
-                className="max-h-36 min-h-[44px] flex-1 resize-none bg-transparent py-2.5 text-sm leading-6 outline-none placeholder:text-gray-400"
-              />
+              <div className="flex-1 flex items-center min-h-[44px]">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="SNU 거버넌스 자료에 대해 질문하세요"
+                  rows={1}
+                  className="w-full resize-none bg-transparent text-sm leading-6 outline-none placeholder:text-gray-400"
+                />
+              </div>
               <button
                 onClick={() => sendMessage()}
                 disabled={loading || !input.trim()}
@@ -730,14 +732,14 @@ export default function ChatPage({ user }: { user: User }) {
           onClick={() => setShowMyConvsModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[70vh]"
+            className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[70vh] mt-8"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-800">내 대화 전체 ({conversations.length}개)</h2>
               <button
                 onClick={() => setShowMyConvsModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 text-base"
               >
                 ✕
               </button>
