@@ -48,11 +48,12 @@ export async function logQuestionToSheet(row: {
   wikis: string;
   mode: string;
   conversationId: string;
+  timestamp?: Date;
 }): Promise<void> {
   const sheetId = process.env.GOOGLE_SHEET_ID;
   if (!sheetId || !process.env.GOOGLE_SERVICE_ACCOUNT_JSON) return;
 
-  const kst = new Date().toLocaleString('ko-KR', {
+  const kst = (row.timestamp ?? new Date()).toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
