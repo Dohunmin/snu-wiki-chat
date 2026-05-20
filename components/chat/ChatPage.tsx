@@ -705,7 +705,7 @@ export default function ChatPage({ user }: { user: User }) {
                 onKeyDown={handleKeyDown}
                 placeholder="SNU 거버넌스 자료에 대해 질문하세요"
                 rows={1}
-                className="max-h-36 min-h-[32px] flex-1 resize-none bg-transparent py-1 text-sm leading-6 outline-none placeholder:text-gray-400 self-center"
+                className="max-h-36 min-h-[44px] flex-1 resize-none bg-transparent py-2.5 text-sm leading-6 outline-none placeholder:text-gray-400"
               />
               <button
                 onClick={() => sendMessage()}
