@@ -22,8 +22,7 @@ async function getAccessToken(): Promise<string> {
   const signingInput = `${header}.${payload}`;
   const sign = crypto.createSign('RSA-SHA256');
   sign.update(signingInput);
-  const signature = sign.sign(creds.private_key, 'base64url');
-  const jwt = `${signingInput}.${signature}`;
+  const jwt = `${signingInput}.${sign.sign(creds.private_key, 'base64url')}`;
 
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -60,33 +59,34 @@ export async function logQuestionToSheet(row: {
     hour12: false,
   });
 
-  const values = [[
-    kst,
-    row.name,
-    row.email,
-    row.role,
-    row.question,
-    row.answer,
-    row.wikis,
-    row.mode,
-    row.conversationId,
-  ]];
+  const values = [kst, row.name, row.email, row.role, row.question, row.answer, row.wikis, row.mode, row.conversationId];
 
   const token = await getAccessToken();
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A:I:append?valueInputOption=USER_ENTERED`,
+  const base = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}`;
+
+  // 1) 헤더(row 1) 바로 아래에 빈 행 삽입
+  const insertRes = await fetch(`${base}:batchUpdate`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requests: [{
+        insertDimension: {
+          range: { sheetId: 0, dimension: 'ROWS', startIndex: 1, endIndex: 2 },
+          inheritFromBefore: false,
+        },
+      }],
+    }),
+  });
+  if (!insertRes.ok) throw new Error(`insertDimension failed: ${await insertRes.text()}`);
+
+  // 2) 삽입된 row 2에 데이터 쓰기
+  const updateRes = await fetch(
+    `${base}/values/A2:I2?valueInputOption=USER_ENTERED`,
     {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ values }),
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [values] }),
     }
   );
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Sheets API error: ${err}`);
-  }
+  if (!updateRes.ok) throw new Error(`values.update failed: ${await updateRes.text()}`);
 }

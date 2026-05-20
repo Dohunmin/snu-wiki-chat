@@ -1010,7 +1010,7 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
 
   return (
     <div className="flex gap-3">
-      <img src="/snu-logo.png" alt="SNU" className="mt-0.5 h-7 w-7 shrink-0 object-contain" />
+      <div className="mt-0.5 h-7 w-7 shrink-0" />
       <div className="min-w-0 flex-1 pt-0.5">
         {message.agentNames && message.agentNames.length > 0 && (
           <div className="mb-2.5 flex flex-wrap gap-1.5">
