@@ -99,6 +99,13 @@ export default function ChatPage({ user }: { user: User }) {
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const isAdmin = canAccessAdmin(user.role);
 
+  const CONV_PREVIEW = 12;
+  const [showAllMine, setShowAllMine] = useState(false);
+  const [publicConvs, setPublicConvs] = useState<{ id: string; title: string | null; createdAt: string }[]>([]);
+  const [publicLoaded, setPublicLoaded] = useState(false);
+  const [showPublic, setShowPublic] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
   async function deleteConversation(convId: string, e: React.MouseEvent) {
     e.stopPropagation();
     await fetch(`/api/conversations/${convId}`, { method: 'DELETE' });
@@ -176,17 +183,22 @@ export default function ChatPage({ user }: { user: User }) {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [modeMenuOpen]);
 
-  async function loadConversation(convId: string) {
-    if (convId === currentConvId) return;
+  async function loadConversation(convId: string, readOnly = false) {
+    if (convId === currentConvId && isReadOnly === readOnly) return;
     setSidebarOpen(false);
     setConvLoading(true);
     setCurrentConvId(convId);
+    setIsReadOnly(readOnly);
     setLensInsufficient(null);
 
-    // 해당 대화의 mode가 있으면 입력 모드를 그대로 이어받음 (admin만)
-    const conv = conversations.find(c => c.id === convId);
-    if (conv?.mode?.startsWith('lens:') && isAdmin) {
-      setChatMode(conv.mode);
+    // 내 대화일 때만 lens 모드 이어받음
+    if (!readOnly) {
+      const conv = conversations.find(c => c.id === convId);
+      if (conv?.mode?.startsWith('lens:') && isAdmin) {
+        setChatMode(conv.mode);
+      } else {
+        setChatMode('normal');
+      }
     } else {
       setChatMode('normal');
     }
@@ -329,6 +341,7 @@ export default function ChatPage({ user }: { user: User }) {
   function newConversation() {
     setMessages([]);
     setCurrentConvId(undefined);
+    setIsReadOnly(false);
     setInput('');
     setSidebarOpen(false);
     inputRef.current?.focus();
@@ -383,49 +396,111 @@ export default function ChatPage({ user }: { user: User }) {
           </Link>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-2">
-          {conversations.length > 0 && (
-            <p className="px-2 pb-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wide">최근 대화</p>
-          )}
-          {conversations.length === 0 ? (
-            <p className="px-2 pt-1 text-xs text-gray-400 leading-5">질문을 시작하면 대화 목록이 표시됩니다.</p>
-          ) : (
-            <div className="space-y-0.5">
-              {conversations.map(conv => {
-                const isLens = conv.mode?.startsWith('lens:');
-                const isCurrent = currentConvId === conv.id;
-                return (
-                <div
-                  key={conv.id}
-                  className={`group flex items-center rounded-lg transition-colors border-l-2 ${
-                    isCurrent
-                      ? 'bg-blue-50 border-l-blue-400'
-                      : isLens
-                      ? 'bg-emerald-50 hover:bg-emerald-100 border-l-emerald-400'
-                      : 'border-l-transparent hover:bg-gray-100'
-                  }`}
-                >
-                  <button
-                    onClick={() => loadConversation(conv.id)}
-                    className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm flex items-center gap-1.5 ${
-                      isCurrent ? 'text-blue-700 font-medium' : 'text-gray-600'
-                    }`}
-                  >
-                    {isLens && <span className="text-xs shrink-0">🎯</span>}
-                    <span className="truncate">{conv.title}</span>
-                  </button>
-                  <button
-                    onClick={(e) => deleteConversation(conv.id, e)}
-                    className="mr-1.5 hidden shrink-0 rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 group-hover:flex"
-                    title="삭제"
-                  >
-                    <TrashIcon />
-                  </button>
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+          {/* 내 대화 */}
+          <div>
+            {conversations.length > 0 && (
+              <p className="px-2 pb-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wide">최근 대화</p>
+            )}
+            {conversations.length === 0 ? (
+              <p className="px-2 pt-1 text-xs text-gray-400 leading-5">질문을 시작하면 대화 목록이 표시됩니다.</p>
+            ) : (
+              <>
+                <div className="space-y-0.5">
+                  {(showAllMine ? conversations : conversations.slice(0, CONV_PREVIEW)).map(conv => {
+                    const isLens = conv.mode?.startsWith('lens:');
+                    const isCurrent = currentConvId === conv.id && !isReadOnly;
+                    return (
+                      <div
+                        key={conv.id}
+                        className={`group flex items-center rounded-lg transition-colors border-l-2 ${
+                          isCurrent
+                            ? 'bg-blue-50 border-l-blue-400'
+                            : isLens
+                            ? 'bg-emerald-50 hover:bg-emerald-100 border-l-emerald-400'
+                            : 'border-l-transparent hover:bg-gray-100'
+                        }`}
+                      >
+                        <button
+                          onClick={() => loadConversation(conv.id)}
+                          className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm flex items-center gap-1.5 ${
+                            isCurrent ? 'text-blue-700 font-medium' : 'text-gray-600'
+                          }`}
+                        >
+                          {isLens && <span className="text-xs shrink-0">🎯</span>}
+                          <span className="truncate">{conv.title}</span>
+                        </button>
+                        <button
+                          onClick={(e) => deleteConversation(conv.id, e)}
+                          className="mr-1.5 hidden shrink-0 rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 group-hover:flex"
+                          title="삭제"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-                );
-              })}
-            </div>
-          )}
+                {conversations.length > CONV_PREVIEW && (
+                  <button
+                    onClick={() => setShowAllMine(v => !v)}
+                    className="mt-1 w-full px-3 py-1.5 text-left text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    {showAllMine ? '접기 ▲' : `전체 보기 (${conversations.length}개) ▼`}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* 모든 유저 질문 */}
+          <div>
+            <button
+              onClick={() => {
+                if (!publicLoaded) {
+                  fetch('/api/conversations/public')
+                    .then(r => r.json())
+                    .then((rows: { id: string; title: string | null; createdAt: string }[]) => {
+                      if (Array.isArray(rows)) setPublicConvs(rows);
+                      setPublicLoaded(true);
+                    });
+                }
+                setShowPublic(v => !v);
+              }}
+              className="flex w-full items-center justify-between px-2 pb-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-wide hover:text-gray-600 transition-colors"
+            >
+              <span>모든 유저 질문</span>
+              <span>{showPublic ? '▲' : '▼'}</span>
+            </button>
+            {showPublic && (
+              <div className="space-y-0.5">
+                {!publicLoaded ? (
+                  <p className="px-3 py-2 text-xs text-gray-400">불러오는 중...</p>
+                ) : publicConvs.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-gray-400">아직 다른 유저의 대화가 없습니다.</p>
+                ) : publicConvs.map(conv => {
+                  const isCurrent = currentConvId === conv.id && isReadOnly;
+                  return (
+                    <div
+                      key={conv.id}
+                      className={`rounded-lg transition-colors border-l-2 ${
+                        isCurrent ? 'bg-amber-50 border-l-amber-400' : 'border-l-transparent hover:bg-gray-100'
+                      }`}
+                    >
+                      <button
+                        onClick={() => loadConversation(conv.id, true)}
+                        className={`min-w-0 w-full truncate px-3 py-2 text-left text-sm ${
+                          isCurrent ? 'text-amber-700 font-medium' : 'text-gray-500'
+                        }`}
+                      >
+                        <span className="truncate block">{conv.title ?? '(제목 없음)'}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="border-t border-gray-200 p-3 space-y-0.5">
@@ -501,7 +576,18 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-200 bg-white py-5 flex justify-center px-6">
+        {isReadOnly && (
+          <div className="shrink-0 border-t border-gray-100 bg-amber-50 py-3 flex items-center justify-center gap-3 px-6">
+            <span className="text-sm text-amber-700">읽기 전용 대화입니다.</span>
+            <button
+              onClick={newConversation}
+              className="text-sm text-blue-600 hover:underline font-medium"
+            >
+              새 대화 시작 →
+            </button>
+          </div>
+        )}
+        <div className={`shrink-0 border-t border-gray-200 bg-white py-5 flex justify-center px-6 ${isReadOnly ? 'hidden' : ''}`}>
           <div className="w-full max-w-2xl">
             {/* Lens 자료 부족 알림 */}
             {lensInsufficient && (

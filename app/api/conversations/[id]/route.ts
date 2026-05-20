@@ -4,6 +4,7 @@ import { db } from '@/lib/db/client';
 import { conversations, messages } from '@/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,12 +15,12 @@ export async function GET(
   }
 
   const { id } = await params;
-  const userId = session.user.id;
 
+  // 모든 인증 사용자가 읽기 가능 (공개 대화 뷰어 지원)
   const [conv] = await db
     .select({ id: conversations.id })
     .from(conversations)
-    .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
+    .where(eq(conversations.id, id))
     .limit(1);
 
   if (!conv) {
