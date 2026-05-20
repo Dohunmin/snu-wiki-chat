@@ -135,8 +135,8 @@ export async function POST(req: NextRequest) {
             .orderBy(asc(messages.createdAt));
 
           // 현재 저장된 user 메시지 제외 (마지막 1개)
-          // 직전 3회 교환(user+assistant 쌍 3개)까지 포함
-          const prev = allPrev.slice(0, -1).slice(-6);
+          // 직전 5회 교환(user+assistant 쌍 5개)까지 포함
+          const prev = allPrev.slice(0, -1).slice(-10);
           for (const m of prev) {
             if (m.role === 'user' || m.role === 'assistant') {
               history.push({ role: m.role, content: m.content });
