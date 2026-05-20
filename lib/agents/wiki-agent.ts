@@ -12,6 +12,13 @@ const MAX_CHUNKS = 15;
 const MAX_CHUNKS_ENTITY = 30;
 const MAX_CHUNKS_RAG = 25;       // 🆕 ragEnabled 위키 — fused 결과 충분 활용
 
+// 내부 wiki 페이지 ID 참조 패턴 제거 (non-Lens 컨텍스트 전용)
+// 예: 학문후속세대지원.이석재.stance, 재원구조분석.fact
+const INTERNAL_ID_PATTERN = /[\w가-힣·\-]+\.(?:stance|fact|overview)/g;
+function stripInternalIds(text: string): string {
+  return text.replace(INTERNAL_ID_PATTERN, '').replace(/\s{2,}/g, ' ').trim();
+}
+
 /**
  * Design Ref: §4.2 — chunker가 재사용 (lib/embed/chunker.ts에서 import)
  * ## 헤더 단위로 분할, 최소 100자 미만 청크는 다음과 병합
@@ -390,12 +397,15 @@ export class WikiAgent implements AgentPlugin {
     }
 
     // ─── 출력 포맷 (타입 라벨링) ───────────────────────────────────
+    // non-Lens 모드: 내부 페이지 ID 참조를 콘텐츠에서 제거
+    const sanitize = options.lensMode ? (s: string) => s : stripInternalIds;
+
     const sourceBlocks = chunksToUse.map(item => {
       if (item.type === 'source') {
-        return `## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${item.chunk}`;
+        return `## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${sanitize(item.chunk)}`;
       } else {
         const labeled = item as LabeledItem;
-        return `## [${labeled.type}] ${labeled.title} (${labeled.id}) | ${labeled.meta}\n${labeled.chunk}`;
+        return `## [${labeled.type}] ${labeled.title} (${labeled.id}) | ${labeled.meta}\n${sanitize(labeled.chunk)}`;
       }
     }).join('\n\n---\n\n');
 
