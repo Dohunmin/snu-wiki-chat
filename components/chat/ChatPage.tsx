@@ -917,8 +917,8 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
 function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
-      <div className="w-full max-w-xl text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-xl font-bold text-white shadow-md">
+      <div className="w-full max-w-xl flex flex-col items-center text-center">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-xl font-bold text-white shadow-md">
           SNU
         </div>
         <h2 className="text-3xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
