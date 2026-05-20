@@ -216,19 +216,22 @@ export class WikiAgent implements AgentPlugin {
     };
     const labeledItems: LabeledItem[] = [];
 
-    for (const s of data.stances) {
-      if (!isSensitiveAllowed && s.sensitive) continue;
-      let score = scoreChunk(s.content + ' ' + s.holder + ' ' + s.topic, queryWords);
-      if (options.guaranteedPageIds?.has(s.id)) score += 5;
-      if (queryWords.some(w => s.holder.toLowerCase().includes(w))) score += 3;
-      if (queryWords.some(w => s.topic.toLowerCase().includes(w))) score += 3;
-      if (score > 0) {
-        labeledItems.push({
-          type: 'stance', id: s.id, title: s.title,
-          chunk: s.content,
-          meta: `holder: ${s.holder} / topic: ${s.topic}`,
-          score,
-        });
+    // stance는 Lens 모드에서만 포함 — 일반 쿼리에서 내부 ID 노출 방지
+    if (options.lensMode) {
+      for (const s of data.stances) {
+        if (!isSensitiveAllowed && s.sensitive) continue;
+        let score = scoreChunk(s.content + ' ' + s.holder + ' ' + s.topic, queryWords);
+        if (options.guaranteedPageIds?.has(s.id)) score += 5;
+        if (queryWords.some(w => s.holder.toLowerCase().includes(w))) score += 3;
+        if (queryWords.some(w => s.topic.toLowerCase().includes(w))) score += 3;
+        if (score > 0) {
+          labeledItems.push({
+            type: 'stance', id: s.id, title: s.title,
+            chunk: s.content,
+            meta: `holder: ${s.holder} / topic: ${s.topic}`,
+            score,
+          });
+        }
       }
     }
 

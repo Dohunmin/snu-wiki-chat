@@ -33,6 +33,8 @@ export interface AgentConfig {
 export interface GetContextOptions {
   chunkCap?: number;
   guaranteedPageIds?: Set<string>;
+  /** true이면 stance 청크 포함 (Lens 모드 전용). 기본 false → stance 제외 */
+  lensMode?: boolean;
 }
 
 export interface SourceRef {
