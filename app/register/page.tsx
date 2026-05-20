@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '12px 12px 12px 40px',
+    padding: '12px 14px',
     border: '1px solid #d9d9d9',
     borderRadius: '6px',
     backgroundColor: '#fafafa',
@@ -64,14 +64,9 @@ export default function RegisterPage() {
         borderRadius: '4px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       }}>
-        {/* 로고 */}
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/snu-logo.png"
-            alt="SNU"
-            style={{ width: '64px', height: '64px', objectFit: 'contain', display: 'inline-block' }}
-          />
+          <img src="/snu-logo.png" alt="SNU" style={{ width: '64px', height: '64px', objectFit: 'contain', display: 'inline-block' }} />
         </div>
 
         <h2 style={{
@@ -85,9 +80,7 @@ export default function RegisterPage() {
         }}>Sign Up</h2>
 
         <form onSubmit={handleSubmit}>
-          {/* 이름 */}
-          <div style={{ position: 'relative', marginBottom: '14px' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9a9a9a', fontSize: '14px' }}>👤</span>
+          <div style={{ marginBottom: '14px' }}>
             <input
               type="text"
               value={form.name}
@@ -100,9 +93,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* 이메일 */}
-          <div style={{ position: 'relative', marginBottom: '14px' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9a9a9a', fontSize: '14px' }}>✉</span>
+          <div style={{ marginBottom: '14px' }}>
             <input
               type="email"
               value={form.email}
@@ -115,9 +106,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* 비밀번호 */}
           <div style={{ position: 'relative', marginBottom: '14px' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9a9a9a', fontSize: '13px' }}>🔒</span>
             <input
               type={showPassword ? 'text' : 'password'}
               value={form.password}
@@ -162,18 +151,7 @@ export default function RegisterPage() {
           </div>
         </form>
 
-        <Link
-          href="/login"
-          style={{
-            display: 'block',
-            textAlign: 'center',
-            marginTop: '16px',
-            fontSize: '11px',
-            color: '#888',
-            textDecoration: 'none',
-            fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          }}
-        >
+        <Link href="/login" style={{ display: 'block', textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#888', textDecoration: 'none' }}>
           이미 계정이 있으신가요? 로그인
         </Link>
       </div>

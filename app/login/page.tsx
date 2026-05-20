@@ -27,6 +27,19 @@ export default function LoginPage() {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '12px 14px',
+    border: '1px solid #d9d9d9',
+    borderRadius: '6px',
+    backgroundColor: '#fafafa',
+    fontSize: '13px',
+    color: '#333',
+    outline: 'none',
+    boxSizing: 'border-box',
+    fontFamily: "'Helvetica Neue', Arial, sans-serif",
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -44,14 +57,9 @@ export default function LoginPage() {
         borderRadius: '4px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
       }}>
-        {/* 로고 */}
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/snu-logo.png"
-            alt="SNU"
-            style={{ width: '64px', height: '64px', objectFit: 'contain', display: 'inline-block' }}
-          />
+          <img src="/snu-logo.png" alt="SNU" style={{ width: '64px', height: '64px', objectFit: 'contain', display: 'inline-block' }} />
         </div>
 
         <h2 style={{
@@ -65,53 +73,27 @@ export default function LoginPage() {
         }}>Log in</h2>
 
         <form onSubmit={handleSubmit}>
-          {/* 이메일 */}
-          <div style={{ position: 'relative', marginBottom: '14px' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9a9a9a', fontSize: '14px' }}>✉</span>
+          <div style={{ marginBottom: '14px' }}>
             <input
               type="text"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="이메일"
+              placeholder="아이디"
               required
-              style={{
-                width: '100%',
-                padding: '12px 12px 12px 40px',
-                border: '1px solid #d9d9d9',
-                borderRadius: '6px',
-                backgroundColor: '#fafafa',
-                fontSize: '13px',
-                color: '#333',
-                outline: 'none',
-                boxSizing: 'border-box',
-                fontFamily: "'Helvetica Neue', Arial, sans-serif",
-              }}
+              style={inputStyle}
               onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
               onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
             />
           </div>
 
-          {/* 비밀번호 */}
           <div style={{ position: 'relative', marginBottom: '14px' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9a9a9a', fontSize: '13px' }}>🔒</span>
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="비밀번호"
               required
-              style={{
-                width: '100%',
-                padding: '12px 40px 12px 40px',
-                border: '1px solid #d9d9d9',
-                borderRadius: '6px',
-                backgroundColor: '#fafafa',
-                fontSize: '13px',
-                color: '#333',
-                outline: 'none',
-                boxSizing: 'border-box',
-                fontFamily: "'Helvetica Neue', Arial, sans-serif",
-              }}
+              style={{ ...inputStyle, paddingRight: '40px' }}
               onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
               onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
             />
@@ -148,18 +130,7 @@ export default function LoginPage() {
           </div>
         </form>
 
-        <Link
-          href="/register"
-          style={{
-            display: 'block',
-            textAlign: 'center',
-            marginTop: '16px',
-            fontSize: '11px',
-            color: '#888',
-            textDecoration: 'none',
-            fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          }}
-        >
+        <Link href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#888', textDecoration: 'none' }}>
           계정이 없으신가요? 가입 신청
         </Link>
       </div>
