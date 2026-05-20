@@ -527,9 +527,9 @@ export default function ChatPage({ user }: { user: User }) {
               </div>
             )}
 
-            <div className="flex items-center gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-2 shadow-md focus-within:border-blue-400 focus-within:shadow-lg transition-all">
+            <div className="flex items-end gap-3 rounded-2xl border border-gray-300 bg-white px-4 py-3 shadow-md focus-within:border-blue-400 focus-within:shadow-lg transition-all">
               {/* 통합 + 메뉴 (자료 업로드 + 모드 전환) */}
-              <div ref={modeMenuRef} className="relative shrink-0">
+              <div ref={modeMenuRef} className="relative shrink-0 mb-1">
                 <button
                   type="button"
                   onClick={() => setModeMenuOpen(o => !o)}
@@ -619,12 +619,12 @@ export default function ChatPage({ user }: { user: User }) {
                 onKeyDown={handleKeyDown}
                 placeholder="SNU 거버넌스 자료에 대해 질문하세요"
                 rows={1}
-                className="max-h-36 min-h-[40px] flex-1 resize-none bg-transparent py-2.5 text-sm leading-5 outline-none placeholder:text-gray-400"
+                className="max-h-36 min-h-[40px] flex-1 resize-none bg-transparent py-2 text-base leading-6 outline-none placeholder:text-gray-400"
               />
               <button
                 onClick={() => sendMessage()}
                 disabled={loading || !input.trim()}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed"
+                className="mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed"
                 title="전송"
                 aria-label="전송"
               >
