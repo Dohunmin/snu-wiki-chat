@@ -99,11 +99,25 @@ function applyPCA(vecs: number[][], pcaMean: number[], pc1: number[], pc2: numbe
   });
 }
 
-// ── 답변 품질 판정 (라우팅된 위키 수 기준) ──────────────────────────────────
-function judgeQuality(_answer: string, routedAgents: string[]): 'answered' | 'partial' | 'no_data' {
-  if (routedAgents.length >= 2) return 'answered';   // 2개 이상 위키 교차 참조
-  if (routedAgents.length === 1) return 'partial';   // 단일 위키
-  return 'no_data';                                   // 관련 위키 없음
+// ── 답변 품질 판정 ──────────────────────────────────────────────────────────
+// 우선순위: 명시적 범위 이탈 감지 → 라우팅 수
+function judgeQuality(answer: string, routedAgents: string[]): 'answered' | 'partial' | 'no_data' {
+  // 우리 시스템이 "이 질문은 위키 범위 밖입니다"라고 명시하는 패턴들
+  const outOfScopePatterns = [
+    '범위를 벗어난',
+    '범위 내의 질문',
+    '범위 밖',
+    '위키 운영팀',
+    '시스템 관리자에게',
+    '관련 질문에만 답변',
+    '위키 자료를 바탕으로 서울대학교',  // 시스템 자기소개 + 범위 선언 패턴
+  ];
+  if (outOfScopePatterns.some(p => answer.includes(p))) return 'no_data';
+
+  // 라우팅 수 기준
+  if (routedAgents.length >= 2) return 'answered';
+  if (routedAgents.length === 1) return 'partial';
+  return 'no_data';
 }
 
 async function main() {
