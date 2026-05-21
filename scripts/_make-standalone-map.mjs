@@ -91,9 +91,9 @@ const html = `<!DOCTYPE html>
   <div class="kr"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#3b82f6" stroke-width="2"/><\/svg><span>위키 내 유사 페이지</span></div>
   <div class="kr"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/><\/svg><span>위키 간 내용 유사</span></div>
   <div style="border-top:1px solid #f1f5f9;margin:8px 0;"></div>
-  <div class="kr"><svg width="11" height="11"><rect x="1" y="1" width="9" height="9" transform="rotate(45 5.5 5.5)" fill="#22c55e" stroke="#fff" stroke-width="1.5"/><\/svg><span>잘 답변된 질문</span></div>
-  <div class="kr"><svg width="11" height="11"><rect x="1" y="1" width="9" height="9" transform="rotate(45 5.5 5.5)" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/><\/svg><span>부분 답변</span></div>
-  <div class="kr"><svg width="11" height="11"><rect x="1" y="1" width="9" height="9" transform="rotate(45 5.5 5.5)" fill="#ef4444" stroke="#fff" stroke-width="1.5"/><\/svg><span>자료 없음 응답</span></div>
+  <div class="kr"><svg width="11" height="11"><rect x="1" y="1" width="9" height="9" transform="rotate(45 5.5 5.5)" fill="#22c55e" stroke="#fff" stroke-width="1.5"/><\/svg><span>2개+ 위키 교차 참조</span></div>
+  <div class="kr"><svg width="11" height="11"><rect x="1" y="1" width="9" height="9" transform="rotate(45 5.5 5.5)" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/><\/svg><span>1개 위키만 참조</span></div>
+  <div class="kr"><svg width="11" height="11"><rect x="1" y="1" width="9" height="9" transform="rotate(45 5.5 5.5)" fill="#ef4444" stroke="#fff" stroke-width="1.5"/><\/svg><span>관련 위키 없음</span></div>
   <div style="margin-top:8px;border-top:1px solid #f1f5f9;padding-top:8px;color:#94a3b8;font-size:10px;line-height:1.7;">
     원 크기 = 청크 수 (문서 분량)<br>마름모 = 사용자 질문
   </div>
@@ -272,7 +272,7 @@ const QUESTIONS = ${inlineQuestions};
     .on('mouseover',function(e,d){
       d3.select(this).raise().attr('width',qSize*2).attr('height',qSize*2)
         .attr('x',d.dx-qSize).attr('y',d.dy-qSize).attr('transform',\`rotate(45 \${d.dx} \${d.dy})\`);
-      const qLabel={answered:'✅ 잘 답변됨',partial:'⚠️ 부분 답변',no_data:'❌ 자료 없음'};
+      const qLabel={answered:'✅ 2개+ 위키 교차 참조',partial:'⚠️ 1개 위키만 참조',no_data:'❌ 관련 위키 없음'};
       document.getElementById('t-badge').textContent=d.wikiLabel+'  ·  질문';
       document.getElementById('t-badge').style.background=(Q_COLOR[d.quality]||'#94a3b8')+'22';
       document.getElementById('t-badge').style.color=Q_COLOR[d.quality]||'#94a3b8';
