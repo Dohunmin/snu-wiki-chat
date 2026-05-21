@@ -1,13 +1,65 @@
 import fs from 'fs';
 
-const points    = JSON.parse(fs.readFileSync('public/knowledge-map-data.json', 'utf-8'));
+// ── 데이터 로딩 ───────────────────────────────────────────────────────────
+const points    = JSON.parse(fs.readFileSync('public/knowledge-map-data.json',      'utf-8'));
 const questions = fs.existsSync('public/knowledge-map-questions.json')
-  ? JSON.parse(fs.readFileSync('public/knowledge-map-questions.json', 'utf-8'))
-  : [];
+  ? JSON.parse(fs.readFileSync('public/knowledge-map-questions.json', 'utf-8')) : [];
 
+const WIKI_IDS = ['senate','board','plan','vision','history','status','yhl-speeches','finance','leesj'];
+const wikiData = {};
+WIKI_IDS.forEach(wid => {
+  try { wikiData[wid] = JSON.parse(fs.readFileSync(`data/${wid}.json`, 'utf-8')); }
+  catch { wikiData[wid] = { sources:[], topics:[], entities:[] }; }
+});
+
+// ── 위키 내 구조적 엣지: topic.sources (이 토픽이 어느 문서에서 다뤄졌나) ──
+const withinEdges = [];
+for (const [wid, wiki] of Object.entries(wikiData)) {
+  for (const topic of wiki.topics ?? []) {
+    for (const srcId of topic.sources ?? []) {
+      withinEdges.push({ wikiId: wid, fromId: topic.id, toId: srcId, label: topic.name });
+    }
+  }
+}
+console.log(`위키 내 엣지 (topic→source): ${withinEdges.length}개`);
+
+// ── 위키 간 구조적 엣지: 공통 태그 ──────────────────────────────────────
+const tagIndex = {}; // tag → [{wikiId, pageId}]
+for (const [wid, wiki] of Object.entries(wikiData)) {
+  const addTags = (id, tags) => (tags ?? []).forEach(tag => {
+    (tagIndex[tag] = tagIndex[tag] ?? []).push({ wikiId: wid, pageId: id });
+  });
+  (wiki.sources ?? []).forEach(s => addTags(s.id, s.tags));
+  (wiki.topics  ?? []).forEach(t => addTags(t.id, t.tags));
+}
+
+const crossEdgeMap = new Map();
+for (const [tag, pages] of Object.entries(tagIndex)) {
+  for (let i = 0; i < pages.length; i++) {
+    for (let j = i + 1; j < pages.length; j++) {
+      if (pages[i].wikiId === pages[j].wikiId) continue;
+      const key = [pages[i].wikiId+'|'+pages[i].pageId, pages[j].wikiId+'|'+pages[j].pageId].sort().join('~~~');
+      const e = crossEdgeMap.get(key) ?? { from: pages[i], to: pages[j], tags: [] };
+      e.tags.push(tag);
+      crossEdgeMap.set(key, e);
+    }
+  }
+}
+const crossEdges = [...crossEdgeMap.values()]
+  .sort((a, b) => b.tags.length - a.tags.length)
+  .slice(0, 40)
+  .map(e => ({ fromWiki: e.from.wikiId, fromId: e.from.pageId, toWiki: e.to.wikiId, toId: e.to.pageId, sharedTags: e.tags.slice(0, 5) }));
+console.log(`위키 간 엣지 (공통 태그 Top40): ${crossEdges.length}개`);
+console.log('  Top3 공통 태그 엣지:');
+crossEdges.slice(0,3).forEach(e => console.log(`  ${e.fromWiki}:${e.fromId} ↔ ${e.toWiki}:${e.toId} [${e.sharedTags.join(', ')}]`));
+
+// ── 인라인 데이터 ──────────────────────────────────────────────────────────
 const inlineChunks    = JSON.stringify(points);
 const inlineQuestions = JSON.stringify(questions);
+const inlineWithin    = JSON.stringify(withinEdges);
+const inlineCross     = JSON.stringify(crossEdges);
 
+// ── HTML 생성 ─────────────────────────────────────────────────────────────
 const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -18,12 +70,10 @@ const html = `<!DOCTYPE html>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #f4f6f9; color: #1e293b; font-family: -apple-system, 'Malgun Gothic', sans-serif; height: 100vh; overflow: hidden; }
 
-  #header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  #header { position: fixed; top: 0; left: 0; right: 0; z-index: 20;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(10px);
     padding: 10px 20px; border-bottom: 1px solid #e2e8f0;
-    display: flex; align-items: center; justify-content: space-between;
-  }
+    display: flex; align-items: center; justify-content: space-between; }
   #header h1 { font-size: 14px; font-weight: 700; color: #0f172a; }
   #header p  { font-size: 11px; color: #94a3b8; margin-top: 1px; }
   #controls  { display: flex; align-items: center; gap: 8px; }
@@ -33,7 +83,10 @@ const html = `<!DOCTYPE html>
   #search:focus { border-color: #64748b; }
   #search::placeholder { color: #94a3b8; }
 
-  #legend { position: fixed; top: 52px; right: 16px; z-index: 10; background: rgba(255,255,255,0.96); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; min-width: 158px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+  #legend { position: fixed; top: 52px; right: 16px; z-index: 10;
+    background: rgba(255,255,255,0.96); border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 12px 14px; min-width: 158px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07); }
   #legend h3 { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 7px; }
   .li { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; color: #334155; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
   .li:hover { background: #f1f5f9; }
@@ -41,27 +94,22 @@ const html = `<!DOCTYPE html>
   .ld { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .lc { color: #94a3b8; margin-left: auto; font-size: 10px; }
 
-  #key { position: fixed; bottom: 16px; right: 16px; z-index: 10; background: rgba(255,255,255,0.96); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; width: 200px; box-shadow: 0 2px 12px rgba(0,0,0,.07); font-size: 11px; color: #334155; }
+  #key { position: fixed; bottom: 16px; right: 16px; z-index: 10;
+    background: rgba(255,255,255,0.96); border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 12px 14px; width: 210px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07); font-size: 11px; color: #334155; }
   #key b { display: block; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
   .kr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .q-dot { width: 11px; height: 11px; transform: rotate(45deg); flex-shrink: 0; }
 
-  /* 질문 심볼 — 위키 색상과 겹치지 않는 모노크롬 계열 */
-  .qs path { stroke: #fff; stroke-width: 2; cursor: pointer; }
-  .qs path:hover { stroke-width: 3; }
+  #tooltip { position: fixed; z-index: 30; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 12px 14px; max-width: 280px; pointer-events: none; display: none;
+    box-shadow: 0 8px 28px rgba(0,0,0,.12); }
+  .tb2 { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 4px; margin-bottom: 7px; font-weight: 700; }
+  .tt  { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 3px; line-height: 1.3; }
+  .tm  { font-size: 10px; color: #94a3b8; margin-bottom: 8px; }
+  .tp  { font-size: 11px; color: #475569; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 7px; }
 
-  #gap-bar { position: fixed; bottom: 16px; left: 16px; z-index: 10; background: rgba(255,255,255,0.96); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; min-width: 240px; box-shadow: 0 2px 12px rgba(0,0,0,.07); font-size: 11px; }
-  #gap-bar b { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 8px; }
-  .gap-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
-  .gap-wiki { font-size: 11px; color: #334155; flex: 1; }
-  .gap-bar-inner { height: 6px; border-radius: 3px; min-width: 4px; }
-  .gap-label { font-size: 10px; color: #94a3b8; white-space: nowrap; }
-
-  #tooltip { position: fixed; z-index: 30; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; max-width: 270px; pointer-events: none; display: none; box-shadow: 0 8px 28px rgba(0,0,0,.12); }
-  .tb2  { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 4px; margin-bottom: 7px; font-weight: 700; }
-  .tt   { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 3px; line-height: 1.3; }
-  .tm   { font-size: 10px; color: #94a3b8; margin-bottom: 8px; }
-  .tp   { font-size: 11px; color: #475569; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 7px; }
+  #stats { position: fixed; bottom: 16px; left: 16px; z-index: 10; font-size: 10px; color: #94a3b8; }
   svg { display: block; }
 </style>
 </head>
@@ -69,11 +117,11 @@ const html = `<!DOCTYPE html>
 <div id="header">
   <div>
     <h1>SNU 거버넌스 위키 — 지식 지형도</h1>
-    <p id="sub">페이지 네트워크 + 사용자 질문 레이어 · 9개 위키</p>
+    <p id="sub">페이지 네트워크 + 사용자 질문 · 9개 위키</p>
   </div>
   <div id="controls">
-    <button class="tb on"  id="b-edges">연결선</button>
-    <button class="tb on"  id="b-cross">위키간</button>
+    <button class="tb on"  id="b-edges">위키 내 연결</button>
+    <button class="tb on"  id="b-cross">위키 간 연결</button>
     <button class="tb on"  id="b-q">질문 레이어</button>
     <button class="tb"     id="b-chunks">청크 점</button>
     <input id="search" type="text" placeholder="검색...">
@@ -86,30 +134,34 @@ const html = `<!DOCTYPE html>
 </div>
 
 <div id="key">
-  <b>연결선</b>
-  <div class="kr"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#3b82f6" stroke-width="2"/><\/svg><span>위키 내 유사 페이지</span></div>
-  <div class="kr"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/><\/svg><span>위키 간 내용 유사</span></div>
-  <div style="border-top:1px solid #f1f5f9;margin:8px 0;"></div>
-  <b style="display:block;margin-bottom:6px;">사용자 질문 ◆</b>
-  <div class="kr"><svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg><span>잘 답변됨</span></div>
-  <div class="kr"><svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg><span>부분 답변</span></div>
-  <div class="kr"><svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg><span>관련 자료 없음</span></div>
-</div>
-
-<div id="gap-bar">
-  <b>위키별 질문 밀도 vs 콘텐츠 밀도</b>
-  <div id="gap-rows"></div>
-  <div style="font-size:10px;color:#94a3b8;margin-top:6px;">
-    막대 = 질문수/청크수 비율 · 빨간색 = 콘텐츠 부족 영역
+  <b>연결선 의미</b>
+  <div class="kr">
+    <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#3b82f6" stroke-width="2"/><\/svg>
+    <span>토픽 → 회의록 (같은 위키)</span>
+  </div>
+  <div class="kr">
+    <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/><\/svg>
+    <span>공통 태그 (위키 간)</span>
+  </div>
+  <div style="border-top:1px solid #f1f5f9;margin:8px 0;padding-top:8px;">
+    <b>사용자 질문 ◆</b>
+    <div class="kr" style="margin-top:6px;">
+      <svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg>
+      <span style="font-size:10px;color:#475569;">검정 마름모 · 호버하면 품질 표시</span>
+    </div>
+  </div>
+  <div style="font-size:10px;color:#94a3b8;line-height:1.7;margin-top:4px;">
+    원 크기 = 청크 수<br>흰 테두리 원 = 소스 문서
   </div>
 </div>
 
 <div id="tooltip">
   <div class="tb2" id="t-badge"></div>
-  <div class="tt" id="t-title"></div>
-  <div class="tm" id="t-meta"></div>
-  <div class="tp" id="t-preview"></div>
+  <div class="tt"  id="t-title"></div>
+  <div class="tm"  id="t-meta"></div>
+  <div class="tp"  id="t-preview"></div>
 </div>
+<div id="stats"></div>
 <svg id="canvas"></svg>
 
 <script>
@@ -125,13 +177,15 @@ const WIKI_LAYOUT = {
   leesj:          { fx: 0.50, fy: 0.80 },
 };
 
-const CHUNKS    = ${inlineChunks};
-const QUESTIONS = ${inlineQuestions};
+const CHUNKS        = ${inlineChunks};
+const QUESTIONS     = ${inlineQuestions};
+const WITHIN_STRUCT = ${inlineWithin};   // topic→source (wiki JSON 구조)
+const CROSS_STRUCT  = ${inlineCross};    // 공통 태그 기반 위키 간 연결
 
 (function () {
   const W = window.innerWidth, H = window.innerHeight - 44;
 
-  // ── 섬 좌표 (청크) ──
+  // ── 섬 좌표 ──
   const wikiGroups = d3.group(CHUNKS, d => d.wikiId);
   const wikiStats  = {};
   for (const [wid, pts] of wikiGroups) {
@@ -146,11 +200,10 @@ const QUESTIONS = ${inlineQuestions};
     d.dy = lay.fy*H + (d.y - st.cy)/st.sy * SPREAD;
   });
 
-  // ── 질문 섬 좌표 (embed-questions.ts에서 계산된 값 사용) ──
+  // ── 질문 섬 좌표 ──
   QUESTIONS.forEach(q => {
-    const cx = q.islandFx * W, cy = q.islandFy * H;
-    q.dx = cx + q.dxDelta + Math.cos(q.jitterAngle || 0) * (q.jitterR || 0);
-    q.dy = cy + q.dyDelta + Math.sin(q.jitterAngle || 0) * (q.jitterR || 0);
+    q.dx = q.islandFx*W + q.dxDelta + Math.cos(q.jitterAngle||0)*(q.jitterR||0);
+    q.dy = q.islandFy*H + q.dyDelta + Math.sin(q.jitterAngle||0)*(q.jitterR||0);
   });
 
   // ── 페이지 집약 ──
@@ -167,31 +220,36 @@ const QUESTIONS = ${inlineQuestions};
     preview:p.chunks[0].preview,
   }));
 
-  // ── 위키 내 엣지 (k=2) ──
-  const edgeSet=new Set(), wEdges=[];
-  for (const [,wps] of d3.group(pages,p=>p.wikiId)) {
-    for (const p of wps) {
-      wps.filter(q=>q!==p)
-        .sort((a,b)=>Math.hypot(a.dx-p.dx,a.dy-p.dy)-Math.hypot(b.dx-p.dx,b.dy-p.dy))
-        .slice(0,2).forEach(q=>{
-          const ek=[p.key,q.key].sort().join('~');
-          if (!edgeSet.has(ek)){edgeSet.add(ek);wEdges.push({s:p,t:q});}
-        });
-    }
-  }
+  // ── 구조적 엣지 매핑 ──
+  const pageIndex = new Map(pages.map(p => [p.wikiId+'||'+p.pageId, p]));
 
-  // ── 위키 간 엣지 (상위 20) ──
-  const cPairs=[];
-  for (let i=0;i<pages.length;i++) for (let j=i+1;j<pages.length;j++)
-    if (pages[i].wikiId!==pages[j].wikiId)
-      cPairs.push({s:pages[i],t:pages[j],dist:Math.hypot(pages[i].ox-pages[j].ox,pages[i].oy-pages[j].oy)});
-  cPairs.sort((a,b)=>a.dist-b.dist);
-  const cEdges=cPairs.slice(0,20);
+  // 위키 내: topic → source
+  const wEdgeSet = new Set(), wEdges = [];
+  WITHIN_STRUCT.forEach(e => {
+    const s = pageIndex.get(e.wikiId+'||'+e.fromId);
+    const t = pageIndex.get(e.wikiId+'||'+e.toId);
+    if (!s || !t) return;
+    const k = [s.key, t.key].sort().join('~');
+    if (edgeSet(wEdgeSet, k)) wEdges.push({ s, t, label: e.label });
+  });
+
+  // 위키 간: 공통 태그
+  const cEdges = [];
+  CROSS_STRUCT.forEach(e => {
+    const s = pageIndex.get(e.fromWiki+'||'+e.fromId);
+    const t = pageIndex.get(e.toWiki+'||'+e.toId);
+    if (s && t) cEdges.push({ s, t, tags: e.sharedTags });
+  });
+
+  function edgeSet(set, key) {
+    if (set.has(key)) return false;
+    set.add(key); return true;
+  }
 
   // ── SVG ──
   const svg  = d3.select('#canvas').attr('width',W).attr('height',H+44);
   const root = svg.append('g').attr('transform','translate(0,44)');
-  svg.call(d3.zoom().scaleExtent([0.2,30]).on('zoom',e=>root.attr('transform','translate(0,44) '+e.transform)));
+  svg.call(d3.zoom().scaleExtent([0.2,30]).on('zoom', e => root.attr('transform','translate(0,44) '+e.transform)));
   const tooltip = document.getElementById('tooltip');
 
   // ── 클러스터 배경 ──
@@ -206,17 +264,26 @@ const QUESTIONS = ${inlineQuestions};
       .attr('fill',color).attr('fill-opacity',.85).text(wps[0].wikiLabel);
   }
 
-  // ── 위키 간 엣지 (점선) ──
+  // ── 위키 간 엣지 (점선, 공통 태그) ──
   const cLayer=root.append('g').attr('id','ce');
-  cEdges.forEach(({s,t})=>cLayer.append('line').attr('x1',s.dx).attr('y1',s.dy).attr('x2',t.dx).attr('y2',t.dy)
-    .attr('stroke','#64748b').attr('stroke-opacity',.45).attr('stroke-width',1.4).attr('stroke-dasharray','5,5'));
+  cEdges.forEach(({s,t,tags})=>{
+    cLayer.append('line')
+      .attr('x1',s.dx).attr('y1',s.dy).attr('x2',t.dx).attr('y2',t.dy)
+      .attr('stroke','#64748b').attr('stroke-opacity',.5)
+      .attr('stroke-width',1.4).attr('stroke-dasharray','5,5')
+      .append('title').text(tags.join(', ')); // hover로 공통 태그 확인 가능
+  });
 
-  // ── 위키 내 엣지 (실선) ──
+  // ── 위키 내 엣지 (실선, topic→source) ──
   const wLayer=root.append('g').attr('id','we');
-  wEdges.forEach(({s,t})=>wLayer.append('line').attr('x1',s.dx).attr('y1',s.dy).attr('x2',t.dx).attr('y2',t.dy)
-    .attr('stroke',s.color).attr('stroke-opacity',.55).attr('stroke-width',1.6));
+  wEdges.forEach(({s,t,label})=>{
+    wLayer.append('line')
+      .attr('x1',s.dx).attr('y1',s.dy).attr('x2',t.dx).attr('y2',t.dy)
+      .attr('stroke',s.color).attr('stroke-opacity',.55).attr('stroke-width',1.6)
+      .append('title').text(label||'');
+  });
 
-  // ── 청크 점 (숨김) ──
+  // ── 청크 점 ──
   const chLayer=root.append('g').attr('id','ch').attr('display','none');
   chLayer.selectAll('circle').data(CHUNKS).join('circle')
     .attr('cx',d=>d.dx).attr('cy',d=>d.dy).attr('r',2.2)
@@ -238,79 +305,30 @@ const QUESTIONS = ${inlineQuestions};
       document.getElementById('t-preview').textContent=d.preview;
       tooltip.style.display='block';
     })
-    .on('mousemove',e=>{
-      const x=e.clientX+16, y=e.clientY+16;
-      tooltip.style.left=(x+270>W?x-286:x)+'px'; tooltip.style.top=(y+160>window.innerHeight?y-160:y)+'px';
-    })
+    .on('mousemove',e=>{ const x=e.clientX+16,y=e.clientY+16; tooltip.style.left=(x+280>W?x-296:x)+'px'; tooltip.style.top=(y+160>window.innerHeight?y-160:y)+'px'; })
     .on('mouseout',function(e,d){ d3.select(this).attr('r',d.r).attr('stroke-width',d.pageType==='source'?2:.8); tooltip.style.display='none'; });
 
-  // ── 질문 레이어 — 마름모, 검정 단일색 ──
-  const Q_COLOR = { answered: '#000000', partial: '#000000', no_data: '#000000' };
-  const Q_LABEL = { answered: '잘 답변됨', partial: '부분 답변', no_data: '관련 자료 없음' };
-  const QSIZE = 13; // 마름모 반크기
+  // ── 질문 레이어 (검정 마름모) ──
+  const Q_LABEL = { answered:'잘 답변됨', partial:'부분 답변', no_data:'관련 자료 없음' };
+  const QSIZE = 13;
+  const diamond = (cx,cy,r) => \`\${cx},\${cy-r} \${cx+r},\${cy} \${cx},\${cy+r} \${cx-r},\${cy}\`;
 
-  const qLayer = root.append('g').attr('id','ql').attr('class','qs');
-  const diamond = (cx, cy, r) => \`\${cx},\${cy-r} \${cx+r},\${cy} \${cx},\${cy+r} \${cx-r},\${cy}\`;
-  const qNodes = qLayer.selectAll('polygon').data(QUESTIONS).join('polygon')
-    .attr('points', d => diamond(d.dx, d.dy, QSIZE))
-    .attr('fill', '#000000')
-    .attr('stroke', '#fff').attr('stroke-width', 2)
-    .attr('fill-opacity', 0.88)
-    .style('cursor', 'pointer')
-    .on('mouseover', function(e, d){
-      d3.select(this).raise()
-        .attr('points', diamond(d.dx, d.dy, QSIZE * 1.8))
-        .attr('fill-opacity', 1);
-      document.getElementById('t-badge').textContent = d.wikiLabel + '  ·  사용자 질문';
-      document.getElementById('t-badge').style.background = '#f1f5f9';
-      document.getElementById('t-badge').style.color = '#374151';
-      document.getElementById('t-title').textContent = d.question;
-      document.getElementById('t-meta').textContent = Q_LABEL[d.quality] || '';
-      document.getElementById('t-preview').textContent = '';
-      tooltip.style.display = 'block';
+  const qLayer=root.append('g').attr('id','ql');
+  const qNodes=qLayer.selectAll('polygon').data(QUESTIONS).join('polygon')
+    .attr('points',d=>diamond(d.dx,d.dy,QSIZE))
+    .attr('fill','#000000').attr('stroke','#fff').attr('stroke-width',2).attr('fill-opacity',.88)
+    .style('cursor','pointer')
+    .on('mouseover',function(e,d){
+      d3.select(this).raise().attr('points',diamond(d.dx,d.dy,QSIZE*1.8)).attr('fill-opacity',1);
+      document.getElementById('t-badge').textContent=d.wikiLabel+'  ·  사용자 질문';
+      document.getElementById('t-badge').style.background='#f1f5f9'; document.getElementById('t-badge').style.color='#374151';
+      document.getElementById('t-title').textContent=d.question;
+      document.getElementById('t-meta').textContent=Q_LABEL[d.quality]||'';
+      document.getElementById('t-preview').textContent='';
+      tooltip.style.display='block';
     })
-    .on('mousemove', e => {
-      const x = e.clientX+16, y = e.clientY+16;
-      tooltip.style.left = (x+270>W ? x-286 : x) + 'px';
-      tooltip.style.top  = (y+120>window.innerHeight ? y-120 : y) + 'px';
-    })
-    .on('mouseout', function(e, d){
-      d3.select(this)
-        .attr('points', diamond(d.dx, d.dy, QSIZE))
-        .attr('fill-opacity', 0.88);
-      tooltip.style.display = 'none';
-    });
-
-  // ── 위키별 갭 분석 바 ──
-  const wikiQCounts={};
-  QUESTIONS.forEach(q=>{ wikiQCounts[q.nearestWiki]=(wikiQCounts[q.nearestWiki]||0)+1; });
-  const wikiChunkCounts={};
-  CHUNKS.forEach(c=>{ wikiChunkCounts[c.wikiId]=(wikiChunkCounts[c.wikiId]||0)+1; });
-
-  const totalQ=QUESTIONS.length||1;
-  const totalC=CHUNKS.length||1;
-  const gapRows=document.getElementById('gap-rows');
-  const wikiIds=[...new Set(CHUNKS.map(d=>d.wikiId))];
-  // 갭 점수 = (질문비율 / 청크비율) — 1보다 크면 콘텐츠 부족
-  const gapData=wikiIds.map(wid=>{
-    const qr=(wikiQCounts[wid]||0)/totalQ;
-    const cr=(wikiChunkCounts[wid]||1)/totalC;
-    return { wid, label:CHUNKS.find(d=>d.wikiId===wid)?.wikiLabel||wid, color:CHUNKS.find(d=>d.wikiId===wid)?.color||'#999', qr, cr, gap:qr/cr };
-  }).sort((a,b)=>b.gap-a.gap);
-
-  const maxGap=Math.max(...gapData.map(d=>d.gap));
-  gapData.forEach(({wid,label,color,qr,cr,gap})=>{
-    const pct=Math.round(gap/maxGap*100);
-    const barColor=gap>1.5?'#ef4444':gap>0.8?'#f59e0b':'#22c55e';
-    const row=document.createElement('div'); row.className='gap-row';
-    row.innerHTML=
-      '<span class="gap-wiki">'+label+'</span>'+
-      '<div style="width:80px;background:#f1f5f9;border-radius:3px;height:6px;">'+
-        '<div class="gap-bar-inner" style="width:'+pct+'%;background:'+barColor+'"></div>'+
-      '</div>'+
-      '<span class="gap-label">Q'+Math.round(qr*100)+'% C'+Math.round(cr*100)+'%</span>';
-    gapRows.appendChild(row);
-  });
+    .on('mousemove',e=>{ const x=e.clientX+16,y=e.clientY+16; tooltip.style.left=(x+280>W?x-296:x)+'px'; tooltip.style.top=(y+120>window.innerHeight?y-120:y)+'px'; })
+    .on('mouseout',function(e,d){ d3.select(this).attr('points',diamond(d.dx,d.dy,QSIZE)).attr('fill-opacity',.88); tooltip.style.display='none'; });
 
   // ── 범례 ──
   const hidden=new Set();
@@ -330,10 +348,7 @@ const QUESTIONS = ${inlineQuestions};
   }
 
   // ── 토글 ──
-  const tog=(id,layer,state)=>{
-    let on=state;
-    document.getElementById(id).onclick=function(){ on=!on; this.classList.toggle('on',on); layer.attr('display',on?null:'none'); };
-  };
+  const tog=(id,layer,state)=>{ let on=state; document.getElementById(id).onclick=function(){ on=!on; this.classList.toggle('on',on); layer.attr('display',on?null:'none'); }; };
   tog('b-edges',wLayer,true);
   tog('b-cross',cLayer,true);
   tog('b-q',qLayer,true);
@@ -342,14 +357,17 @@ const QUESTIONS = ${inlineQuestions};
   // ── 검색 ──
   document.getElementById('search').addEventListener('input',function(){
     const q=this.value.trim().toLowerCase();
-    if(!q){ pgNodes.attr('fill-opacity',.88).attr('r',d=>d.r); qNodes.attr('fill-opacity',.9); return; }
+    if(!q){ pgNodes.attr('fill-opacity',.88).attr('r',d=>d.r); qNodes.attr('fill-opacity',.88); return; }
     pgNodes.attr('fill-opacity',d=>((d.title||'').toLowerCase().includes(q)||d.preview.toLowerCase().includes(q))?1:.06)
            .attr('r',d=>((d.title||'').toLowerCase().includes(q)||d.preview.toLowerCase().includes(q))?d.r*1.8:d.r);
     qNodes.attr('fill-opacity',d=>d.question.toLowerCase().includes(q)?1:.06);
   });
 
-  document.getElementById('sub').textContent=
-    '페이지 '+pages.length+'개 · 질문 '+QUESTIONS.length+'개 · 9개 위키';
+  const wikiCount = [...new Set(CHUNKS.map(d=>d.wikiId))].length;
+  document.getElementById('stats').textContent =
+    '페이지 '+pages.length+'개  ·  질문 '+QUESTIONS.length+'개  ·  위키 내 연결 '+wEdges.length+'개  ·  위키 간 연결 '+cEdges.length+'개';
+  document.getElementById('sub').textContent =
+    'topic→source 구조 기반 · '+pages.length+'p · '+wikiCount+'개 위키';
 })();
 <\/script>
 </body>
@@ -357,7 +375,4 @@ const QUESTIONS = ${inlineQuestions};
 
 fs.writeFileSync('public/knowledge-map.html', html);
 const size = fs.statSync('public/knowledge-map.html').size;
-console.log('✅ knowledge-map.html 생성 완료:', Math.round(size / 1024), 'KB');
-console.log('   Layer 1: 페이지 노드 + 연결선');
-console.log('   Layer 2: 질문 마름모 (초록/노랑/빨강)');
-console.log('   Layer 3: 위키별 갭 분석 바');
+console.log(`✅ knowledge-map.html 생성 완료: ${Math.round(size/1024)} KB`);
