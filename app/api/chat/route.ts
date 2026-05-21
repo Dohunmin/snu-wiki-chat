@@ -176,9 +176,9 @@ export async function POST(req: NextRequest) {
           mode,
         });
 
-        // Google Sheets 로깅 — 답변 완성 시에만, 오류 시 생략
+        // Google Sheets 로깅 — done 전에 await (Vercel 함수 종료 전 완료 보장)
         if (fullContent.trim()) {
-          logQuestionToSheet({
+          await logQuestionToSheet({
             name: session.user.name ?? '',
             email: session.user.email ?? '',
             role,
