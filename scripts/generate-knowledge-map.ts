@@ -78,7 +78,7 @@ function pca2d(data: number[][]): [number, number][] {
     v2 = normalize(v2);
   }
 
-  return X.map(row => [dot(row, v1), dot(row, v2)]);
+  return { coords: X.map(row => [dot(row, v1), dot(row, v2)]) as [number,number][], pcaMean: mean, pc1: v1, pc2: v2 };
 }
 
 async function main() {
@@ -125,8 +125,26 @@ async function main() {
   // Step 2: PCA 30 → 2차원
   console.log('🧮 PCA 30 → 2차원 (power iteration)...');
   const t0 = Date.now();
-  const coords2d = pca2d(reduced);
+  const { coords: coords2d, pcaMean, pc1, pc2 } = pca2d(reduced);
   console.log(`✅ PCA 완료 (${Date.now() - t0}ms)`);
+
+  // PCA 투영 파라미터 저장 (질문 임베딩 시 재사용)
+  const wikiStatsSave: Record<string, { cx: number; cy: number; sx: number; sy: number }> = {};
+  const wikiChunkMap = new Map<string, [number, number][]>();
+  rows.forEach((r: any, i: number) => {
+    const arr = wikiChunkMap.get(r.wiki_id) ?? [];
+    arr.push([coords2d[i][0], coords2d[i][1]]);
+    wikiChunkMap.set(r.wiki_id, arr);
+  });
+  for (const [wid, pts] of wikiChunkMap) {
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    const mean = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
+    const std  = (a: number[], m: number) => Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length) || 1;
+    const cx = mean(xs), cy = mean(ys);
+    wikiStatsSave[wid] = { cx, cy, sx: std(xs, cx), sy: std(ys, cy) };
+  }
+  fs.writeFileSync('public/knowledge-map-proj.json', JSON.stringify({ pcaMean, pc1, pc2, wikiStats: wikiStatsSave }));
+  console.log('💾 public/knowledge-map-proj.json 저장 완료 (질문 투영용)');
 
   // 결과 데이터 구성
   const points = rows.map((r: any, i: number) => {
