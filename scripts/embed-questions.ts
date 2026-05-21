@@ -102,10 +102,27 @@ function applyPCA(vecs: number[][], pcaMean: number[], pc1: number[], pc2: numbe
 // ── 답변 품질 판정 ──────────────────────────────────────────────────────────
 function judgeQuality(answer: string, routedAgents: string[]): 'answered' | 'partial' | 'no_data' {
   if (!answer || answer.trim().length < 50) return 'no_data';
-  const noDataPatterns = ['찾을 수 없', '자료가 없', '확인되지 않', '정보가 없', '데이터가 없', '기록이 없', '해당 내용을 찾'];
+
+  // 자료 없음 신호 — 시스템이 실제 데이터를 못 찾았다는 표현들
+  const noDataPatterns = [
+    '찾을 수 없', '찾지 못했', '확인되지 않', '확인할 수 없',
+    '자료가 없', '자료를 찾', '관련 자료가', '해당 자료',
+    '정보가 없', '정보를 찾', '데이터가 없', '데이터를 찾',
+    '기록이 없', '기록을 찾', '내용이 없', '내용을 찾',
+    '다루고 있지 않', '다루지 않', '포함되지 않', '포함하지 않',
+    '위키에 없', '현재 위키', '제공된 자료에서',
+    '현재 제공', '현재 접근', '직접적인 정보',
+    '한계가 있', '한계를 인정', '답변하기 어렵',
+    '위 자료만으로는', '제한적', '구체적인 정보가',
+  ];
   if (noDataPatterns.some(p => answer.includes(p))) return 'no_data';
+
+  // 라우팅 없으면 partial
   if (routedAgents.length === 0) return 'partial';
-  if (answer.length < 200) return 'partial';
+
+  // 짧은 답변은 partial
+  if (answer.length < 300) return 'partial';
+
   return 'answered';
 }
 
