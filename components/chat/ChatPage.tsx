@@ -392,6 +392,15 @@ export default function ChatPage({ user }: { user: User }) {
             <BookIcon />
             위키 탐색
           </Link>
+          <a
+            href="/knowledge-map.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+          >
+            <MapIcon />
+            지식 지형도
+          </a>
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
@@ -1067,6 +1076,16 @@ function TrashIcon() {
   return (
     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MapIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="8" y1="2" x2="8" y2="18" strokeLinecap="round" />
+      <line x1="16" y1="6" x2="16" y2="22" strokeLinecap="round" />
     </svg>
   );
 }
