@@ -392,15 +392,17 @@ export default function ChatPage({ user }: { user: User }) {
             <BookIcon />
             위키 탐색
           </Link>
-          <a
-            href="/knowledge-map.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-          >
-            <MapIcon />
-            지식 지형도
-          </a>
+          {isAdmin && (
+            <a
+              href="/knowledge-map.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              <MapIcon />
+              지식 지형도
+            </a>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
