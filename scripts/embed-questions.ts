@@ -168,16 +168,13 @@ async function main() {
     const [px, py] = coords2d[i];
     const routedAgents: string[] = r.routed_agents ?? [];
 
-    // 배치 위키: routedAgents[0] 우선, 없으면 PCA 최근접
-    const routedWiki = routedAgents.find(w => WIKI_LAYOUT[w]);
-    let placementWiki = routedWiki ?? (() => {
-      let best = wikiIds[0], minD = Infinity;
-      for (const w of wikiIds) {
-        const d = Math.hypot(px - proj.wikiStats[w].cx, py - proj.wikiStats[w].cy);
-        if (d < minD) { minD = d; best = w; }
-      }
-      return best;
-    })();
+    // 배치 위키: PCA 공간에서 가장 가까운 위키 (의미적 유사도 기반)
+    let placementWiki = wikiIds[0];
+    let minDist = Infinity;
+    for (const w of wikiIds) {
+      const d = Math.hypot(px - proj.wikiStats[w].cx, py - proj.wikiStats[w].cy);
+      if (d < minDist) { minDist = d; placementWiki = w; }
+    }
 
     const st = proj.wikiStats[placementWiki];
     const clamp = (v: number) => Math.max(-MAX_DELTA, Math.min(MAX_DELTA, v));
