@@ -28,6 +28,12 @@ export default auth((req: NextRequest & { auth: { user?: { role?: Role } } | nul
     }
   }
 
+  if (pathname.startsWith('/knowledge-map')) {
+    if (!role || !canAccessAdmin(role)) {
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+  }
+
   if (pathname === '/' || pathname.startsWith('/api/chat')) {
     if (!role || !canChat(role)) {
       return NextResponse.redirect(new URL('/pending', req.url));
@@ -38,5 +44,5 @@ export default auth((req: NextRequest & { auth: { user?: { role?: Role } } | nul
 });
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.ico|snu-logo\\.png).*)'],
 };
