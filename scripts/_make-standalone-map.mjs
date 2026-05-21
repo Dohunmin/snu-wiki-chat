@@ -149,22 +149,11 @@ const QUESTIONS = ${inlineQuestions};
     d.dy = lay.fy*H + (d.y - st.cy)/st.sy * SPREAD;
   });
 
-  // ── 질문 섬 좌표 (클램핑 + 중복 jitter) ──
-  const MAX_DELTA = 110; // 클러스터 반경 내로 클램핑
-  const seenQ = new Map(); // 중복 질문 카운터
+  // ── 질문 섬 좌표 (embed-questions.ts에서 계산된 값 사용) ──
   QUESTIONS.forEach(q => {
-    const clamp = (v, max) => Math.max(-max, Math.min(max, v));
     const cx = q.islandFx * W, cy = q.islandFy * H;
-    // 클램핑
-    const dx = clamp(q.dxDelta, MAX_DELTA);
-    const dy = clamp(q.dyDelta, MAX_DELTA);
-    // 중복 질문 jitter: 같은 질문이면 작은 원형 오프셋 추가
-    const cnt = seenQ.get(q.question) || 0;
-    seenQ.set(q.question, cnt + 1);
-    const jAngle = cnt * 2.0;  // 라디안
-    const jR = cnt * 14;       // 픽셀 반지름
-    q.dx = cx + dx + Math.cos(jAngle) * jR;
-    q.dy = cy + dy + Math.sin(jAngle) * jR;
+    q.dx = cx + q.dxDelta + Math.cos(q.jitterAngle || 0) * (q.jitterR || 0);
+    q.dy = cy + q.dyDelta + Math.sin(q.jitterAngle || 0) * (q.jitterR || 0);
   });
 
   // ── 페이지 집약 ──
