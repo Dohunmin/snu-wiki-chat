@@ -91,9 +91,9 @@ const html = `<!DOCTYPE html>
   <div class="kr"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/><\/svg><span>위키 간 내용 유사</span></div>
   <div style="border-top:1px solid #f1f5f9;margin:8px 0;"></div>
   <b style="display:block;margin-bottom:6px;">사용자 질문 ◆</b>
-  <div class="kr"><svg width="14" height="14"><rect x="2" y="2" width="10" height="10" transform="rotate(45,7,7)" fill="#111827" stroke="#fff" stroke-width="1.5"/><\/svg><span>잘 답변됨</span></div>
-  <div class="kr"><svg width="14" height="14"><rect x="2" y="2" width="10" height="10" transform="rotate(45,7,7)" fill="#334155" stroke="#fff" stroke-width="1.5"/><\/svg><span>부분 답변</span></div>
-  <div class="kr"><svg width="14" height="14"><rect x="2" y="2" width="10" height="10" transform="rotate(45,7,7)" fill="#7f1d1d" stroke="#fff" stroke-width="1.5"/><\/svg><span>관련 자료 없음</span></div>
+  <div class="kr"><svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg><span>잘 답변됨</span></div>
+  <div class="kr"><svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg><span>부분 답변</span></div>
+  <div class="kr"><svg width="14" height="14"><polygon points="7,1 13,7 7,13 1,7" fill="#000" stroke="#fff" stroke-width="1.5"/><\/svg><span>관련 자료 없음</span></div>
 </div>
 
 <div id="gap-bar">
@@ -244,25 +244,22 @@ const QUESTIONS = ${inlineQuestions};
     })
     .on('mouseout',function(e,d){ d3.select(this).attr('r',d.r).attr('stroke-width',d.pageType==='source'?2:.8); tooltip.style.display='none'; });
 
-  // ── 질문 레이어 — 마름모 통일, 위키색과 겹치지 않는 색상 ──
-  // 위키 색: 파랑/초록/노랑/보라/빨강/회/핑크/민트/주황 → 검정/슬레이트/암적으로 분리
-  const Q_COLOR = { answered: '#111827', partial: '#334155', no_data: '#7f1d1d' };
+  // ── 질문 레이어 — 마름모, 검정 단일색 ──
+  const Q_COLOR = { answered: '#000000', partial: '#000000', no_data: '#000000' };
   const Q_LABEL = { answered: '잘 답변됨', partial: '부분 답변', no_data: '관련 자료 없음' };
-  const QSIZE = 10; // 마름모 반크기
+  const QSIZE = 13; // 마름모 반크기
 
   const qLayer = root.append('g').attr('id','ql').attr('class','qs');
-  const qNodes = qLayer.selectAll('rect').data(QUESTIONS).join('rect')
-    .attr('x', d => d.dx - QSIZE/2).attr('y', d => d.dy - QSIZE/2)
-    .attr('width', QSIZE).attr('height', QSIZE)
-    .attr('transform', d => \`rotate(45,\${d.dx},\${d.dy})\`)
-    .attr('fill', d => Q_COLOR[d.quality] || '#334155')
+  const diamond = (cx, cy, r) => \`\${cx},\${cy-r} \${cx+r},\${cy} \${cx},\${cy+r} \${cx-r},\${cy}\`;
+  const qNodes = qLayer.selectAll('polygon').data(QUESTIONS).join('polygon')
+    .attr('points', d => diamond(d.dx, d.dy, QSIZE))
+    .attr('fill', '#000000')
     .attr('stroke', '#fff').attr('stroke-width', 2)
-    .attr('fill-opacity', 0.92)
+    .attr('fill-opacity', 0.88)
     .style('cursor', 'pointer')
     .on('mouseover', function(e, d){
       d3.select(this).raise()
-        .attr('width', QSIZE*2).attr('height', QSIZE*2)
-        .attr('x', d.dx - QSIZE).attr('y', d.dy - QSIZE)
+        .attr('points', diamond(d.dx, d.dy, QSIZE * 1.8))
         .attr('fill-opacity', 1);
       document.getElementById('t-badge').textContent = d.wikiLabel + '  ·  사용자 질문';
       document.getElementById('t-badge').style.background = '#f1f5f9';
@@ -279,9 +276,8 @@ const QUESTIONS = ${inlineQuestions};
     })
     .on('mouseout', function(e, d){
       d3.select(this)
-        .attr('width', QSIZE).attr('height', QSIZE)
-        .attr('x', d.dx - QSIZE/2).attr('y', d.dy - QSIZE/2)
-        .attr('fill-opacity', 0.92);
+        .attr('points', diamond(d.dx, d.dy, QSIZE))
+        .attr('fill-opacity', 0.88);
       tooltip.style.display = 'none';
     });
 
