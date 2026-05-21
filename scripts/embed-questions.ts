@@ -72,34 +72,61 @@ function applyPCA(vecs: number[][], pcaMean: number[], pc1: number[], pc2: numbe
 // ── Claude Haiku LLM-as-judge ──────────────────────────────────────────────
 let anthropic: Anthropic;
 
-async function judgeOne(question: string, answer: string): Promise<'answered' | 'partial' | 'no_data'> {
-  const msg = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 5,
-    messages: [{
-      role: 'user',
-      content: `서울대 거버넌스 위키 챗봇의 Q&A를 평가하세요.
+const WIKI_LIST = Object.entries(WIKI_LABELS).map(([id, label]) => `${id}(${label})`).join(', ');
 
-질문: ${question}
-
-답변(앞부분): ${answer.slice(0, 600)}
-
-평가 기준:
-- answered: 질문의 핵심에 위키 자료 기반으로 구체적으로 답변함
-- partial: 관련 내용은 있으나 불완전하거나 일부만 답변함
-- no_data: 자료 없음/범위 밖/답변 불가 등으로 실질적 답변 없음
-
-한 단어만 출력 (answered / partial / no_data):`,
-    }],
-  });
-  const text = (msg.content[0] as { text: string }).text.trim().toLowerCase();
-  if (text.startsWith('answered')) return 'answered';
-  if (text.startsWith('partial'))  return 'partial';
-  return 'no_data';
+interface JudgeResult {
+  quality: 'answered' | 'partial' | 'no_data';
+  wiki: string;
 }
 
-async function judgeAll(pairs: { question: string; answer: string }[]): Promise<('answered' | 'partial' | 'no_data')[]> {
-  const results: ('answered' | 'partial' | 'no_data')[] = [];
+async function judgeOne(question: string, answer: string): Promise<JudgeResult> {
+  const msg = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 60,
+    messages: [{
+      role: 'user',
+      content: `서울대 거버넌스 위키 챗봇 Q&A를 평가하세요.
+
+질문: ${question}
+답변(앞부분): ${answer.slice(0, 500)}
+
+[품질]
+- answered: 위키 자료로 핵심에 구체적으로 답변
+- partial: 일부만 답변하거나 불완전
+- no_data: 자료없음/범위밖/실질 답변 없음
+
+[위키 분류] 이 질문의 주제와 가장 가까운 위키 ID 하나:
+${WIKI_LIST}
+관련 위키가 없으면 none
+
+JSON으로만 출력: {"q":"answered|partial|no_data","w":"위키ID"}`,
+    }],
+  });
+  const raw = (msg.content[0] as { text: string }).text.trim();
+  try {
+    const jsonMatch = raw.match(/\{[^}]+\}/s);
+    const parsed = JSON.parse(jsonMatch?.[0] ?? '{}');
+    // q 파싱
+    const qRaw = (parsed.q ?? '').toLowerCase();
+    const quality: 'answered' | 'partial' | 'no_data' =
+      qRaw.includes('answered') ? 'answered' :
+      qRaw.includes('partial')  ? 'partial'  : 'no_data';
+    // w 파싱
+    const wRaw = (parsed.w ?? '').toLowerCase().trim();
+    const wiki = WIKI_LAYOUT[wRaw] ? wRaw : '';
+    return { quality, wiki };
+  } catch {
+    // JSON 실패시 텍스트에서 직접 추출
+    const quality: 'answered' | 'partial' | 'no_data' =
+      raw.includes('answered') ? 'answered' :
+      raw.includes('partial')  ? 'partial'  : 'no_data';
+    const wikiMatch = Object.keys(WIKI_LAYOUT).find(w => raw.includes(w));
+    return { quality, wiki: wikiMatch ?? '' };
+  }
+}
+
+async function judgeAll(pairs: { question: string; answer: string }[]): Promise<JudgeResult[]> {
+  const results: JudgeResult[] = [];
   const CONCURRENCY = 5;
   for (let i = 0; i < pairs.length; i += CONCURRENCY) {
     const batch = pairs.slice(i, i + CONCURRENCY);
@@ -167,13 +194,16 @@ async function main() {
   const result = rows.map((r: any, i: number) => {
     const [px, py] = coords2d[i];
     const routedAgents: string[] = r.routed_agents ?? [];
+    const judged = qualities[i];
 
-    // 배치 위키: PCA 공간에서 가장 가까운 위키 (의미적 유사도 기반)
-    let placementWiki = wikiIds[0];
-    let minDist = Infinity;
-    for (const w of wikiIds) {
-      const d = Math.hypot(px - proj.wikiStats[w].cx, py - proj.wikiStats[w].cy);
-      if (d < minDist) { minDist = d; placementWiki = w; }
+    // 배치 위키: Claude 판단 우선 → PCA 최근접 fallback
+    let placementWiki = judged.wiki;
+    if (!placementWiki) {
+      let minDist = Infinity;
+      for (const w of wikiIds) {
+        const d = Math.hypot(px - proj.wikiStats[w].cx, py - proj.wikiStats[w].cy);
+        if (d < minDist) { minDist = d; placementWiki = w; }
+      }
     }
 
     const st = proj.wikiStats[placementWiki];
@@ -187,7 +217,7 @@ async function main() {
 
     return {
       question:    (r.question as string).slice(0, 120),
-      quality:     qualities[i],
+      quality:     judged.quality,
       routedAgents,
       nearestWiki: placementWiki,
       wikiLabel:   WIKI_LABELS[placementWiki] ?? placementWiki,
