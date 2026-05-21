@@ -128,13 +128,19 @@ const html = `<!DOCTYPE html>
   </div>
 </div>
 
-<div id="legend">
-  <h3>위키</h3>
-  <div id="legend-items"></div>
+<div id="legend" class="panel">
+  <div class="ph" onclick="this.closest('.panel').classList.toggle('collapsed')">
+    <span class="ph-title">위키</span><span class="ph-arr">▾</span>
+  </div>
+  <div class="pb"><div id="legend-items"></div></div>
 </div>
 
-<div id="key">
-  <b>연결선 의미</b>
+<div id="key" class="panel collapsed">
+  <div class="ph" onclick="this.closest('.panel').classList.toggle('collapsed')">
+    <span class="ph-title">범례</span><span class="ph-arr">▾</span>
+  </div>
+  <div class="pb">
+  <b>연결선</b>
   <div class="kr">
     <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#3b82f6" stroke-width="2"/><\/svg>
     <span>토픽 → 회의록 (같은 위키)</span>
@@ -152,6 +158,10 @@ const html = `<!DOCTYPE html>
   </div>
   <div style="font-size:10px;color:#94a3b8;line-height:1.7;margin-top:4px;">
     원 크기 = 청크 수<br>흰 테두리 원 = 소스 문서
+  </div>
+</div>
+  </div>
+</div>
   </div>
 </div>
 
