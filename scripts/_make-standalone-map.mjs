@@ -149,10 +149,22 @@ const QUESTIONS = ${inlineQuestions};
     d.dy = lay.fy*H + (d.y - st.cy)/st.sy * SPREAD;
   });
 
-  // ── 질문 섬 좌표 ──
+  // ── 질문 섬 좌표 (클램핑 + 중복 jitter) ──
+  const MAX_DELTA = 110; // 클러스터 반경 내로 클램핑
+  const seenQ = new Map(); // 중복 질문 카운터
   QUESTIONS.forEach(q => {
-    q.dx = q.islandFx * W + q.dxDelta;
-    q.dy = q.islandFy * H + q.dyDelta;
+    const clamp = (v, max) => Math.max(-max, Math.min(max, v));
+    const cx = q.islandFx * W, cy = q.islandFy * H;
+    // 클램핑
+    const dx = clamp(q.dxDelta, MAX_DELTA);
+    const dy = clamp(q.dyDelta, MAX_DELTA);
+    // 중복 질문 jitter: 같은 질문이면 작은 원형 오프셋 추가
+    const cnt = seenQ.get(q.question) || 0;
+    seenQ.set(q.question, cnt + 1);
+    const jAngle = cnt * 2.0;  // 라디안
+    const jR = cnt * 14;       // 픽셀 반지름
+    q.dx = cx + dx + Math.cos(jAngle) * jR;
+    q.dy = cy + dy + Math.sin(jAngle) * jR;
   });
 
   // ── 페이지 집약 ──
@@ -249,7 +261,7 @@ const QUESTIONS = ${inlineQuestions};
   // ── 질문 레이어 (마름모) ──
   const qLayer=root.append('g').attr('id','ql');
   const Q_COLOR = { answered:'#22c55e', partial:'#f59e0b', no_data:'#ef4444' };
-  const qSize = 8; // 마름모 반크기
+  const qSize = 10; // 마름모 반크기
   const qNodes=qLayer.selectAll('rect').data(QUESTIONS).join('rect')
     .attr('x', d=>d.dx - qSize/2).attr('y', d=>d.dy - qSize/2)
     .attr('width', qSize).attr('height', qSize)
