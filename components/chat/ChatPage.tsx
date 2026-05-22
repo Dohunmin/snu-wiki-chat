@@ -951,7 +951,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
 function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
-      <div className="w-full max-w-xl flex flex-col items-center text-center">
+      <div className="w-full max-w-3xl flex flex-col items-center text-center">
         <h2 className="text-3xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
         <p className="mt-2.5 text-base leading-relaxed text-gray-500">
           서울대 거버넌스 자료를 바탕으로 질문에 답합니다.
@@ -961,7 +961,7 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-2xl border border-gray-200 bg-white px-20 py-6 text-center text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed"
+              className="rounded-2xl border border-gray-200 bg-white px-10 py-6 text-center text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed whitespace-nowrap"
             >
               {q}
             </button>
