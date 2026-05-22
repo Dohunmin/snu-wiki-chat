@@ -76,6 +76,7 @@ const AGENT_OPTIONS = [
   { id: 'status', label: '대학현황' },
   { id: 'yhl-speeches', label: '유홍림총장연설' },
   { id: 'finance', label: '재무정보공시' },
+  { id: 'other', label: '기타' },
 ] as const;
 
 export default function ChatPage({ user }: { user: User }) {
@@ -809,7 +810,9 @@ export default function ChatPage({ user }: { user: User }) {
 function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded: (message: string) => void }) {
   const [agentId, setAgentId] = useState<(typeof AGENT_OPTIONS)[number]['id']>('senate');
   const [fileName, setFileName] = useState('');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState('');  // base64 dataURL or plain text
+  const [isBinary, setIsBinary] = useState(false);
+  const [fileSize, setFileSize] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -818,23 +821,34 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
     if (!file) return;
     setError('');
     setFileName(file.name);
-    try {
-      setContent(await file.text());
-    } catch {
-      setError('파일을 읽지 못했습니다. 텍스트 파일인지 확인해 주세요.');
+    setFileSize((file.size / 1024).toFixed(1) + ' KB');
+
+    const binary = !file.type.startsWith('text/') && !file.name.match(/\.(md|txt|csv|json)$/i);
+    setIsBinary(binary);
+
+    if (binary) {
+      // PDF 등 바이너리: base64 DataURL로 읽기
+      const reader = new FileReader();
+      reader.onload = () => setContent(reader.result as string);
+      reader.onerror = () => setError('파일을 읽지 못했습니다.');
+      reader.readAsDataURL(file);
+    } else {
+      // 텍스트 파일: 그대로 읽기
+      try { setContent(await file.text()); }
+      catch { setError('파일을 읽지 못했습니다.'); }
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!content) { setError('파일을 선택해주세요.'); return; }
     setError('');
     setLoading(true);
-
     try {
       const res = await fetch('/api/uploads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, fileName: fileName.trim(), content: content.trim() }),
+        body: JSON.stringify({ agentId, fileName: fileName.trim(), content }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || '자료 업로드에 실패했습니다.');
@@ -874,34 +888,45 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
             <label className="mb-1 block text-sm font-medium text-gray-700">파일</label>
             <input
               type="file"
-              accept=".md,.txt,.json,.csv,text/*"
+              accept=".md,.txt,.json,.csv,.pdf,.docx,.hwp,.xlsx"
               onChange={handleFileChange}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:text-gray-700"
             />
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">파일명</label>
-            <input
-              value={fileName}
-              onChange={e => setFileName(e.target.value)}
-              placeholder="예: board-note.md"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+          {fileName && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">파일명</label>
+              <input
+                value={fileName}
+                onChange={e => setFileName(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+          )}
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">내용</label>
-            <textarea
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              placeholder="파일을 선택하거나 내용을 직접 붙여넣으세요."
-              rows={8}
-              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+          {/* 선택된 파일 정보 */}
+          {content && (
+            <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-sm text-gray-600">
+              <span className="text-base">{isBinary ? '📎' : '📄'}</span>
+              <span className="flex-1 truncate">{fileName}</span>
+              <span className="text-xs text-gray-400">{fileSize}</span>
+            </div>
+          )}
+
+          {/* 텍스트 파일만 내용 미리보기/편집 */}
+          {!isBinary && content && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">내용 미리보기</label>
+              <textarea
+                value={content}
+                onChange={e => setContent(e.target.value)}
+                rows={6}
+                className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
         </div>
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
@@ -912,7 +937,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
           </button>
           <button
             type="submit"
-            disabled={loading || !fileName.trim() || !content.trim()}
+            disabled={loading || !fileName.trim() || !content}
             className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
           >
             {loading ? '업로드 중...' : '업로드'}

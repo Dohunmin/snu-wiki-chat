@@ -4,6 +4,22 @@ import { useEffect, useState } from 'react';
 import { ROLE_LABELS } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 
+const AGENT_LABELS: Record<string, string> = {
+  senate: '평의원회', board: '이사회', plan: '대학운영계획', vision: '중장기발전계획',
+  history: '70년역사', status: '대학현황', 'yhl-speeches': '유홍림총장연설',
+  finance: '재무정보공시', other: '기타',
+};
+
+interface UploadRecord {
+  id: string;
+  fileName: string;
+  agentId: string;
+  status: string;
+  createdAt: string;
+  userName: string | null;
+  userEmail: string | null;
+}
+
 interface UserRecord {
   id: string;
   email: string;
@@ -15,6 +31,7 @@ interface UserRecord {
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [uploads, setUploads] = useState<UploadRecord[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   async function fetchUsers() {
@@ -22,7 +39,12 @@ export default function AdminDashboard() {
     if (res.ok) setUsers(await res.json());
   }
 
-  useEffect(() => { fetchUsers(); }, []);
+  async function fetchUploads() {
+    const res = await fetch('/api/admin/uploads');
+    if (res.ok) setUploads(await res.json());
+  }
+
+  useEffect(() => { fetchUsers(); fetchUploads(); }, []);
 
   async function handleApprove(userId: string, role: 'admin' | 'tier1' | 'tier2') {
     setActionLoading(userId + role);
@@ -124,6 +146,53 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        {/* 업로드된 자료 */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">
+            업로드된 자료 ({uploads.length}건)
+          </h2>
+          {uploads.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-100 p-6 text-center text-sm text-gray-400">
+              업로드된 자료가 없습니다
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">파일명</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">분류</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">업로더</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">날짜</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {uploads.map(u => (
+                    <tr key={u.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900 max-w-[180px] truncate">{u.fileName}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{AGENT_LABELS[u.agentId] ?? u.agentId}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">{u.userName ?? u.userEmail ?? '-'}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">
+                        {new Date(u.createdAt).toLocaleDateString('ko-KR')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <a
+                          href={`/api/admin/uploads/${u.id}`}
+                          download={u.fileName}
+                          className="px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-700"
+                        >
+                          다운로드
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </section>

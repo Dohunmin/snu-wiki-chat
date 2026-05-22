@@ -7,9 +7,9 @@ import { uploads } from '@/lib/db/schema';
 import { z } from 'zod';
 
 const uploadSchema = z.object({
-  agentId: z.enum(['senate', 'board', 'plan', 'vision']),
+  agentId: z.enum(['senate', 'board', 'plan', 'vision', 'history', 'status', 'yhl-speeches', 'finance', 'other']),
   fileName: z.string().min(1).max(255),
-  content: z.string().min(1).max(500_000),
+  content: z.string().min(1).max(20_000_000), // ~15MB binary (base64)
 });
 
 export async function POST(req: NextRequest) {
