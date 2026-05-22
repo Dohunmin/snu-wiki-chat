@@ -43,15 +43,15 @@ const watcher = chokidar.watch(WATCH_GLOB, {
 });
 
 watcher.on('all', (event, filepath) => {
+  pendingChanges.add(filepath);
+  const rel = path.relative(OBSIDIAN_PATH, filepath);
+
   if (buildInProgress) {
-    console.log(`⏸️  (build in progress) ${event}: ${path.basename(filepath)}`);
+    console.log(`⏸️  (queued) ${rel}`);
     return;
   }
 
-  pendingChanges.add(filepath);
-  const rel = path.relative(OBSIDIAN_PATH, filepath);
   console.log(`📝 [${event.padEnd(6)}] ${rel}`);
-
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(rebuild, DEBOUNCE_MS);
 });
@@ -93,6 +93,10 @@ async function rebuild() {
     console.error(err);
   } finally {
     buildInProgress = false;
+    if (pendingChanges.size > 0) {
+      console.log(`\n🔁 ${pendingChanges.size}개 변경사항 대기 중 — 재빌드 예약`);
+      debounceTimer = setTimeout(rebuild, DEBOUNCE_MS);
+    }
   }
 }
 
