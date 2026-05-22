@@ -929,7 +929,7 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
       <div className="w-full max-w-xl flex flex-col items-center text-center">
         <h2 className="text-3xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
         <p className="mt-2.5 text-base leading-relaxed text-gray-500">
-          평의원회, 이사회, 대학운영계획, 중장기발전계획 자료를 바탕으로 질문에 답합니다.
+          서울대 거버넌스 자료를 바탕으로 질문에 답합니다.
         </p>
         <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {EXAMPLE_QUESTIONS.map(q => (
