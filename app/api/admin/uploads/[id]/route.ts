@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/rbac';
 import { db } from '@/lib/db/client';
 import { uploads } from '@/lib/db/schema';
@@ -16,8 +16,8 @@ const MIME_MAP: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const err = await requireAdmin(req);
-  if (err) return err;
+  const result = await requireAdmin(req);
+  if (result instanceof NextResponse) return result;
 
   const { id } = await params;
   const [row] = await db.select().from(uploads).where(eq(uploads.id, id));

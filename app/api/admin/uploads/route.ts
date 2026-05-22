@@ -1,12 +1,12 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/rbac';
 import { db } from '@/lib/db/client';
 import { uploads, users } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
-  const err = await requireAdmin(req);
-  if (err) return err;
+  const result = await requireAdmin(req);
+  if (result instanceof NextResponse) return result;
 
   const rows = await db
     .select({
