@@ -961,7 +961,7 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-2xl border border-gray-200 bg-white px-8 py-6 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed"
+              className="rounded-2xl border border-gray-200 bg-white px-10 py-6 text-left text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed"
             >
               {q}
             </button>

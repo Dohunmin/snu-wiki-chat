@@ -141,13 +141,16 @@ async function main() {
 
   console.log(`📝 총 ${rows.length}개 Q&A 쌍 발견`);
 
+  // 최신순 정렬: rows는 오래된 순 → 뒤집어서 append하면 오래된 것이 아래, 최신이 위
+  const reversed = [...rows].reverse();
+
   // 100행씩 배치 삽입
   const BATCH = 100;
-  for (let i = 0; i < rows.length; i += BATCH) {
-    const batch = rows.slice(i, i + BATCH);
+  for (let i = 0; i < reversed.length; i += BATCH) {
+    const batch = reversed.slice(i, i + BATCH);
     await appendRows(token, batch);
-    console.log(`  ✅ ${Math.min(i + BATCH, rows.length)} / ${rows.length} 완료`);
-    if (i + BATCH < rows.length) await new Promise(r => setTimeout(r, 500)); // rate limit 방지
+    console.log(`  ✅ ${Math.min(i + BATCH, reversed.length)} / ${reversed.length} 완료`);
+    if (i + BATCH < reversed.length) await new Promise(r => setTimeout(r, 500));
   }
 
   console.log('🎉 백필 완료!');

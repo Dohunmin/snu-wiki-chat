@@ -1,0 +1,255 @@
+{
+  "timestamp": "2026-04-29T08:05:41.273Z",
+  "reason": "compaction",
+  "status": {
+    "version": "3.0",
+    "lastUpdated": "2026-04-29T07:51:01.967Z",
+    "activeFeatures": [
+      "llm",
+      "chat",
+      "conversations",
+      "[id]",
+      "agents"
+    ],
+    "primaryFeature": "llm",
+    "features": {
+      "llm": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:14:50.247Z",
+          "lastUpdated": "2026-04-29T07:19:01.317Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\llm\\client.ts"
+      },
+      "chat": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:15:01.664Z",
+          "lastUpdated": "2026-04-29T07:51:01.958Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\components\\chat\\ChatPage.tsx"
+      },
+      "conversations": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:32:56.586Z",
+          "lastUpdated": "2026-04-29T07:32:56.586Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\conversations\\route.ts"
+      },
+      "[id]": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:33:48.416Z",
+          "lastUpdated": "2026-04-29T07:33:48.416Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\conversations\\[id]\\route.ts"
+      },
+      "agents": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:41:01.828Z",
+          "lastUpdated": "2026-04-29T07:44:44.121Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\agents\\wiki-agent.ts"
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-04-29T07:07:54.909Z",
+      "onboardingCompleted": false,
+      "lastActivity": "2026-04-29T07:51:01.967Z"
+    },
+    "history": [
+      {
+        "timestamp": "2026-04-29T07:14:50.255Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:15:01.673Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:15:12.138Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:16:39.894Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:16:56.594Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:17:16.003Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:17:29.384Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:19:01.322Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:32:56.596Z",
+        "feature": "conversations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:33:48.423Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:33:56.073Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:34:15.133Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:34:45.614Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:35:15.093Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:36:02.025Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:41:01.835Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:43:16.484Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:44:44.129Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:22.840Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:30.014Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:38.004Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:46.867Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:54.150Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:51:01.966Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      }
+    ],
+    "stateMachine": {
+      "defaultWorkflow": "default",
+      "activeWorkflows": {},
+      "totalTransitions": 0
+    },
+    "automation": {
+      "globalLevel": 2,
+      "trustScore": 40,
+      "pendingApprovals": 0,
+      "lastGateResult": null
+    },
+    "team": {
+      "enabled": true,
+      "stateFile": ".bkit/runtime/agent-state.json",
+      "eventsFile": ".bkit/runtime/agent-events.jsonl"
+    }
+  }
+}
