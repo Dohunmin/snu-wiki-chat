@@ -956,12 +956,12 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
         <p className="mt-2.5 text-base leading-relaxed text-gray-500">
           서울대 거버넌스 자료를 바탕으로 질문에 답합니다.
         </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
+        <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {EXAMPLE_QUESTIONS.map(q => (
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-2xl border border-gray-200 bg-white px-10 py-5 text-center text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm whitespace-nowrap"
+              className="rounded-2xl border border-gray-200 bg-white px-10 py-6 text-center text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed whitespace-nowrap"
             >
               {q}
             </button>
