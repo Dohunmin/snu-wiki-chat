@@ -14,6 +14,7 @@ const RECENCY_QUERIES = [
   '이번 평의원회 안건',
   '평의원회 19기 최신 회의록',
   '평의원회 진행 상황',
+  '평의원회 관련 정보 최근 5개 알려줘',  // user 실측 케이스
 ];
 
 // SC2 회귀 확인용 — 시간성 키워드 없음. 이전 동작과 동일해야 함
@@ -32,26 +33,47 @@ interface QueryResult {
   selectedWikis: string[];
   senateHeaders: string[];
   recentHits: string[];
+  gi19InContext: string[];
+  boardHeaderCount: number;
+  boardSample: string[];
 }
 
 async function diagnose(query: string): Promise<QueryResult> {
   const routing = await routeQuery(query, 'admin');
   const senateCtx = routing.contexts.find((c: { agentId: string }) => c.agentId === 'senate');
-  const headers: string[] = senateCtx
-    ? (senateCtx as { relevantData: string }).relevantData.match(/^##\s+.+$/gm) ?? []
+  const senateRaw = senateCtx ? (senateCtx as { relevantData: string }).relevantData : '';
+  const headers: string[] = senateRaw.match(/^##\s+.+$/gm) ?? [];
+
+  // 엄격한 헤더 패턴 — "## 제19기 ... (sid) | 회의일:" 만 진짜 source 진입으로 간주.
+  // 본문의 [[19기-X차]] wikilink는 false positive라 제외.
+  const headerSourcePattern = /^##\s+[^\n]+?\(([^)]+)\)\s*\|\s*회의일:/gm;
+  const sourceIdsInContext = new Set<string>();
+  let m;
+  while ((m = headerSourcePattern.exec(senateRaw)) !== null) {
+    sourceIdsInContext.add(m[1].trim());
+  }
+  const recentHits = RECENT_IDS.filter(id => sourceIdsInContext.has(id));
+  const gi19InContext = Array.from(sourceIdsInContext).filter(id => id.startsWith('19기'));
+  // board 컨텍스트 (이사회 자료가 평의원회 쿼리에 끼어드는지)
+  const boardCtx = routing.contexts.find((c: { agentId: string }) => c.agentId === 'board');
+  const boardHeaders: string[] = boardCtx
+    ? (boardCtx as { relevantData: string }).relevantData.match(/^##\s+.+$/gm) ?? []
     : [];
-  const recentHits = RECENT_IDS.filter(id => headers.some(h => h.includes(id)));
+
   return {
     query,
     selectedWikis: routing.selectedAgentIds,
     senateHeaders: headers,
     recentHits,
+    gi19InContext,
+    boardHeaderCount: boardHeaders.length,
+    boardSample: boardHeaders.slice(0, 5),
   };
 }
 
 function printRecencySection(results: QueryResult[]) {
   console.log('\n' + '═'.repeat(80));
-  console.log(' SC1 — 시간성 쿼리 (19기-7차/8차 진입 확인)');
+  console.log(' SC1 — 시간성 쿼리 (19기 최신 source 진입 확인)');
   console.log('═'.repeat(80));
 
   let passedCount = 0;
@@ -60,12 +82,17 @@ function printRecencySection(results: QueryResult[]) {
     if (passed) passedCount++;
     console.log(`\n[${passed ? '✅' : '❌'}] "${r.query}"`);
     console.log(`    위키: ${r.selectedWikis.join(', ')}`);
-    console.log(`    senate 헤더 ${r.senateHeaders.length}개. 최신 source 진입: ${r.recentHits.length > 0 ? r.recentHits.join(', ') : '(없음)'}`);
+    console.log(`    senate 헤더: ${r.senateHeaders.length}개 / 19기 진입: ${r.gi19InContext.length > 0 ? r.gi19InContext.join(', ') : '(없음)'}`);
+    console.log(`    19기-7차/8차/6차서면: ${r.recentHits.length > 0 ? r.recentHits.join(', ') : '(없음)'}`);
+    console.log(`    board 헤더: ${r.boardHeaderCount}개`);
+    if (r.boardSample.length > 0) {
+      console.log(`      샘플: ${r.boardSample.map(h => h.slice(0, 60)).join(' | ')}`);
+    }
   }
 
   console.log('\n' + '─'.repeat(80));
   console.log(`SC1 결과: ${passedCount}/${results.length} 쿼리에서 최신 source 진입 (목표: 4/5 이상)`);
-  console.log(`판정: ${passedCount >= 4 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`판정: ${passedCount >= Math.ceil(results.length * 0.8) ? '✅ PASS' : '❌ FAIL'}`);
 }
 
 function printRegressionSection(results: QueryResult[]) {

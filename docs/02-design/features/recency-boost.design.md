@@ -1,10 +1,37 @@
-# Design: Recency Boost — Option C (Pragmatic Balance)
+# Design: Recency Boost — v2 Guarantee 방식
 
 > **Feature**: recency-boost
-> **Date**: 2026-05-25
+> **Date**: 2026-05-25 (v1) → 2026-05-25 v2 정정
 > **Phase**: Design
 > **Plan Reference**: [docs/01-plan/features/recency-boost.plan.md](../../01-plan/features/recency-boost.plan.md)
-> **Architecture**: Option C — Pragmatic Balance
+> **Architecture**: v1 점수 가산 → **v2 직접 주입 (guarantee)**
+
+---
+
+## ⚠️ v2 정정 노트 — 점수 가산에서 guarantee로 전환
+
+### v1의 실패
+- source-level + chunk-level 점수 가산(+20)으로 시도
+- 진단 스크립트가 wikilink false positive로 PASS 오판 (실제 8개 중 4개만 진입)
+- RRF 단계 (limit 30) + chunk cap (25) 모두 자체 점수로 추리는데 +20 boost가 부족
+- 점수 가산 방식은 본질적으로 다른 신호와 경쟁 — recency가 약하면 누락
+
+### v2의 접근
+- `lib/agents/recency.ts`에 `getRecencySources(sources, topN=5)` 추가 — date 내림차순 top-N source IDs
+- `wiki-agent.ts`에서 chunksToUse 계산 완료 *후* 누락된 recency source들의 첫 청크를 **직접 unshift**
+- score=999로 표시해서 정렬에서 상단 보장
+- RRF·cap 단계와 무관하게 절대 누락 안 됨
+
+### 결과
+- 진단 5/6 PASS (남은 1개는 키워드 사전에 "진행" 없어 의도된 미진입)
+- user 실측 케이스 ("평의원회 관련 정보 최근 5개") 검증 완료
+- 코드 단순화: `recency.ts` 60줄→25줄, 점수 시스템 제거
+
+### 트레이드오프 수용
+- 시간성 쿼리에서 컨텍스트 길이 +5 source 증가 (관련도 낮은 최신 자료도 강제 진입)
+- 토큰 비용 약간 증가 (시간성 쿼리에 한정)
+
+---
 
 ---
 

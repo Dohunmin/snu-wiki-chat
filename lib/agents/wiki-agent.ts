@@ -7,8 +7,8 @@ import { canAccessSensitive } from '@/lib/auth/roles';
 import { searchVector } from '@/lib/embed/search';
 import { rrfFuse, rrfStats } from '@/lib/embed/rrf';
 import type { KeywordRankedChunk, ChunkMetadata } from '@/lib/embed/types';
-// Design Ref: recency-boost §2.2 — 시간성 쿼리에 source 점수 가산
-import { detectRecencyIntent, recencyScore } from './recency';
+// Design Ref: recency-boost (v2) — 시간성 쿼리에 date 최신 N개 source 직접 주입
+import { detectRecencyIntent, getRecencySources } from './recency';
 
 const MAX_CHUNKS = 15;
 const MAX_CHUNKS_ENTITY = 30;
@@ -184,7 +184,6 @@ export class WikiAgent implements AgentPlugin {
       for (const word of queryWords) {
         if (contentLower.includes(word)) score += 1;
       }
-      if (isRecencyQuery) score += recencyScore(source);
       return { source, score };
     });
 
@@ -202,15 +201,10 @@ export class WikiAgent implements AgentPlugin {
 
     for (const source of sourcesToProcess) {
       const isGuaranteed = guaranteedIds.has(source.id);
-      // recency-boost: source의 recency를 청크 점수에도 전파.
-      // 청크 본문에 "최근" 같은 키워드가 없어도 source의 date/sequence가
-      // 새것이면 모든 청크에 boost → cap 단계에서 신규 source 진입 보장.
-      const sourceRecencyBoost = isRecencyQuery ? recencyScore(source) : 0;
       const chunks = splitIntoChunks(source.content);
       for (const chunk of chunks) {
         let score = scoreChunk(chunk, queryWords);
         if (isGuaranteed) score = score * 2 + 1;
-        score += sourceRecencyBoost;
         if (score > 0) {
           scoredChunks.push({
             type: 'source',
@@ -395,6 +389,29 @@ export class WikiAgent implements AgentPlugin {
         chunk: splitIntoChunks(source.content)[0],
         score: 0,
       })).slice(0, chunkCap);
+    }
+
+    // ─── recency-boost (v2): 시간성 쿼리 시 date 최신 N개 source를 직접 주입 ───
+    // RRF·cap 단계가 자체 점수로 골라낼 때 신규 source가 매번 누락되는 문제 해결.
+    // 점수 가산이 아니라 chunksToUse 직접 추가라 RRF top-N에서 절대 빠지지 않음.
+    if (isRecencyQuery) {
+      const recencyIds = getRecencySources(allowedSources, 5);
+      const presentIds = new Set(chunksToUse.map(c => c.id));
+      const toInject = recencyIds.filter(id => !presentIds.has(id));
+      for (const sid of toInject) {
+        const source = allowedSources.find(s => s.id === sid);
+        if (!source) continue;
+        const firstChunk = splitIntoChunks(source.content)[0];
+        chunksToUse.unshift({
+          type: 'source' as const,
+          title: source.title,
+          id: source.id,
+          topic: source.topics[0] ?? source.tags[0] ?? '',
+          date: source.date,
+          chunk: firstChunk,
+          score: 999,  // recency guaranteed — 정렬 상단 보장
+        });
+      }
     }
 
     // ─── entity 블록 (기존 유지) ───────────────────────────────────
