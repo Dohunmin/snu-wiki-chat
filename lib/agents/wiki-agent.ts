@@ -393,23 +393,23 @@ export class WikiAgent implements AgentPlugin {
 
     // ─── recency-boost (v2): 시간성 쿼리 시 date 최신 N개 source를 직접 주입 ───
     // RRF·cap 단계가 자체 점수로 골라낼 때 신규 source가 매번 누락되는 문제 해결.
-    // 점수 가산이 아니라 chunksToUse 직접 추가라 RRF top-N에서 절대 빠지지 않음.
+    // 각 source의 *전체 본문*을 단일 청크로 주입 — 부분 청크만 들어가면 LLM이
+    // 회의 메타(개최일·참여자)만 보고 "안건 내용은 자료에 없다"고 답하는 문제 방지.
     if (isRecencyQuery) {
-      const recencyIds = getRecencySources(allowedSources, 5);
-      const presentIds = new Set(chunksToUse.map(c => c.id));
-      const toInject = recencyIds.filter(id => !presentIds.has(id));
-      for (const sid of toInject) {
+      const recencyIds = new Set(getRecencySources(allowedSources, 5));
+      // 이미 chunksToUse에 들어있던 recency source의 부분 청크 제거 (중복·단편화 방지)
+      chunksToUse = chunksToUse.filter(c => !recencyIds.has(c.id));
+      for (const sid of recencyIds) {
         const source = allowedSources.find(s => s.id === sid);
         if (!source) continue;
-        const firstChunk = splitIntoChunks(source.content)[0];
         chunksToUse.unshift({
           type: 'source' as const,
           title: source.title,
           id: source.id,
           topic: source.topics[0] ?? source.tags[0] ?? '',
           date: source.date,
-          chunk: firstChunk,
-          score: 999,  // recency guaranteed — 정렬 상단 보장
+          chunk: source.content,  // 전체 본문 — 안건/심의/의결 모두 포함
+          score: 999,
         });
       }
     }
