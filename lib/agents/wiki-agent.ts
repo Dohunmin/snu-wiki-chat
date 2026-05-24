@@ -7,6 +7,8 @@ import { canAccessSensitive } from '@/lib/auth/roles';
 import { searchVector } from '@/lib/embed/search';
 import { rrfFuse, rrfStats } from '@/lib/embed/rrf';
 import type { KeywordRankedChunk, ChunkMetadata } from '@/lib/embed/types';
+// Design Ref: recency-boost §2.2 — 시간성 쿼리에 source 점수 가산
+import { detectRecencyIntent, recencyScore } from './recency';
 
 const MAX_CHUNKS = 15;
 const MAX_CHUNKS_ENTITY = 30;
@@ -134,6 +136,8 @@ export class WikiAgent implements AgentPlugin {
 
     const queryLower = query.toLowerCase();
     const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
+    // Plan SC: SC1 (시간성 쿼리에 신규 source 진입)
+    const isRecencyQuery = detectRecencyIntent(query);
 
     const allowedSources = data.sources.filter(s => isSensitiveAllowed || !s.sensitive);
     const allowedSourceIds = new Set(allowedSources.map(s => s.id));
@@ -180,6 +184,7 @@ export class WikiAgent implements AgentPlugin {
       for (const word of queryWords) {
         if (contentLower.includes(word)) score += 1;
       }
+      if (isRecencyQuery) score += recencyScore(source);
       return { source, score };
     });
 
@@ -197,10 +202,15 @@ export class WikiAgent implements AgentPlugin {
 
     for (const source of sourcesToProcess) {
       const isGuaranteed = guaranteedIds.has(source.id);
+      // recency-boost: source의 recency를 청크 점수에도 전파.
+      // 청크 본문에 "최근" 같은 키워드가 없어도 source의 date/sequence가
+      // 새것이면 모든 청크에 boost → cap 단계에서 신규 source 진입 보장.
+      const sourceRecencyBoost = isRecencyQuery ? recencyScore(source) : 0;
       const chunks = splitIntoChunks(source.content);
       for (const chunk of chunks) {
         let score = scoreChunk(chunk, queryWords);
         if (isGuaranteed) score = score * 2 + 1;
+        score += sourceRecencyBoost;
         if (score > 0) {
           scoredChunks.push({
             type: 'source',
