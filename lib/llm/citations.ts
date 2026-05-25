@@ -19,6 +19,7 @@ export interface CitationRef {
   wiki: string;       // 위키 display name (e.g., "평의원회")
   page: string;       // source ID (e.g., "19기-7차")
   topic?: string;     // 또는 type (stance/fact/overview)
+  title?: string;     // source의 실제 title (LLM이 [N]을 정확히 식별하기 위함)
 }
 
 /**
@@ -38,7 +39,20 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
   const numberByKey = new Map<string, number>();
   let nextNum = 1;
 
-  // 1) unique source 식별 + 번호 부여
+  // 1a) 헤더에서 title 사전 추출 (sid 제거되기 전에)
+  //     "## [type]? title (sid) | ..." 패턴에서 title 캡쳐
+  const titleByKey = new Map<string, string>();
+  const titleExtractPattern = /^##\s+(?:\[(?:source|fact|stance|overview|entity)\]\s+)?([^(\n]*?)\(([^)]+)\)/gm;
+  for (const ctx of contexts) {
+    for (const m of ctx.relevantData.matchAll(titleExtractPattern)) {
+      const title = m[1].trim();
+      const sid = m[2].trim();
+      const key = `${ctx.agentName}|${sid}`;
+      if (title && !titleByKey.has(key)) titleByKey.set(key, title);
+    }
+  }
+
+  // 1b) unique source 식별 + 번호 부여 (title 포함)
   for (const ctx of contexts) {
     for (const src of ctx.sources) {
       const key = `${src.wiki}|${src.page}`;
@@ -48,6 +62,7 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
           wiki: src.wiki,
           page: src.page,
           topic: src.topic,
+          title: titleByKey.get(key),
         });
         nextNum++;
       }
@@ -78,11 +93,13 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
   });
 
   // 3) LLM이 빠르게 참조할 수 있는 매핑 요약 — sid 노출 안 함
-  //    LLM은 위키명 + 주제(topic)로만 [N] 식별. 답변에 적을 sid가 없음.
+  //    title 포함하여 LLM이 [N]을 정확히 식별. wrong-attribution 방지.
+  //    예: "[3] 대학운영계획: 실행과제 10 — 지식공유와 정책대안 — 2026년"
   const summary = Array.from(mapping.entries())
     .map(([n, ref]) => {
-      const desc = ref.topic ? ` — ${ref.topic}` : '';
-      return `[${n}] ${ref.wiki}${desc}`;
+      const titlePart = ref.title ? `: ${ref.title}` : '';
+      const topicPart = ref.topic ? ` — ${ref.topic}` : '';
+      return `[${n}] ${ref.wiki}${titlePart}${topicPart}`;
     })
     .join('\n');
 

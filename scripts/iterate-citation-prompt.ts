@@ -36,8 +36,10 @@ async function main() {
   console.log(`매핑 source 수: ${numbered.mapping.size}`);
   console.log(`매핑 전체 dump:`);
   Array.from(numbered.mapping.entries()).forEach(([n, ref]) => {
-    console.log(`  [${n}] wiki="${ref.wiki}" page="${ref.page}" topic="${ref.topic ?? ''}"`);
+    console.log(`  [${n}] wiki="${ref.wiki}" page="${ref.page}" title="${ref.title ?? ''}" topic="${ref.topic ?? ''}"`);
   });
+  console.log(`\nLLM이 보는 매핑 요약 (citationSummary):`);
+  numbered.summary.split('\n').forEach((l: string) => console.log(`  ${l}`));
 
   // routing.contexts.sources 원본 확인 (어디서 토픽이 source로 들어오나)
   console.log(`\nrouting.contexts.sources 원본:`);
