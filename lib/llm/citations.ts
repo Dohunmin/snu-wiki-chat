@@ -54,7 +54,8 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
     }
   }
 
-  // 2) 각 컨텍스트 본문의 source 헤더에 [N] 주입
+  // 2) 각 컨텍스트 본문의 source 헤더에 [N] 주입 + sid 제거
+  //    LLM이 source ID 자체를 못 보게 하여 답변에 [N] 만 사용하도록 강제.
   //    헤더 패턴: "## ... (sourceId) | ..." 또는 "## [type] ... (sourceId) | ..."
   const headerPattern = /^(##\s+)(\[(?:source|fact|stance|overview|entity)\]\s+)?([^(\n]*?)\(([^)]+)\)([^\n]*)$/gm;
 
@@ -66,18 +67,23 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
         const n = numberByKey.get(key);
         const tagPart = typeTag ?? '';
         if (!n) {
-          // entity나 매칭 안 되는 케이스 — 그대로
-          return `${hashPrefix}${tagPart}${title}(${sourceId})${rest}`;
+          // entity 등 매칭 안 되는 케이스 — 인용 대상 아니므로 sid도 보이지 않게 제거
+          return `${hashPrefix}${tagPart}${title.trim()}${rest}`;
         }
-        return `${hashPrefix}${tagPart}[${n}] ${title}(${sourceId})${rest}`;
+        // [N] 주입 + 괄호 안 sid 제거 → LLM은 [N]만 알고 sid 자체를 모름
+        return `${hashPrefix}${tagPart}[${n}] ${title.trim()}${rest}`;
       },
     );
-    return `### [${ctx.agentName}] 관련 자료\n\n${numbered}`;
+    return `### ${ctx.agentName} 관련 자료\n\n${numbered}`;
   });
 
-  // 3) LLM이 빠르게 참조할 수 있는 매핑 요약
+  // 3) LLM이 빠르게 참조할 수 있는 매핑 요약 — sid 노출 안 함
+  //    LLM은 위키명 + 주제(topic)로만 [N] 식별. 답변에 적을 sid가 없음.
   const summary = Array.from(mapping.entries())
-    .map(([n, ref]) => `[${n}] [${ref.wiki}] ${ref.page}`)
+    .map(([n, ref]) => {
+      const desc = ref.topic ? ` — ${ref.topic}` : '';
+      return `[${n}] ${ref.wiki}${desc}`;
+    })
     .join('\n');
 
   return {

@@ -344,6 +344,24 @@ export class WikiAgent implements AgentPlugin {
     }
     // ─── 🆕 RRF 통합 끝 ──────────────────────────────────────────
 
+    // ─── 🆕 source ID 위생화 (citation-validator 보호) ────────────────
+    // vector search가 chunk_embeddings에서 topic 페이지를 'source' type으로
+    // 잘못 가져오는 경우가 있어 (e.g., 이사회 wiki의 "대학운영계획"이 topic인데
+    // chunksToUse에 source처럼 들어옴) bogus citation 발생.
+    // 진짜 source/fact/stance/overview ID만 통과시킴.
+    const validIds = new Set<string>([
+      ...allowedSources.map(s => s.id),
+      ...data.facts.map(f => f.id),
+      ...(data.stances ?? []).map(s => s.id),
+      ...(data.overviews ?? []).map(o => o.id),
+    ]);
+    const filteredScored = scoredChunks.filter(c => validIds.has(c.id));
+    const filteredLabeled = labeledItems.filter(l => validIds.has(l.id));
+    scoredChunks.length = 0;
+    scoredChunks.push(...filteredScored);
+    labeledItems.length = 0;
+    labeledItems.push(...filteredLabeled);
+
     // ─── chunk cap 결정 ────────────────────────────────────────────
     const chunkCap = options.chunkCap ?? (
       isGlobal ? allowedSources.length
