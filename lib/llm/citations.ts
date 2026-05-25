@@ -127,6 +127,50 @@ export function resolveCitations(
 }
 
 /**
+ * LLM이 P2 규칙 무시하고 [위키명] sid 옛 형식 직접 출력했는지 검출.
+ * raw response (resolve 전) 에서 [한글위키명] 패턴 찾음. [숫자] 는 제외.
+ *
+ * @returns 검출된 옛 형식 인용들 — 발견 시 LLM에게 retry 요청해야 함
+ */
+export function detectOldFormatCitations(rawResponse: string): Array<{ wiki: string; sid: string; raw: string }> {
+  const out: Array<{ wiki: string; sid: string; raw: string }> = [];
+  // [한글위키명] 뒤에 공백 + ID 패턴 — [N] 숫자는 제외
+  const pattern = /\[([가-힣][가-힣\w\-]*)\]\s+([\w가-힣·\-]+(?:\.(?:fact|stance|overview))?)/g;
+  for (const m of rawResponse.matchAll(pattern)) {
+    out.push({ wiki: m[1], sid: m[2], raw: m[0] });
+  }
+  return out;
+}
+
+/**
+ * 옛 형식 사용 감지 시 LLM에게 줄 retry 프롬프트.
+ * "[N] 만 써라" 명시 + 매핑 다시 안내.
+ */
+export function buildOldFormatRetryPrompt(
+  oldFormats: Array<{ wiki: string; sid: string }>,
+  citationSummary: string,
+): string {
+  const examples = oldFormats.slice(0, 5).map((f, i) => `${i + 1}. \`[${f.wiki}] ${f.sid}\``).join('\n');
+
+  return `이전 답변에 ${oldFormats.length}개의 잘못된 인용 형식이 사용되었습니다.
+
+검출된 잘못된 형식:
+${examples}
+
+이런 \`[위키명] 문서ID\` 형식은 **시스템이 거부**합니다. 오직 \`[N]\` 번호 형식만 허용됩니다.
+
+답변을 처음부터 다시 작성해주세요:
+- 모든 인용을 \`[N]\` 번호 형식으로만 표기
+- 위키명·문서ID를 인용 표기에 사용 금지
+- 본문 서술에서 자연스러운 위키명 언급은 OK (예: "평의원회는 ~을 의결 [3]")
+- 번호 매핑은 다음과 같습니다:
+
+${citationSummary}
+
+답변 내용·구조는 유지하되, 모든 출처 인용을 \`[N]\` 으로만 표기하세요.`;
+}
+
+/**
  * 스트리밍 중 buffer에서 안전한 flush point 결정.
  *
  * 안전 = "[N]" 패턴이 도중에 끊기지 않은 위치.

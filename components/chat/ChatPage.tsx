@@ -306,6 +306,15 @@ export default function ChatPage({ user }: { user: User }) {
             ));
           }
 
+          // citation retry 발동 시 답변 영역 전체 교체 (P2 위반 LLM 재요청 결과)
+          if (data.type === 'replace') {
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId
+                ? { ...m, content: data.content }
+                : m
+            ));
+          }
+
           if (data.type === 'sources') {
             setMessages(prev => prev.map(m =>
               m.id === assistantId

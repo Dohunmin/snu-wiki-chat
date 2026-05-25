@@ -16,6 +16,8 @@ import {
   extractCitedNumbers,
   resolveCitations,
   safeFlushPoint,
+  detectOldFormatCitations,
+  buildOldFormatRetryPrompt,
 } from '@/lib/llm/citations';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
 import { logQuestionToSheet } from '@/lib/google-sheets';
@@ -66,6 +68,7 @@ export async function POST(req: NextRequest) {
   let systemPrompt;
   let userMessage;
   let citationMapping: Map<number, { wiki: string; page: string; topic?: string }>;
+  let citationSummary: string;
   let lensPersonaInfo: { id: string; displayName: string; insufficient: boolean } | undefined;
   let convId = conversationId;
 
@@ -75,6 +78,7 @@ export async function POST(req: NextRequest) {
     // 번호 인용 매핑 구축 — LLM이 [N]만 사용하도록
     const numbered = buildNumberedContexts(routing.contexts);
     citationMapping = numbered.mapping;
+    citationSummary = numbered.summary;
 
     if (mode.startsWith('lens:')) {
       const personaId = mode.slice(5);
@@ -189,6 +193,42 @@ export async function POST(req: NextRequest) {
         if (buffer.length > 0) {
           const resolved = resolveText(buffer, citationMapping);
           send({ type: 'chunk', content: resolved });
+        }
+
+        // ─── 옛 형식 [위키] sid 검출 + retry ──────────────────────────
+        // LLM이 P2 무시하고 옛 형식 직접 출력 시 1회 재요청.
+        // 발견되면 비-스트리밍 retry → 'replace' 이벤트로 답변 영역 교체.
+        const oldFormats = detectOldFormatCitations(fullContentRaw);
+        if (oldFormats.length > 0) {
+          console.log(`[citation] ${oldFormats.length} old-format detected, retrying once...`);
+          try {
+            const retryPrompt = buildOldFormatRetryPrompt(oldFormats, citationSummary);
+            const retryResp = await client.messages.create({
+              model: LLM_MODEL,
+              max_tokens: MAX_TOKENS,
+              system: systemPrompt,
+              messages: [
+                ...history,
+                { role: 'user', content: userMessage },
+                { role: 'assistant', content: fullContentRaw },
+                { role: 'user', content: retryPrompt },
+              ],
+            });
+            const retryRaw = retryResp.content[0]?.type === 'text' ? retryResp.content[0].text : '';
+            const retryOldFormats = detectOldFormatCitations(retryRaw);
+            if (retryOldFormats.length === 0) {
+              // retry 성공 — fullContentRaw 교체
+              fullContentRaw = retryRaw;
+              const resolved = resolveText(retryRaw, citationMapping);
+              send({ type: 'replace', content: resolved });
+            } else {
+              console.error(`[citation] retry still has ${retryOldFormats.length} old-format, accepting`);
+              // retry도 실패 — 그대로 진행 (답변 폐기보다는 덜 완벽한 상태로 전달)
+            }
+          } catch (err) {
+            console.error('[citation] retry failed:', err);
+            // 실패 시 원본 그대로 진행
+          }
         }
 
         // DB·sources 모두 resolve된 텍스트 + LLM이 실제 인용한 source만
