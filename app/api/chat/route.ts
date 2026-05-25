@@ -10,6 +10,13 @@ import {
   buildLensSystemPrompt,
   buildLensUserMessage,
 } from '@/lib/llm/prompts';
+import {
+  buildNumberedContexts,
+  resolveText,
+  extractCitedNumbers,
+  resolveCitations,
+  safeFlushPoint,
+} from '@/lib/llm/citations';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
 import { logQuestionToSheet } from '@/lib/google-sheets';
 import { db } from '@/lib/db/client';
@@ -58,11 +65,16 @@ export async function POST(req: NextRequest) {
   let routing;
   let systemPrompt;
   let userMessage;
+  let citationMapping: Map<number, { wiki: string; page: string; topic?: string }>;
   let lensPersonaInfo: { id: string; displayName: string; insufficient: boolean } | undefined;
   let convId = conversationId;
 
   try {
     routing = await routeQuery(message, role);
+
+    // 번호 인용 매핑 구축 — LLM이 [N]만 사용하도록
+    const numbered = buildNumberedContexts(routing.contexts);
+    citationMapping = numbered.mapping;
 
     if (mode.startsWith('lens:')) {
       const personaId = mode.slice(5);
@@ -71,7 +83,7 @@ export async function POST(req: NextRequest) {
         return Response.json({ error: '존재하지 않는 페르소나입니다.' }, { status: 400 });
       }
       systemPrompt = buildLensSystemPrompt(routing.contexts, persona, role);
-      userMessage = buildLensUserMessage(message, routing.contexts, persona);
+      userMessage = buildLensUserMessage(message, numbered.contextMarkdown, numbered.summary, persona);
       lensPersonaInfo = {
         id: persona.id,
         displayName: persona.displayName,
@@ -79,7 +91,7 @@ export async function POST(req: NextRequest) {
       };
     } else {
       systemPrompt = buildSystemPrompt(routing.contexts, role);
-      userMessage = buildUserMessage(message, routing.contexts);
+      userMessage = buildUserMessage(message, numbered.contextMarkdown, numbered.summary);
     }
 
     if (!convId) {
@@ -123,7 +135,8 @@ export async function POST(req: NextRequest) {
         });
 
         const client = getAnthropicClient();
-        let fullContent = '';
+        let fullContentRaw = '';   // LLM 원본 ([N] 포함)
+        let buffer = '';            // 스트리밍 중 [N] 버퍼
 
         // 직전 1회 교환(user + assistant 쌍)만 전문 포함
         // 토큰 증가 최소화하면서 직전 답변 맥락 완전 보존
@@ -153,18 +166,37 @@ export async function POST(req: NextRequest) {
           messages: [...history, { role: 'user', content: userMessage }],
         });
 
+        // 스트리밍 + [N] → [위키] sid resolve
+        // buffer에 누적하다가 safe flush point 까지만 resolve해서 송신
+        // → 부분 [N] (예: "[1" 가 chunk 경계에 걸린 경우) 안전 처리
         for await (const chunk of anthropicStream) {
           if (
             chunk.type === 'content_block_delta' &&
             chunk.delta.type === 'text_delta'
           ) {
-            fullContent += chunk.delta.text;
-            send({ type: 'chunk', content: chunk.delta.text });
+            fullContentRaw += chunk.delta.text;
+            buffer += chunk.delta.text;
+            const flushPoint = safeFlushPoint(buffer);
+            if (flushPoint > 0) {
+              const toFlush = buffer.slice(0, flushPoint);
+              const resolved = resolveText(toFlush, citationMapping);
+              send({ type: 'chunk', content: resolved });
+              buffer = buffer.slice(flushPoint);
+            }
           }
         }
+        // 남은 버퍼 flush (마지막에 미완성 [ 가 있어도 그대로 전송)
+        if (buffer.length > 0) {
+          const resolved = resolveText(buffer, citationMapping);
+          send({ type: 'chunk', content: resolved });
+        }
 
-        const allSources = routing.contexts.flatMap(c => c.sources);
-        send({ type: 'sources', refs: allSources });
+        // DB·sources 모두 resolve된 텍스트 + LLM이 실제 인용한 source만
+        const fullContent = resolveText(fullContentRaw, citationMapping);
+        const citedNumbers = extractCitedNumbers(fullContentRaw);
+        const citedSources = resolveCitations(citedNumbers, citationMapping);
+
+        send({ type: 'sources', refs: citedSources });
 
         await db.insert(messages).values({
           id: crypto.randomUUID(),
@@ -172,7 +204,7 @@ export async function POST(req: NextRequest) {
           role: 'assistant',
           content: fullContent,
           routedAgents: routing.selectedAgentIds,
-          sources: allSources,
+          sources: citedSources,
           mode,
         });
 

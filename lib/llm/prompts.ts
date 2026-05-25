@@ -22,15 +22,17 @@ export function buildSystemPrompt(contexts: AgentContext[], userRole: Role): str
 **P0. 내부 위키 구조 노출 금지 (최우선)**
 \`국제화전략.이석재.stance\`, \`재원구조분석.fact\` 같은 내부 페이지 ID를 답변에 직접 쓰지 마세요.
 인물의 입장(stance) 자료가 현재 컨텍스트에 포함되지 않은 경우, 페이지 ID나 stance 목록을 나열하지 말고 "해당 인물의 상세 입장 자료는 제공된 자료 범위 밖에 있습니다"라고 간결하게 한 줄로만 처리하세요.
-출처 표기(\`[위키명] 문서ID\`)는 source·fact·overview 페이지에만 적용하고, stance ID는 출처로 표기하지 마세요.
 
-**P2. 인라인 출처 표기 (필수)**
-모든 사실·수치·의결 결과에 출처를 인라인으로 표기하세요.
-형식: \`[위키명] 문서ID\` — 예: \`[이사회] 2023-1차\`, \`[평의원회] 17기-12차\`
-자료 헤더에 \`[fact]\` \`[stance]\` \`[overview]\` 라벨이 붙은 문서는 ID 뒤에 타입을 붙이세요:
-예: \`[재무정보공시] 재원구조분석.fact\`, \`[유홍림총장연설] 교육혁신.stance\`, \`[70년역사] 제1편-개요.overview\`
-출처 없이 사실을 서술하지 마세요.
-답변 마지막에 출처 목록을 별도로 나열하지 마세요. 인라인 표기만 사용하세요.
+**P2. 인용은 번호로만 표기 (필수)**
+모든 사실·수치·결정·발언에 출처를 번호로 인용하세요. 형식: \`[N]\` (예: \`[1]\`, \`[3]\`, \`[12]\`)
+
+⚠️ 절대 규칙:
+- 인용은 오직 \`[숫자]\` 형식만 사용. \`[위키명] 문서ID\` 같은 옛 형식 절대 금지.
+- N은 아래 "인용 번호 매핑"에 있는 번호여야 합니다 (범위 밖 숫자 금지).
+- 본문 source-id (예: \`2026-운영계획-실행과제1\`, \`19기-7차\`)를 답변 텍스트에 직접 적지 마세요. 오직 [N] 사용.
+- 같은 source의 여러 사실 인용 시 같은 [N] 반복 사용.
+- 출처 없이 사실을 서술하지 마세요.
+- 답변 마지막에 출처 목록을 별도로 나열하지 마세요. 인라인 [N] 표기만 사용.
 
 **P3. 테마별 구조화**
 관련 내용이 여러 도메인·시기에 걸쳐 있으면 주제별로 묶어 제목을 붙이세요.
@@ -55,7 +57,7 @@ export function buildSystemPrompt(contexts: AgentContext[], userRole: Role): str
 
 질문이 두 인물·시점·위키의 비교를 요구하면:
 - 비교 항목별 표 형식 (행: 항목, 열: 비교 대상)
-- 각 셀에 인라인 출처 표기
+- 각 셀에 인라인 [N] 표기
 - 한쪽만 자료 있는 항목은 "(자료 없음)" 명시
 - \`[stance]\` 페이지가 양쪽 모두 있으면 표 상단에 우선 배치
 
@@ -63,7 +65,7 @@ export function buildSystemPrompt(contexts: AgentContext[], userRole: Role): str
 
 **질문이 구체적일 때** (특정 인물·안건·정책·기간):
 → 상세하게 서술. 압축하지 말고 관련 내용을 충분히 다룸
-→ 테마별 제목 + 구체적 사실 + 인라인 출처
+→ 테마별 제목 + 구체적 사실 + 인라인 [N]
 
 **질문이 광범위할 때** ("전체", "모든", "N년간 기록", "다 알려줘" 등):
 → 항목을 하나씩 나열하지 말고 **주제별 핵심 요약 테이블** 우선
@@ -71,21 +73,44 @@ export function buildSystemPrompt(contexts: AgentContext[], userRole: Role): str
 → 답변 마지막에 "특정 기수·주제·인물에 대해 더 자세히 물어보세요" 안내
 
 **비교 질문**:
-→ 비교 표 또는 항목별 대조, 각 항목마다 출처
+→ 비교 표 또는 항목별 대조, 각 항목마다 [N]
 
 **단순 조회**:
-→ 핵심 결론 먼저, 근거 출처 포함
+→ 핵심 결론 먼저, 근거 [N] 포함
 
 ## 현재 활용 가능한 위키
 ${agentList}${sensitiveWarning}`;
 }
 
-export function buildUserMessage(query: string, contexts: AgentContext[]): string {
-  const contextBlocks = contexts
-    .map(ctx => `### [${ctx.agentName}] 관련 자료\n\n${ctx.relevantData}`)
-    .join('\n\n---\n\n');
+/**
+ * 사용자 메시지 빌더 — 인용 번호 매핑 + 본문 컨텍스트(헤더에 [N] 주입됨).
+ *
+ * @param query 사용자 질문
+ * @param contextMarkdown buildNumberedContexts 결과 (헤더에 [N] 주입된 본문)
+ * @param citationSummary buildNumberedContexts 결과 요약 ("[1] [위키] sid" 줄)
+ */
+export function buildUserMessage(
+  query: string,
+  contextMarkdown: string,
+  citationSummary: string,
+): string {
+  return `## 인용 번호 매핑
 
-  return `## 위키 자료\n\n${contextBlocks}\n\n---\n\n## 질문\n\n${query}`;
+답변 작성 시 아래 번호를 \`[N]\` 형식으로만 인용하세요. 다른 형식 금지.
+
+${citationSummary}
+
+---
+
+## 위키 자료 본문
+
+${contextMarkdown}
+
+---
+
+## 질문
+
+${query}`;
 }
 
 /**
@@ -110,25 +135,24 @@ export function buildLensSystemPrompt(
 위 자료들을 ${persona.name}의 시각으로 해석·답변하세요.
 
 ### Lens 적용 원칙
-1. **명시적 입장 우선**: ${persona.name}이 직접 표명한 입장은 그대로 인용. 출처 형식: \`[${persona.name}-stance] {stanceId}\`
+1. **명시적 입장 우선**: ${persona.name}이 직접 표명한 입장은 그대로 인용. 인용 번호 [N] 형식 동일하게 사용.
 2. **추론 표시 의무**: 명시적 입장이 없는 주제는 그의 가치 우선순위·관점에 비추어 추론하되, 답변 본문에 "(${persona.name}의 명시적 입장은 자료에 없으나, ~의 가치관에 비추어 보면...)" 같이 추론임을 명시
 3. **자료 외 생성 금지 (P1)**: 자료에 없는 의견·발언·수치를 생성하지 마세요. 일반 모드와 동일한 hallucination 금지 원칙 적용
-4. **이중 출처 표기**: 일반 자료 인용은 \`[위키명] 문서ID\` 형식 그대로 유지. 페르소나 출처와 일반 자료 출처가 답변에서 명확히 구분되어야 함
-5. **자연스러운 톤**: 답변 시작에 "이석재의 시각:" 같은 라벨 자동 삽입 안 함. 일반 답변처럼 자연스럽게 작성하되, 출처 표기로 lens인지 자료인지 구분 가능
+4. **자연스러운 톤**: 답변 시작에 "이석재의 시각:" 같은 라벨 자동 삽입 안 함. 일반 답변처럼 자연스럽게 작성하되, [N] 인용으로 lens인지 자료인지 구분 가능
 
 ### ${persona.name}의 입장 자료
 ${persona.stanceBlock || '(매칭된 stance 자료 없음)'}${insufficientNotice}`;
 }
 
 /**
- * Lens 모드용 user 메시지.
- * 현재는 buildUserMessage와 동일하지만, 추후 lens 전용 컨텍스트 분리 시 확장 지점.
+ * Lens 모드용 user 메시지. buildUserMessage와 동일 시그니처로 통일.
  */
 export function buildLensUserMessage(
   query: string,
-  contexts: AgentContext[],
+  contextMarkdown: string,
+  citationSummary: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _persona: PersonaContext,
 ): string {
-  return buildUserMessage(query, contexts);
+  return buildUserMessage(query, contextMarkdown, citationSummary);
 }
