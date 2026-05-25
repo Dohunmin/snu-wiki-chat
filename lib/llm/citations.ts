@@ -96,14 +96,24 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
 /**
  * 텍스트 내 [N] 패턴을 매핑으로 resolve하여 `[위키명] sourceId` 형식으로 치환.
  * 매핑에 없는 [N]은 그대로 둠 (LLM이 잘못 출력한 경우).
+ *
+ * 후처리: 인접 인용 사이에 공백 보장 — `[1][2]` 처럼 LLM이 인용을 붙여
+ * 출력해도 resolve 후 두 인용이 화면에서 붙어 보이지 않도록 자동 분리.
  */
 export function resolveText(text: string, mapping: Map<number, CitationRef>): string {
-  return text.replace(/\[(\d+)\]/g, (match, numStr) => {
+  // 1단계: 인접 [N][M] → [N] [M] (raw 단계 분리)
+  const spaced = text.replace(/\]\[/g, '] [');
+  // 2단계: [N] resolve
+  const resolved = spaced.replace(/\[(\d+)\]/g, (match, numStr) => {
     const n = parseInt(numStr, 10);
     const ref = mapping.get(n);
     if (!ref) return match;
     return `[${ref.wiki}] ${ref.page}`;
   });
+  // 3단계: resolved 결과에서 인접 `... sid[wiki]` → `... sid [wiki]`
+  //         (LLM이 [N] 안 쓰고 옛 형식 직접 인접 출력한 경우도 처리)
+  //         단, markdown 링크 `[text](url)` 같은 패턴 영향 X
+  return resolved.replace(/(\S)(\[[가-힣][가-힣\w\-]*\]\s+\S)/g, '$1 $2');
 }
 
 /**
