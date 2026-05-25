@@ -295,7 +295,11 @@ export class WikiAgent implements AgentPlugin {
         keywordCombined.sort((a, b) => b.score - a.score);
 
         // (2) 벡터 검색 (Voyage 임베딩 + pgvector top-K)
-        const vectorTop = await searchVector(query, this.config.id, userRole, 30);
+        const vectorTopRaw = await searchVector(query, this.config.id, userRole, 30);
+        // stance는 Lens 모드에서만 인용 가능 — 일반 모드에선 벡터 결과에서도 제외
+        const vectorTop = options.lensMode
+          ? vectorTopRaw
+          : vectorTopRaw.filter(v => v.pageType !== 'stance');
 
         // (3) RRF 융합 (k=60 업계 표준)
         const debug = process.env.RAG_DEBUG === 'true';
@@ -352,7 +356,8 @@ export class WikiAgent implements AgentPlugin {
     const validIds = new Set<string>([
       ...allowedSources.map(s => s.id),
       ...data.facts.map(f => f.id),
-      ...(data.stances ?? []).map(s => s.id),
+      // stance는 Lens 모드에서만 허용 (일반 모드에선 내부 ID 노출 방지 P0)
+      ...(options.lensMode ? (data.stances ?? []).map(s => s.id) : []),
       ...(data.overviews ?? []).map(o => o.id),
     ]);
     const filteredScored = scoredChunks.filter(c => validIds.has(c.id));
