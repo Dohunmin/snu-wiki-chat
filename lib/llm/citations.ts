@@ -110,12 +110,31 @@ export function buildNumberedContexts(contexts: AgentContext[]): {
   };
 }
 
+// 위키명 → agent ID 매핑 (ChatPage.tsx의 WIKI_ID_MAP과 동기화)
+const WIKI_TO_AGENT: Record<string, string> = {
+  '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan',
+  '중장기발전계획': 'vision', '중장기': 'vision',
+  '70년역사': 'history', '대학현황': 'status',
+  '유홍림총장연설': 'yhl-speeches', '재무정보공시': 'finance',
+};
+
+function buildFriendlyLabel(ref: CitationRef): string {
+  // title 우선, topic 보조, page basename fallback (suffix 제거)
+  if (ref.title) return ref.title;
+  if (ref.topic) return ref.topic;
+  return ref.page.split('.')[0];
+}
+
 /**
- * 텍스트 내 [N] 패턴을 매핑으로 resolve하여 `[위키명] sourceId` 형식으로 치환.
- * 매핑에 없는 [N]은 그대로 둠 (LLM이 잘못 출력한 경우).
+ * 텍스트 내 [N] 패턴을 매핑으로 resolve.
  *
- * 후처리: 인접 인용 사이에 공백 보장 — `[1][2]` 처럼 LLM이 인용을 붙여
- * 출력해도 resolve 후 두 인용이 화면에서 붙어 보이지 않도록 자동 분리.
+ * - source 페이지: `[위키명] sourceId` 형식 (UI linkifyCitations 정규식이 처리)
+ * - stance/fact/overview: 친화적 markdown link `[위키명 친화이름](url)` 형식
+ *   → 내부 ID (`.stance` `.fact` `.overview`) 노출 없이 사용자에게 의미 있는 텍스트로 표시
+ *   → URL은 sid 사용 — wiki browser 클릭 동작 유지
+ *
+ * 매핑에 없는 [N]은 그대로 둠 (LLM 잘못 출력 케이스).
+ * 인접 인용 [N][M] 또는 sid[wiki]는 후처리로 공백 삽입.
  */
 export function resolveText(text: string, mapping: Map<number, CitationRef>): string {
   // 1단계: 인접 [N][M] → [N] [M] (raw 단계 분리)
@@ -125,11 +144,22 @@ export function resolveText(text: string, mapping: Map<number, CitationRef>): st
     const n = parseInt(numStr, 10);
     const ref = mapping.get(n);
     if (!ref) return match;
+
+    // 친화 처리 대상: stance / fact / overview
+    const suffixMatch = ref.page.match(/\.(stance|fact|overview)$/);
+    if (suffixMatch) {
+      const typeMap = { stance: 'stances', fact: 'facts', overview: 'overviews' };
+      const type = typeMap[suffixMatch[1] as 'stance' | 'fact' | 'overview'];
+      const agentId = WIKI_TO_AGENT[ref.wiki];
+      const friendly = buildFriendlyLabel(ref);
+      if (!agentId) return `[${ref.wiki}] ${friendly}`;
+      const url = `/wiki?agent=${agentId}&type=${type}&id=${encodeURIComponent(ref.page)}`;
+      return `[${ref.wiki} ${friendly}](${url})`;
+    }
+    // source는 기존 형식 — UI linkifyCitations가 처리
     return `[${ref.wiki}] ${ref.page}`;
   });
-  // 3단계: resolved 결과에서 인접 `... sid[wiki]` → `... sid [wiki]`
-  //         (LLM이 [N] 안 쓰고 옛 형식 직접 인접 출력한 경우도 처리)
-  //         단, markdown 링크 `[text](url)` 같은 패턴 영향 X
+  // 3단계: 인접 `sid[wiki]` → `sid [wiki]` (markdown 링크 패턴 영향 X)
   return resolved.replace(/(\S)(\[[가-힣][가-힣\w\-]*\]\s+\S)/g, '$1 $2');
 }
 
