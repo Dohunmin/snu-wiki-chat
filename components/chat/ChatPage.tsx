@@ -8,6 +8,7 @@ import type { Role } from '@/lib/auth/roles';
 import { canUpload, canAccessAdmin, ROLE_LABELS } from '@/lib/auth/roles';
 import type { SourceRef } from '@/lib/agents/types';
 import Link from 'next/link';
+import { ConversationsListModal } from './ConversationsListModal';
 
 const WIKI_ID_MAP: Record<string, string> = {
   '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan', '중장기발전계획': 'vision', '중장기': 'vision',
@@ -101,11 +102,15 @@ export default function ChatPage({ user }: { user: User }) {
   const isAdmin = canAccessAdmin(user.role);
 
   const CONV_PREVIEW = 12;
+  const PUBLIC_PREVIEW = 30;
   const [showMyConvsModal, setShowMyConvsModal] = useState(false);
+  const [showPublicConvsModal, setShowPublicConvsModal] = useState(false);
   const [publicConvs, setPublicConvs] = useState<{ id: string; title: string | null; createdAt: string }[]>([]);
   const [publicLoaded, setPublicLoaded] = useState(false);
   const [showPublic, setShowPublic] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
+  // Design Ref: §2.5 — race 가드. conversations fetch 완료 전 restore가 발동하면 내 대화가 readOnly로 잘못 진입.
+  const [convsLoaded, setConvsLoaded] = useState(false);
 
   async function deleteConversation(convId: string, e: React.MouseEvent) {
     e.stopPropagation();
@@ -150,11 +155,15 @@ export default function ChatPage({ user }: { user: User }) {
           })));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setConvsLoaded(true));
   }, []);
 
   // URL에서 대화 복원 + 뒤로가기(popstate) 대응
+  // Design Ref: §2.5 — convsLoaded=true 후에만 발동.
+  // 그래야 loadConversation의 ownership 자동 판정이 정확한 conversations 목록과 대조됨.
   useEffect(() => {
+    if (!convsLoaded) return;
     const restore = () => {
       const convId = new URLSearchParams(window.location.search).get('conv');
       if (convId) loadConversation(convId);
@@ -163,7 +172,7 @@ export default function ChatPage({ user }: { user: User }) {
     window.addEventListener('popstate', restore);
     return () => window.removeEventListener('popstate', restore);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [convsLoaded]);
 
   // currentConvId → URL 동기화 (클리어는 명시적 삭제 시에만)
   useEffect(() => {
@@ -184,16 +193,21 @@ export default function ChatPage({ user }: { user: User }) {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [modeMenuOpen]);
 
-  async function loadConversation(convId: string, readOnly = false) {
-    if (convId === currentConvId && isReadOnly === readOnly) return;
+  async function loadConversation(convId: string, readOnly?: boolean) {
+    // Design Ref: §2.4 — readOnly 미지정 시 내 대화 목록과 대조해서 자동 결정.
+    // restore() 경로처럼 readOnly를 안 넘기는 호출도 남의 대화면 자동 차단됨.
+    const isOwn = conversations.some(c => c.id === convId);
+    const effectiveReadOnly = readOnly ?? !isOwn;
+
+    if (convId === currentConvId && isReadOnly === effectiveReadOnly) return;
     setSidebarOpen(false);
     setConvLoading(true);
     setCurrentConvId(convId);
-    setIsReadOnly(readOnly);
+    setIsReadOnly(effectiveReadOnly);
     setLensInsufficient(null);
 
-    // 내 대화일 때만 lens 모드 이어받음
-    if (!readOnly) {
+    // 내 대화일 때만 lens 모드 이어받음 (isOwn 기준)
+    if (!effectiveReadOnly && isOwn) {
       const conv = conversations.find(c => c.id === convId);
       if (conv?.mode?.startsWith('lens:') && isAdmin) {
         setChatMode(conv.mode);
@@ -497,26 +511,38 @@ export default function ChatPage({ user }: { user: User }) {
                   <p className="px-3 py-2 text-xs text-gray-400">불러오는 중...</p>
                 ) : publicConvs.length === 0 ? (
                   <p className="px-3 py-2 text-xs text-gray-400">아직 다른 유저의 대화가 없습니다.</p>
-                ) : publicConvs.map(conv => {
-                  const isCurrent = currentConvId === conv.id && isReadOnly;
-                  return (
-                    <div
-                      key={conv.id}
-                      className={`rounded-lg transition-colors border-l-2 ${
-                        isCurrent ? 'bg-amber-50 border-l-amber-400' : 'border-l-transparent hover:bg-gray-100'
-                      }`}
-                    >
+                ) : (
+                  <>
+                    {publicConvs.slice(0, PUBLIC_PREVIEW).map(conv => {
+                      const isCurrent = currentConvId === conv.id && isReadOnly;
+                      return (
+                        <div
+                          key={conv.id}
+                          className={`rounded-lg transition-colors border-l-2 ${
+                            isCurrent ? 'bg-amber-50 border-l-amber-400' : 'border-l-transparent hover:bg-gray-100'
+                          }`}
+                        >
+                          <button
+                            onClick={() => loadConversation(conv.id, true)}
+                            className={`min-w-0 w-full truncate px-3 py-2 text-left text-sm ${
+                              isCurrent ? 'text-amber-700 font-medium' : 'text-gray-500'
+                            }`}
+                          >
+                            <span className="truncate block">{conv.title ?? '(제목 없음)'}</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {publicConvs.length > PUBLIC_PREVIEW && (
                       <button
-                        onClick={() => loadConversation(conv.id, true)}
-                        className={`min-w-0 w-full truncate px-3 py-2 text-left text-sm ${
-                          isCurrent ? 'text-amber-700 font-medium' : 'text-gray-500'
-                        }`}
+                        onClick={() => setShowPublicConvsModal(true)}
+                        className="mt-1 w-full px-3 py-1.5 text-left text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
                       >
-                        <span className="truncate block">{conv.title ?? '(제목 없음)'}</span>
+                        전체 보기 ({publicConvs.length}개) ▼
                       </button>
-                    </div>
-                  );
-                })}
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -746,60 +772,30 @@ export default function ChatPage({ user }: { user: User }) {
       </main>
 
       {showMyConvsModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowMyConvsModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[70vh] mt-8"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-              <h2 className="text-sm font-semibold text-gray-800">내 대화 전체 ({conversations.length}개)</h2>
-              <button
-                onClick={() => setShowMyConvsModal(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 text-base"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="overflow-y-auto flex-1 px-3 py-2 space-y-0.5">
-              {conversations.map(conv => {
-                const isLens = conv.mode?.startsWith('lens:');
-                const isCurrent = currentConvId === conv.id && !isReadOnly;
-                return (
-                  <div
-                    key={conv.id}
-                    className={`group flex items-center rounded-lg border-l-2 transition-colors ${
-                      isCurrent
-                        ? 'bg-blue-50 border-l-blue-400'
-                        : isLens
-                        ? 'bg-emerald-50 hover:bg-emerald-100 border-l-emerald-400'
-                        : 'border-l-transparent hover:bg-gray-100'
-                    }`}
-                  >
-                    <button
-                      onClick={() => { loadConversation(conv.id); setShowMyConvsModal(false); }}
-                      className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm flex items-center gap-1.5 ${
-                        isCurrent ? 'text-blue-700 font-medium' : 'text-gray-600'
-                      }`}
-                    >
-                      {isLens && <span className="text-xs shrink-0">🎯</span>}
-                      <span className="truncate">{conv.title}</span>
-                    </button>
-                    <button
-                      onClick={(e) => { deleteConversation(conv.id, e); }}
-                      className="mr-1.5 hidden shrink-0 rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 group-hover:flex"
-                      title="삭제"
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <ConversationsListModal
+          title="내 대화 전체"
+          conversations={conversations}
+          currentConvId={currentConvId}
+          isReadOnlyCurrent={!isReadOnly}
+          onSelect={(id) => { loadConversation(id); setShowMyConvsModal(false); }}
+          onDelete={deleteConversation}
+          onClose={() => setShowMyConvsModal(false)}
+          emptyText="아직 대화가 없습니다."
+          variant="mine"
+        />
+      )}
+
+      {showPublicConvsModal && (
+        <ConversationsListModal
+          title="모든 유저 질문 전체"
+          conversations={publicConvs}
+          currentConvId={currentConvId}
+          isReadOnlyCurrent={isReadOnly}
+          onSelect={(id) => { loadConversation(id, true); setShowPublicConvsModal(false); }}
+          onClose={() => setShowPublicConvsModal(false)}
+          emptyText="아직 다른 유저의 대화가 없습니다."
+          variant="public"
+        />
       )}
 
       {uploadOpen && (

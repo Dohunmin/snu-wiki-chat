@@ -57,6 +57,23 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: '관리자 전용 모드입니다.' }, { status: 403 });
   }
 
+  // Design Ref: §2.2 — conversationId ownership 검증 (보안 floor).
+  // 정상 흐름에선 클라 자동 readOnly가 미리 차단하므로 여기 도달 X.
+  // Dev tools / 직접 fetch 우회 시에만 발동.
+  if (conversationId) {
+    const [conv] = await db
+      .select({ userId: conversations.userId })
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+    if (!conv) {
+      return Response.json({ error: '대화를 찾을 수 없습니다.' }, { status: 404 });
+    }
+    if (conv.userId !== userId) {
+      return Response.json({ error: '본인 대화에만 메시지를 보낼 수 있습니다.' }, { status: 403 });
+    }
+  }
+
   try {
     await ensureUserExists(userId, session.user.name, role);
   } catch (err) {
