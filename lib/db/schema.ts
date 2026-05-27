@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb, integer, boolean, vector } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, jsonb, integer, boolean, vector, real } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id:           text('id').primaryKey(),
@@ -78,4 +78,36 @@ export const chunkEmbeddings = pgTable('chunk_embeddings', {
   metadata:    jsonb('metadata'),                                    // { title, topic, holder, category, ... }
   contentHash: text('content_hash').notNull(),                       // SHA-256 (증분 갱신용)
   createdAt:   timestamp('created_at').defaultNow().notNull(),
+});
+
+// Design Ref: limitation-storage §2.1 — 한계 답변 추적 데이터 (파일 → DB 이전).
+// Vercel read-only fs(EROFS) 회피 + pgvector ANN 증분 클러스터링.
+// chunk_embeddings와 동일 pgvector 패턴. 기존 테이블 영향 없음.
+export const limitationQuestions = pgTable('limitation_questions', {
+  id:                text('id').primaryKey(),                         // messages.id (user 질문)
+  question:          text('question').notNull(),
+  answer:            text('answer').notNull(),
+  questionCreatedAt: timestamp('question_created_at').notNull(),
+  routedAgents:      jsonb('routed_agents').$type<string[]>().default([]).notNull(),
+  embedding:         vector('embedding', { dimensions: 1024 }).notNull(),
+  // Sonnet 평가
+  quality:           text('quality').notNull(),                       // answered | partial | no_data
+  wiki:              text('wiki').default('').notNull(),
+  limitation:        boolean('limitation').default(false).notNull(),
+  limitationExcerpt: text('limitation_excerpt').default('').notNull(),
+  // DBSCAN (ANN 증분 할당)
+  clusterId:         integer('cluster_id').default(-1).notNull(),
+  // 지식 지형도 호환 (PCA 2D)
+  pcaX:              real('pca_x').default(0).notNull(),
+  pcaY:              real('pca_y').default(0).notNull(),
+  placementWiki:     text('placement_wiki').default('').notNull(),
+  evaluatedAt:       timestamp('evaluated_at').defaultNow().notNull(),
+});
+
+// 클러스터 라벨 캐시 (멤버 동일하면 재사용)
+export const limitationClusters = pgTable('limitation_clusters', {
+  clusterId: integer('cluster_id').primaryKey(),
+  label:     text('label').notNull(),
+  memberIds: jsonb('member_ids').$type<string[]>().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

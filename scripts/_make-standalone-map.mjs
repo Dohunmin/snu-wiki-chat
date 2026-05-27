@@ -1,12 +1,34 @@
 import fs from 'fs';
+import pg from 'pg';
 
 // ── 데이터 로딩 ───────────────────────────────────────────────────────────
 const points    = JSON.parse(fs.readFileSync('public/knowledge-map-data.json',      'utf-8'));
-// Design Ref: §4 — questions.json이 신규 형식({questions:[...], clusterLabels:...})이면
-// .questions 배열만 추출. 옛 형식(배열)은 그대로.
-const questionsRaw = fs.existsSync('public/knowledge-map-questions.json')
-  ? JSON.parse(fs.readFileSync('public/knowledge-map-questions.json', 'utf-8')) : [];
-const questionsArr = Array.isArray(questionsRaw) ? questionsRaw : (questionsRaw.questions ?? []);
+
+// limitation-storage: questions를 DB(limitation_questions)에서 로드.
+// 파일이 아닌 DB가 단일 소스 (EROFS 회피 + 갱신 즉시 반영).
+// 실행 시 --env-file=.env.local 필요 (POSTGRES_URL).
+let questionsArr = [];
+try {
+  const pool = new pg.Pool({ connectionString: process.env.POSTGRES_URL });
+  const { rows } = await pool.query(`
+    SELECT question, quality, routed_agents AS "routedAgents", wiki,
+           pca_x AS "pcaX", pca_y AS "pcaY", placement_wiki AS "placementWiki"
+    FROM limitation_questions
+  `);
+  await pool.end();
+  questionsArr = rows.map(r => ({
+    question: r.question,
+    quality: r.quality,
+    routedAgents: r.routedAgents ?? [],
+    wiki: r.wiki,
+    pcaCoord: [Number(r.pcaX), Number(r.pcaY)],
+    placementWiki: r.placementWiki,
+  }));
+  console.log(`✅ DB에서 질문 ${questionsArr.length}개 로딩`);
+} catch (e) {
+  console.warn('⚠️ DB 질문 로딩 실패, 질문 없이 빌드:', e.message);
+  questionsArr = [];
+}
 
 // 신규 형식(LimitationQuestion)이면 지식 지형도용 필드 derive.
 // PCA 좌표 → dxDelta/dyDelta는 wikiStats(knowledge-map-proj.json) 필요.

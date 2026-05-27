@@ -3,26 +3,19 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import pg from 'pg';
 import Anthropic from '@anthropic-ai/sdk';
-import { dbscan } from './dbscan';
-import type {
-  LimitationQuestion, LimitationsJsonFile, ClusterLabelEntry, RefreshResult,
-} from './types';
+import { db } from '@/lib/db/client';
+import { sql } from 'drizzle-orm';
+import { assignClusterANN } from './cluster-ann';
+import type { RefreshResult } from './types';
 
 // ── 상수 ──────────────────────────────────────────────────────────────────
-const JSON_PATH = path.join(process.cwd(), 'public/knowledge-map-questions.json');
+// proj.json은 정적 파일 — 읽기만 (Vercel read-only fs도 읽기는 OK). 쓰기는 DB로.
 const PROJ_PATH = path.join(process.cwd(), 'public/knowledge-map-proj.json');
 const SONNET_MODEL = 'claude-sonnet-4-6';
 const VOYAGE_MODEL = 'voyage-4-large';
 const JUDGE_CONCURRENCY = 5;
-const LABEL_CONCURRENCY = 5;
-// Plan §2.4 Risks — distance 분포 실측 기반 튜닝.
-// 137건 pair 9316개 중 p25=0.74 → 무관 쌍은 0.7 이상. 의미있는 쌍은 0.3~0.5.
-// 각 질문 nearest p50=0.33, p75=0.47. eps=0.40이면 63% 참여, 0.45면 74%.
-// 0.40으로 시작 (보수적). outlier 여전히 많으면 0.45로.
-const DBSCAN_EPS = 0.40;
-const DBSCAN_MIN_PTS = 2;
+// DBSCAN eps/minPts는 cluster-ann.ts에서 관리 (ANN 증분 + rebuildAll 공유).
 // Plan §5 — Do phase 실측 후 조정. 초기 20건 = Sonnet ~3s/5건 batch × 4 = ~12s 예상.
 export const DEFAULT_BATCH_SIZE = 20;
 
@@ -53,84 +46,57 @@ export async function refresh(opts: { maxNew?: number } = {}): Promise<RefreshRe
   const maxNew = opts.maxNew ?? DEFAULT_BATCH_SIZE;
   const t0 = Date.now();
 
-  const existing = await loadJson();
-  const processedIds = new Set(existing.questions.map(q => q.id));
+  // DB에서 미처리 질문 (limitation_questions에 없는 user 질문) — LIMIT+1로 hasMore 판정
+  const batchRows = await fetchNewQuestionsFromDB(maxNew + 1);
+  const hasMore = batchRows.length > maxNew;
+  const batch = batchRows.slice(0, maxNew);
 
-  // DB에서 미처리 질문 — LIMIT (maxNew + 1)로 hasMore 판정
-  const allRows = await fetchNewQuestionsFromDB(processedIds, maxNew + 1);
-  const hasMore = allRows.length > maxNew;
-  const batch = allRows.slice(0, maxNew);
-
-  // 새 질문 없어도 DBSCAN/라벨링은 다시 — 파라미터(eps) 튜닝 시 즉시 반영되도록.
-  // 비용: DBSCAN 137건 ~수십 ms, 라벨링은 캐싱되어 변경 없으면 Sonnet 호출 0.
-  if (batch.length === 0 && existing.questions.length === 0) {
+  if (batch.length === 0) {
     return {
-      processed: 0,
-      hasMore: false,
-      totalCount: 0,
-      durationMs: Date.now() - t0,
-      newClusterCount: 0,
+      processed: 0, hasMore: false,
+      totalCount: await countQuestions(),
+      durationMs: Date.now() - t0, newClusterCount: 0,
     };
   }
 
-  // 새 질문 처리 (batch.length === 0이면 모두 skip)
-  let newQuestions: LimitationQuestion[] = [];
-  if (batch.length > 0) {
-    const newEmbeddings = await voyageEmbed(batch.map(r => r.question));
-    const judgements = await judgeAllWithConcurrency(batch);
+  // Voyage 임베딩 + Sonnet 평가
+  const newEmbeddings = await voyageEmbed(batch.map(r => r.question));
+  const judgements = await judgeAllWithConcurrency(batch);
 
-    // PCA 좌표 (지식 지형도 호환) — proj 파일 있으면 적용, 없으면 [0,0]
-    const proj = await loadProj();
-    const newCoords: [number, number][] = proj
-      ? projectToPCA(newEmbeddings, proj)
-      : newEmbeddings.map(() => [0, 0]);
+  // PCA 좌표 (지식 지형도 호환)
+  const proj = await loadProj();
+  const coords: [number, number][] = proj
+    ? projectToPCA(newEmbeddings, proj)
+    : newEmbeddings.map(() => [0, 0]);
 
-    newQuestions = batch.map((r, i) => {
-      const judged = judgements[i];
-      const wiki = judged.wiki || r.routedAgents[0] || '';
-      return {
-        id: r.id,
-        question: r.question,
-        answer: r.answer,
-        createdAt: r.createdAt,
-        routedAgents: r.routedAgents,
-        embedding: newEmbeddings[i],
-        quality: judged.quality,
-        wiki,
-        limitation: judged.limitation,
-        limitationExcerpt: judged.excerpt,
-        clusterId: -1,
-        pcaCoord: newCoords[i],
-        placementWiki: wiki || r.routedAgents[0] || '',
-      };
-    });
+  // INSERT + ANN 증분 클러스터 할당
+  const affected = new Set<number>();
+  for (let i = 0; i < batch.length; i++) {
+    const r = batch[i];
+    const j = judgements[i];
+    const wiki = j.wiki || r.routedAgents[0] || '';
+    const vec = `[${newEmbeddings[i].join(',')}]`;
+    await db.execute(sql`
+      INSERT INTO limitation_questions
+        (id, question, answer, question_created_at, routed_agents, embedding,
+         quality, wiki, limitation, limitation_excerpt, cluster_id, pca_x, pca_y, placement_wiki)
+      VALUES (${r.id}, ${r.question}, ${r.answer}, ${r.createdAt},
+        ${JSON.stringify(r.routedAgents)}::jsonb, ${vec}::vector,
+        ${j.quality}, ${wiki}, ${j.limitation}, ${j.excerpt}, -1,
+        ${coords[i][0]}, ${coords[i][1]}, ${wiki})
+      ON CONFLICT (id) DO NOTHING
+    `);
+    const { affectedClusterIds } = await assignClusterANN(r.id, newEmbeddings[i]);
+    affectedClusterIds.forEach(c => affected.add(c));
   }
 
-  const merged: LimitationQuestion[] = [...existing.questions, ...newQuestions];
-
-  // DBSCAN 전체 재계산
-  const clusterIds = dbscan(merged.map(q => q.embedding), DBSCAN_EPS, DBSCAN_MIN_PTS);
-  merged.forEach((q, i) => { q.clusterId = clusterIds[i]; });
-
-  // 클러스터 라벨링 (변경된 것만)
-  const { labels: newLabels, newCount: newClusterCount } =
-    await assignClusterLabels(merged, existing.clusterLabels);
-
-  // 원자적 write
-  const newJson: LimitationsJsonFile = {
-    questions: merged,
-    clusterLabels: newLabels,
-    updatedAt: new Date().toISOString(),
-    totalCount: merged.length,
-  };
-  await atomicWrite(JSON_PATH, JSON.stringify(newJson));
+  // 변경 클러스터 라벨 재생성 (limitation_clusters UPSERT)
+  const newClusterCount = await relabelClusters([...affected]);
 
   return {
-    processed: batch.length,
-    hasMore,
-    totalCount: merged.length,
-    durationMs: Date.now() - t0,
-    newClusterCount,
+    processed: batch.length, hasMore,
+    totalCount: await countQuestions(),
+    durationMs: Date.now() - t0, newClusterCount,
   };
 }
 
@@ -166,80 +132,46 @@ export async function reevaluateAll(opts: {
   onProgress?: (current: number, total: number) => void;
 } = {}): Promise<{ updated: number; limitedBefore: number; limitedAfter: number; durationMs: number }> {
   const t0 = Date.now();
-  const existing = await loadJson();
-  const qs = existing.questions;
-  if (qs.length === 0) {
+  const res = await db.execute(sql`
+    SELECT id, question, answer, quality, wiki, limitation, limitation_excerpt
+    FROM limitation_questions
+    ORDER BY question_created_at
+  `);
+  const rows = res.rows as unknown as Array<{
+    id: string; question: string; answer: string;
+    quality: string; wiki: string; limitation: boolean; limitation_excerpt: string;
+  }>;
+  if (rows.length === 0) {
     return { updated: 0, limitedBefore: 0, limitedAfter: 0, durationMs: Date.now() - t0 };
   }
 
-  const limitedBefore = qs.filter(q => q.limitation).length;
+  const limitedBefore = rows.filter(r => r.limitation).length;
+  let limitedAfter = 0;
 
-  // judgeOne 재호출 (concurrency) — 기존 question/answer 사용
-  const judgements: JudgeResult[] = [];
-  for (let i = 0; i < qs.length; i += JUDGE_CONCURRENCY) {
-    const batch = qs.slice(i, i + JUDGE_CONCURRENCY);
-    const batchResults = await Promise.all(batch.map(async q => {
-      try {
-        return await judgeOne(q.question, q.answer ?? '');
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error(`  ⚠️ judge 실패 (기존값 유지): ${msg.slice(0, 100)}`);
+  for (let i = 0; i < rows.length; i += JUDGE_CONCURRENCY) {
+    const batch = rows.slice(i, i + JUDGE_CONCURRENCY);
+    const judged = await Promise.all(batch.map(async r => {
+      try { return await judgeOne(r.question, r.answer ?? ''); }
+      catch (err) {
+        console.error(`  ⚠️ judge 실패 (기존값 유지): ${(err instanceof Error ? err.message : String(err)).slice(0, 100)}`);
         return null;
       }
     }));
-    judgements.push(...batchResults.map((r, j) => r ?? {
-      // 실패 시 기존값 유지
-      quality: batch[j].quality, wiki: batch[j].wiki,
-      limitation: batch[j].limitation, excerpt: batch[j].limitationExcerpt,
-    }));
-    opts.onProgress?.(Math.min(i + JUDGE_CONCURRENCY, qs.length), qs.length);
-  }
-
-  // judgement만 갱신, embedding/clusterId/pcaCoord 보존
-  qs.forEach((q, i) => {
-    q.quality = judgements[i].quality;
-    q.wiki = judgements[i].wiki || q.wiki;
-    q.limitation = judgements[i].limitation;
-    q.limitationExcerpt = judgements[i].excerpt;
-  });
-
-  const limitedAfter = qs.filter(q => q.limitation).length;
-
-  await atomicWrite(JSON_PATH, JSON.stringify({
-    questions: qs,
-    clusterLabels: existing.clusterLabels,   // 멤버 안 바뀌므로 유지
-    updatedAt: new Date().toISOString(),
-    totalCount: qs.length,
-  } satisfies LimitationsJsonFile));
-
-  return { updated: qs.length, limitedBefore, limitedAfter, durationMs: Date.now() - t0 };
-}
-
-async function loadJson(): Promise<LimitationsJsonFile> {
-  try {
-    const raw = await fs.readFile(JSON_PATH, 'utf-8');
-    const parsed = JSON.parse(raw);
-    // 기존 형식: 그냥 배열. 신규 형식: { questions, clusterLabels, ... }
-    if (Array.isArray(parsed)) {
-      return { questions: [], clusterLabels: {}, updatedAt: '', totalCount: 0 };
-      // 기존 137건은 embedding/limitation 필드 없으므로 그냥 무시 → 첫 갱신에서 전수 처리
-      // (Plan §5에 명시 — 첫 1회 5분)
+    for (let k = 0; k < batch.length; k++) {
+      const r = batch[k];
+      const j = judged[k] ?? { quality: r.quality as JudgeResult['quality'], wiki: r.wiki, limitation: r.limitation, excerpt: r.limitation_excerpt };
+      if (j.limitation) limitedAfter++;
+      await db.execute(sql`
+        UPDATE limitation_questions
+        SET quality = ${j.quality}, wiki = ${j.wiki || r.wiki},
+            limitation = ${j.limitation}, limitation_excerpt = ${j.excerpt}, evaluated_at = NOW()
+        WHERE id = ${r.id}
+      `);
     }
-    return {
-      questions: parsed.questions ?? [],
-      clusterLabels: parsed.clusterLabels ?? {},
-      updatedAt: parsed.updatedAt ?? '',
-      totalCount: parsed.questions?.length ?? 0,
-    };
-  } catch {
-    return { questions: [], clusterLabels: {}, updatedAt: '', totalCount: 0 };
+    opts.onProgress?.(Math.min(i + JUDGE_CONCURRENCY, rows.length), rows.length);
   }
-}
 
-async function atomicWrite(filePath: string, content: string) {
-  const tmp = filePath + '.tmp';
-  await fs.writeFile(tmp, content);
-  await fs.rename(tmp, filePath);
+  return { updated: rows.length, limitedBefore, limitedAfter, durationMs: Date.now() - t0 };
 }
 
 interface ProjData {
@@ -265,48 +197,79 @@ interface DbRow {
   routedAgents: string[];
 }
 
-async function fetchNewQuestionsFromDB(processedIds: Set<string>, limit: number): Promise<DbRow[]> {
-  const pool = new pg.Pool({ connectionString: process.env.POSTGRES_URL });
-  try {
-    // user-assistant 페어 + 처리 안 된 user.id만 (NOT IN). 137~수천 건 규모 OK.
-    // processedIds가 빈 경우 NOT IN 조건 생략 (= 전체)
-    const idsArray = Array.from(processedIds);
-
-    const baseQuery = `
-      SELECT u.id AS id,
-             u.content AS question,
-             a.content AS answer,
-             u.created_at AS "createdAt",
-             COALESCE(a.routed_agents, '{}') AS "routedAgents"
-      FROM messages u
-      JOIN messages a ON (
-        a.conversation_id = u.conversation_id AND a.role = 'assistant'
-        AND a.id = (
-          SELECT id FROM messages
-          WHERE conversation_id = u.conversation_id AND role = 'assistant' AND created_at > u.created_at
-          ORDER BY created_at LIMIT 1
-        )
+async function fetchNewQuestionsFromDB(limit: number): Promise<DbRow[]> {
+  // user-assistant 페어 중 limitation_questions에 아직 없는 user 질문만 (증분)
+  const res = await db.execute(sql`
+    SELECT u.id AS id,
+           u.content AS question,
+           a.content AS answer,
+           u.created_at AS "createdAt",
+           COALESCE(a.routed_agents, '{}') AS "routedAgents"
+    FROM messages u
+    JOIN messages a ON (
+      a.conversation_id = u.conversation_id AND a.role = 'assistant'
+      AND a.id = (
+        SELECT id FROM messages
+        WHERE conversation_id = u.conversation_id AND role = 'assistant' AND created_at > u.created_at
+        ORDER BY created_at LIMIT 1
       )
-      WHERE u.role = 'user' AND LENGTH(u.content) > 5
-    `;
-
-    const { rows } = idsArray.length === 0
-      ? await pool.query(`${baseQuery} ORDER BY u.created_at ASC LIMIT $1`, [limit])
-      : await pool.query(
-          `${baseQuery} AND u.id <> ALL($1::text[]) ORDER BY u.created_at ASC LIMIT $2`,
-          [idsArray, limit]
-        );
-
-    return rows.map((r: any) => ({
+    )
+    WHERE u.role = 'user' AND LENGTH(u.content) > 5
+      AND u.id NOT IN (SELECT id FROM limitation_questions)
+    ORDER BY u.created_at ASC
+    LIMIT ${limit}
+  `);
+  return (res.rows as unknown as Array<{ id: string; question: string; answer: string; createdAt: unknown; routedAgents: string[] }>)
+    .map(r => ({
       id: r.id,
       question: r.question,
       answer: r.answer ?? '',
       createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
       routedAgents: r.routedAgents ?? [],
     }));
-  } finally {
-    await pool.end();
+}
+
+async function countQuestions(): Promise<number> {
+  const res = await db.execute(sql`SELECT count(*)::int AS n FROM limitation_questions`);
+  return Number((res.rows[0] as { n: number }).n);
+}
+
+/**
+ * 변경된 클러스터들의 라벨 재생성. 멤버 동일하면 기존 라벨 유지(Sonnet 호출 skip).
+ * @returns 새로 라벨링한 클러스터 수
+ */
+async function relabelClusters(clusterIds: number[]): Promise<number> {
+  let count = 0;
+  for (const cid of clusterIds) {
+    if (cid < 0) continue;
+    const memRes = await db.execute(sql`
+      SELECT id, question FROM limitation_questions WHERE cluster_id = ${cid} ORDER BY id
+    `);
+    const members = memRes.rows as unknown as Array<{ id: string; question: string }>;
+    if (members.length === 0) continue;
+    const memberIds = members.map(m => m.id).sort();
+
+    // 기존 라벨 캐시 — 멤버 동일하면 skip
+    const exRes = await db.execute(sql`SELECT member_ids FROM limitation_clusters WHERE cluster_id = ${cid}`);
+    const existing = exRes.rows[0] as { member_ids: string[] } | undefined;
+    if (existing && setEquals(existing.member_ids, memberIds)) continue;
+
+    const label = await labelOneCluster(members.map(m => m.question));
+    await db.execute(sql`
+      INSERT INTO limitation_clusters (cluster_id, label, member_ids, updated_at)
+      VALUES (${cid}, ${label}, ${JSON.stringify(memberIds)}::jsonb, NOW())
+      ON CONFLICT (cluster_id) DO UPDATE SET label = EXCLUDED.label, member_ids = EXCLUDED.member_ids, updated_at = NOW()
+    `);
+    count++;
   }
+  return count;
+}
+
+function setEquals(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const sa = [...a].sort(), sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) if (sa[i] !== sb[i]) return false;
+  return true;
 }
 
 // ── Voyage 임베딩 ──────────────────────────────────────────────────────────
@@ -503,58 +466,7 @@ async function judgeAllWithConcurrency(rows: DbRow[]): Promise<JudgeResult[]> {
   return results;
 }
 
-// ── 클러스터 라벨링 (캐싱) ─────────────────────────────────────────────────
-
-async function assignClusterLabels(
-  questions: LimitationQuestion[],
-  existing: Record<string, ClusterLabelEntry>,
-): Promise<{ labels: Record<string, ClusterLabelEntry>; newCount: number }> {
-  // 클러스터별 멤버 ID 수집 (정렬해서 set 비교)
-  const memberMap = new Map<number, string[]>();
-  for (const q of questions) {
-    if (q.clusterId < 0) continue;  // outlier 제외
-    const arr = memberMap.get(q.clusterId) ?? [];
-    arr.push(q.id);
-    memberMap.set(q.clusterId, arr);
-  }
-
-  const newLabels: Record<string, ClusterLabelEntry> = {};
-  const clustersToLabel: Array<{ clusterId: number; memberIds: string[]; questions: string[] }> = [];
-
-  for (const [cid, memberIds] of memberMap) {
-    memberIds.sort();
-    const key = String(cid);
-    const existingEntry = existing[key];
-    const sameMembers = existingEntry && setEquals(existingEntry.memberIds, memberIds);
-    if (sameMembers) {
-      newLabels[key] = existingEntry;  // 기존 라벨 재사용
-    } else {
-      const qs = memberIds
-        .map(id => questions.find(q => q.id === id)?.question)
-        .filter((q): q is string => !!q);
-      clustersToLabel.push({ clusterId: cid, memberIds, questions: qs });
-    }
-  }
-
-  // 신규/변경 클러스터만 Sonnet 호출 (concurrency)
-  for (let i = 0; i < clustersToLabel.length; i += LABEL_CONCURRENCY) {
-    const batch = clustersToLabel.slice(i, i + LABEL_CONCURRENCY);
-    const labels = await Promise.all(batch.map(c => labelOneCluster(c.questions)));
-    batch.forEach((c, j) => {
-      newLabels[String(c.clusterId)] = { label: labels[j], memberIds: c.memberIds };
-    });
-  }
-
-  return { labels: newLabels, newCount: clustersToLabel.length };
-}
-
-function setEquals(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const sa = [...a].sort();
-  const sb = [...b].sort();
-  for (let i = 0; i < sa.length; i++) if (sa[i] !== sb[i]) return false;
-  return true;
-}
+// ── 클러스터 라벨링 (Sonnet) ───────────────────────────────────────────────
 
 async function labelOneCluster(questions: string[]): Promise<string> {
   const sample = questions.slice(0, 10).map((q, i) => `${i + 1}. ${sanitize(q)}`).join('\n');

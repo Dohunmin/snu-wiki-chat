@@ -1,13 +1,11 @@
 // Design Ref: §2.5 — knowledge-map-questions.json 읽고 cluster + outlier 그룹핑.
 // cluster: 한계율 기반 정렬. outlier: 위키별 그룹 (한계 답변만).
 
-import fs from 'fs/promises';
-import path from 'path';
 import { auth } from '@/lib/auth/config';
 import { canAccessAdmin } from '@/lib/auth/roles';
-import type {
-  LimitationsJsonFile, LimitationCluster, LimitationQuestion,
-} from '@/lib/limitations/types';
+import { db } from '@/lib/db/client';
+import { sql } from 'drizzle-orm';
+import type { LimitationCluster, LimitationQuestion } from '@/lib/limitations/types';
 
 export interface OutlierGroup {
   wiki: string;
@@ -42,32 +40,44 @@ export async function GET(req: Request) {
   const wikiFilter = url.searchParams.get('wiki') ?? '';
   const sortBy = (url.searchParams.get('sort') ?? 'rate') as 'rate' | 'limited' | 'recent';
 
-  let json: LimitationsJsonFile;
-  try {
-    const raw = await fs.readFile(
-      path.join(process.cwd(), 'public/knowledge-map-questions.json'),
-      'utf-8'
-    );
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      // 기존 배열 형식 — 한 번도 갱신 안 됨
-      return Response.json({
-        clusters: [], outliers: [],
-        totalCount: 0, limitedCount: 0,
-        updatedAt: '',
-        error: '한계 답변 데이터가 아직 없습니다. 갱신을 실행해주세요.',
-      });
-    }
-    json = parsed;
-  } catch {
+  // DB에서 전체 질문 + 클러스터 라벨 로드
+  const qRes = await db.execute(sql`
+    SELECT id, question, answer, question_created_at AS "createdAt", routed_agents AS "routedAgents",
+           quality, wiki, limitation, limitation_excerpt AS "limitationExcerpt",
+           cluster_id AS "clusterId", pca_x AS "pcaX", pca_y AS "pcaY", placement_wiki AS "placementWiki"
+    FROM limitation_questions
+  `);
+  const labelRes = await db.execute(sql`SELECT cluster_id AS "clusterId", label FROM limitation_clusters`);
+
+  // DB row → LimitationQuestion 형태 (그룹핑 로직 재사용)
+  const allQs: LimitationQuestion[] = (qRes.rows as unknown as Array<Record<string, unknown>>).map(r => ({
+    id: r.id as string,
+    question: r.question as string,
+    answer: r.answer as string,
+    createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+    routedAgents: (r.routedAgents as string[]) ?? [],
+    embedding: [],
+    quality: r.quality as LimitationQuestion['quality'],
+    wiki: (r.wiki as string) ?? '',
+    limitation: r.limitation as boolean,
+    limitationExcerpt: (r.limitationExcerpt as string) ?? '',
+    clusterId: Number(r.clusterId),
+    pcaCoord: [Number(r.pcaX), Number(r.pcaY)],
+    placementWiki: (r.placementWiki as string) ?? '',
+  }));
+
+  const labelMap = new Map<number, string>();
+  for (const row of labelRes.rows as unknown as Array<{ clusterId: number; label: string }>) {
+    labelMap.set(Number(row.clusterId), row.label);
+  }
+
+  if (allQs.length === 0) {
     return Response.json({
       clusters: [], outliers: [],
       totalCount: 0, limitedCount: 0, updatedAt: '',
-      error: '데이터 파일을 찾을 수 없습니다.',
+      error: '한계 답변 데이터가 아직 없습니다. 갱신을 실행해주세요.',
     });
   }
-
-  const allQs = json.questions ?? [];
 
   // 위키 필터 — questions의 wiki(또는 placementWiki) 기준
   const filteredQs = wikiFilter
@@ -90,7 +100,7 @@ export async function GET(req: Request) {
     return {
       clusterId: cid,
       wiki: dominantWiki(items),
-      label: json.clusterLabels[String(cid)]?.label ?? `클러스터 ${cid}`,
+      label: labelMap.get(cid) ?? `클러스터 ${cid}`,
       total: items.length,
       limited: limitedItems.length,
       rate: limitedItems.length / items.length,
@@ -138,7 +148,7 @@ export async function GET(req: Request) {
     outliers,
     totalCount: allQs.length,
     limitedCount: allQs.filter(q => q.limitation).length,
-    updatedAt: json.updatedAt,
+    updatedAt: new Date().toISOString(),
   } satisfies LimitationsApiResponse);
 }
 
