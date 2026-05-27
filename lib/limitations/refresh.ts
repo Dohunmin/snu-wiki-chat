@@ -17,7 +17,11 @@ const SONNET_MODEL = 'claude-sonnet-4-6';
 const VOYAGE_MODEL = 'voyage-4-large';
 const JUDGE_CONCURRENCY = 5;
 const LABEL_CONCURRENCY = 5;
-const DBSCAN_EPS = 0.25;
+// Plan §2.4 Risks — distance 분포 실측 기반 튜닝.
+// 137건 pair 9316개 중 p25=0.74 → 무관 쌍은 0.7 이상. 의미있는 쌍은 0.3~0.5.
+// 각 질문 nearest p50=0.33, p75=0.47. eps=0.40이면 63% 참여, 0.45면 74%.
+// 0.40으로 시작 (보수적). outlier 여전히 많으면 0.45로.
+const DBSCAN_EPS = 0.40;
 const DBSCAN_MIN_PTS = 2;
 // Plan §5 — Do phase 실측 후 조정. 초기 20건 = Sonnet ~3s/5건 batch × 4 = ~12s 예상.
 export const DEFAULT_BATCH_SIZE = 20;
@@ -32,11 +36,6 @@ const WIKI_LAYOUT: Record<string, { fx: number; fy: number }> = {
   'yhl-speeches': { fx: 0.68, fy: 0.54 },
   finance:        { fx: 0.84, fy: 0.68 },
   leesj:          { fx: 0.50, fy: 0.80 },
-};
-const WIKI_COLORS: Record<string, string> = {
-  senate:'#3B82F6', board:'#10B981', plan:'#F59E0B', vision:'#8B5CF6',
-  history:'#EF4444', status:'#6B7280', 'yhl-speeches':'#EC4899',
-  finance:'#14B8A6', leesj:'#F97316',
 };
 const WIKI_LABELS: Record<string, string> = {
   senate:'평의원회', board:'이사회', plan:'대학운영계획', vision:'중장기발전계획',
@@ -62,48 +61,50 @@ export async function refresh(opts: { maxNew?: number } = {}): Promise<RefreshRe
   const hasMore = allRows.length > maxNew;
   const batch = allRows.slice(0, maxNew);
 
-  if (batch.length === 0) {
+  // 새 질문 없어도 DBSCAN/라벨링은 다시 — 파라미터(eps) 튜닝 시 즉시 반영되도록.
+  // 비용: DBSCAN 137건 ~수십 ms, 라벨링은 캐싱되어 변경 없으면 Sonnet 호출 0.
+  if (batch.length === 0 && existing.questions.length === 0) {
     return {
       processed: 0,
       hasMore: false,
-      totalCount: existing.questions.length,
+      totalCount: 0,
       durationMs: Date.now() - t0,
       newClusterCount: 0,
     };
   }
 
-  // Voyage 임베딩 (batch만)
-  const newEmbeddings = await voyageEmbed(batch.map(r => r.question));
+  // 새 질문 처리 (batch.length === 0이면 모두 skip)
+  let newQuestions: LimitationQuestion[] = [];
+  if (batch.length > 0) {
+    const newEmbeddings = await voyageEmbed(batch.map(r => r.question));
+    const judgements = await judgeAllWithConcurrency(batch);
 
-  // Sonnet 평가 (concurrency)
-  const judgements = await judgeAllWithConcurrency(batch);
+    // PCA 좌표 (지식 지형도 호환) — proj 파일 있으면 적용, 없으면 [0,0]
+    const proj = await loadProj();
+    const newCoords: [number, number][] = proj
+      ? projectToPCA(newEmbeddings, proj)
+      : newEmbeddings.map(() => [0, 0]);
 
-  // PCA 좌표 (지식 지형도 호환) — proj 파일 있으면 적용, 없으면 [0,0]
-  const proj = await loadProj();
-  const newCoords: [number, number][] = proj
-    ? projectToPCA(newEmbeddings, proj)
-    : newEmbeddings.map(() => [0, 0]);
-
-  // 신규 질문 객체
-  const newQuestions: LimitationQuestion[] = batch.map((r, i) => {
-    const judged = judgements[i];
-    const wiki = judged.wiki || r.routedAgents[0] || '';
-    return {
-      id: r.id,
-      question: r.question,
-      answer: r.answer,
-      createdAt: r.createdAt,
-      routedAgents: r.routedAgents,
-      embedding: newEmbeddings[i],
-      quality: judged.quality,
-      wiki,
-      limitation: judged.limitation,
-      limitationExcerpt: judged.excerpt,
-      clusterId: -1,  // 아래에서 재할당
-      pcaCoord: newCoords[i],
-      placementWiki: wiki || r.routedAgents[0] || '',
-    };
-  });
+    newQuestions = batch.map((r, i) => {
+      const judged = judgements[i];
+      const wiki = judged.wiki || r.routedAgents[0] || '';
+      return {
+        id: r.id,
+        question: r.question,
+        answer: r.answer,
+        createdAt: r.createdAt,
+        routedAgents: r.routedAgents,
+        embedding: newEmbeddings[i],
+        quality: judged.quality,
+        wiki,
+        limitation: judged.limitation,
+        limitationExcerpt: judged.excerpt,
+        clusterId: -1,
+        pcaCoord: newCoords[i],
+        placementWiki: wiki || r.routedAgents[0] || '',
+      };
+    });
+  }
 
   const merged: LimitationQuestion[] = [...existing.questions, ...newQuestions];
 
