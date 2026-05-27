@@ -48,6 +48,11 @@ export async function GET(req: Request) {
     FROM limitation_questions
   `);
   const labelRes = await db.execute(sql`SELECT cluster_id AS "clusterId", label FROM limitation_clusters`);
+  const tsRes = await db.execute(sql`SELECT MAX(evaluated_at) AS "maxAt" FROM limitation_questions`);
+  const updatedAt = (() => {
+    const m = (tsRes.rows[0] as { maxAt: unknown } | undefined)?.maxAt;
+    return m instanceof Date ? m.toISOString() : (m ? String(m) : '');
+  })();
 
   // DB row → LimitationQuestion 형태 (그룹핑 로직 재사용)
   const allQs: LimitationQuestion[] = (qRes.rows as unknown as Array<Record<string, unknown>>).map(r => ({
@@ -148,7 +153,7 @@ export async function GET(req: Request) {
     outliers,
     totalCount: allQs.length,
     limitedCount: allQs.filter(q => q.limitation).length,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
   } satisfies LimitationsApiResponse);
 }
 
