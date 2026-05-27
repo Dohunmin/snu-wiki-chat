@@ -80,7 +80,10 @@ export default function AdminDashboard() {
       {/* 헤더 */}
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-900">관리자 대시보드</h1>
-        <a href="/" className="text-sm text-blue-600 hover:underline">채팅으로 돌아가기</a>
+        <div className="flex items-center gap-4 text-sm">
+          <a href="/admin/limitations" className="text-gray-600 hover:text-gray-900">한계 답변 추적</a>
+          <a href="/" className="text-blue-600 hover:underline">채팅으로 돌아가기</a>
+        </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">

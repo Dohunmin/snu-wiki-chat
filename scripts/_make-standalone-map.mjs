@@ -2,8 +2,46 @@ import fs from 'fs';
 
 // ── 데이터 로딩 ───────────────────────────────────────────────────────────
 const points    = JSON.parse(fs.readFileSync('public/knowledge-map-data.json',      'utf-8'));
-const questions = fs.existsSync('public/knowledge-map-questions.json')
+// Design Ref: §4 — questions.json이 신규 형식({questions:[...], clusterLabels:...})이면
+// .questions 배열만 추출. 옛 형식(배열)은 그대로.
+const questionsRaw = fs.existsSync('public/knowledge-map-questions.json')
   ? JSON.parse(fs.readFileSync('public/knowledge-map-questions.json', 'utf-8')) : [];
+const questionsArr = Array.isArray(questionsRaw) ? questionsRaw : (questionsRaw.questions ?? []);
+
+// 신규 형식(LimitationQuestion)이면 지식 지형도용 필드 derive.
+// PCA 좌표 → dxDelta/dyDelta는 wikiStats(knowledge-map-proj.json) 필요.
+const _WIKI_LABELS_MAP = { senate:'평의원회', board:'이사회', plan:'대학운영계획', vision:'중장기발전계획', history:'70년역사', status:'대학현황', 'yhl-speeches':'유홍림총장연설', finance:'재무정보공시', leesj:'이석재 후보' };
+const _WIKI_COLORS_MAP = { senate:'#3B82F6', board:'#10B981', plan:'#F59E0B', vision:'#8B5CF6', history:'#EF4444', status:'#6B7280', 'yhl-speeches':'#EC4899', finance:'#14B8A6', leesj:'#F97316' };
+const _WIKI_LAYOUT_MAP = { senate:{fx:0.20,fy:0.32}, board:{fx:0.78,fy:0.32}, plan:{fx:0.48,fy:0.14}, vision:{fx:0.30,fy:0.54}, history:{fx:0.16,fy:0.68}, status:{fx:0.50,fy:0.52}, 'yhl-speeches':{fx:0.68,fy:0.54}, finance:{fx:0.84,fy:0.68}, leesj:{fx:0.50,fy:0.80} };
+const _proj = fs.existsSync('public/knowledge-map-proj.json')
+  ? JSON.parse(fs.readFileSync('public/knowledge-map-proj.json','utf-8')) : null;
+const _wikiStats = _proj?.wikiStats ?? {};
+
+const questions = questionsArr.map(q => {
+  // 옛 형식이면 (wikiLabel 있음) 그대로 통과
+  if (q.wikiLabel && q.islandFx !== undefined) return q;
+  // 신규 LimitationQuestion → 옛 호환 형식으로 변환
+  const placementWiki = q.wiki || q.placementWiki || (q.routedAgents?.[0]) || 'plan';
+  const lay = _WIKI_LAYOUT_MAP[placementWiki] || { fx:0.5, fy:0.5 };
+  const st = _wikiStats[placementWiki];
+  const [px, py] = q.pcaCoord ?? [0, 0];
+  const MAX_DELTA = 110, SPREAD = 72;
+  const clamp = v => Math.max(-MAX_DELTA, Math.min(MAX_DELTA, v));
+  const dxDelta = st && q.pcaCoord ? clamp((px - st.cx) / st.sx * SPREAD) : 0;
+  const dyDelta = st && q.pcaCoord ? clamp((py - st.cy) / st.sy * SPREAD) : 0;
+  return {
+    question: String(q.question ?? '').slice(0, 120),
+    quality: q.quality ?? 'no_data',
+    routedAgents: q.routedAgents ?? [],
+    nearestWiki: placementWiki,
+    wikiLabel: _WIKI_LABELS_MAP[placementWiki] ?? placementWiki,
+    wikiColor: _WIKI_COLORS_MAP[placementWiki] ?? '#999',
+    islandFx: lay.fx,
+    islandFy: lay.fy,
+    dxDelta, dyDelta,
+    jitterAngle: 0, jitterR: 0,
+  };
+});
 
 const WIKI_IDS = ['senate','board','plan','vision','history','status','yhl-speeches','finance','leesj'];
 const wikiData = {};
