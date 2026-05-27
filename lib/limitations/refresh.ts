@@ -158,6 +158,63 @@ export async function refreshAll(opts: {
 
 // ── JSON I/O ──────────────────────────────────────────────────────────────
 
+/**
+ * 기존 questions의 Sonnet judgement(quality/wiki/limitation/excerpt)만 재평가.
+ * 임베딩·클러스터·PCA는 보존 (Voyage·DBSCAN 재계산 안 함). 프롬프트 개선 후 품질 재생성용.
+ */
+export async function reevaluateAll(opts: {
+  onProgress?: (current: number, total: number) => void;
+} = {}): Promise<{ updated: number; limitedBefore: number; limitedAfter: number; durationMs: number }> {
+  const t0 = Date.now();
+  const existing = await loadJson();
+  const qs = existing.questions;
+  if (qs.length === 0) {
+    return { updated: 0, limitedBefore: 0, limitedAfter: 0, durationMs: Date.now() - t0 };
+  }
+
+  const limitedBefore = qs.filter(q => q.limitation).length;
+
+  // judgeOne 재호출 (concurrency) — 기존 question/answer 사용
+  const judgements: JudgeResult[] = [];
+  for (let i = 0; i < qs.length; i += JUDGE_CONCURRENCY) {
+    const batch = qs.slice(i, i + JUDGE_CONCURRENCY);
+    const batchResults = await Promise.all(batch.map(async q => {
+      try {
+        return await judgeOne(q.question, q.answer ?? '');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`  ⚠️ judge 실패 (기존값 유지): ${msg.slice(0, 100)}`);
+        return null;
+      }
+    }));
+    judgements.push(...batchResults.map((r, j) => r ?? {
+      // 실패 시 기존값 유지
+      quality: batch[j].quality, wiki: batch[j].wiki,
+      limitation: batch[j].limitation, excerpt: batch[j].limitationExcerpt,
+    }));
+    opts.onProgress?.(Math.min(i + JUDGE_CONCURRENCY, qs.length), qs.length);
+  }
+
+  // judgement만 갱신, embedding/clusterId/pcaCoord 보존
+  qs.forEach((q, i) => {
+    q.quality = judgements[i].quality;
+    q.wiki = judgements[i].wiki || q.wiki;
+    q.limitation = judgements[i].limitation;
+    q.limitationExcerpt = judgements[i].excerpt;
+  });
+
+  const limitedAfter = qs.filter(q => q.limitation).length;
+
+  await atomicWrite(JSON_PATH, JSON.stringify({
+    questions: qs,
+    clusterLabels: existing.clusterLabels,   // 멤버 안 바뀌므로 유지
+    updatedAt: new Date().toISOString(),
+    totalCount: qs.length,
+  } satisfies LimitationsJsonFile));
+
+  return { updated: qs.length, limitedBefore, limitedAfter, durationMs: Date.now() - t0 };
+}
+
 async function loadJson(): Promise<LimitationsJsonFile> {
   try {
     const raw = await fs.readFile(JSON_PATH, 'utf-8');
@@ -327,18 +384,21 @@ function sanitize(s: string): string {
     .replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '');
 }
 
+// 한계 명시 키워드 — 후처리 검증용. 발췌가 진짜 한계 문장인지 확인.
+const LIMIT_KEYWORD = /않습니다|없습니다|확인되지|확인할 수 없|제한적|범위(를| 내| 밖| 안)|포함되어 있지|별도 자료|미확인|찾을 수 없|누락|벗어|부족|드리지 못|제공되지/;
+
 async function judgeOne(question: string, answer: string): Promise<JudgeResult> {
   const q = sanitize(question);
   const a = sanitize(answer);
   const msg = await getAnthropic().messages.create({
     model: SONNET_MODEL,
-    max_tokens: 400,
+    max_tokens: 600,   // 발췌 완결 문장 + JSON 구조 여유 (한글 토큰 고려)
     messages: [{
       role: 'user',
       content: `서울대 거버넌스 위키 챗봇 Q&A를 평가하세요.
 
 질문: ${q}
-답변(앞부분): ${a.slice(0, 800)}
+답변: ${a.slice(0, 1200)}
 
 [품질]
 - answered: 위키 자료로 핵심에 구체적으로 답변
@@ -349,15 +409,22 @@ async function judgeOne(question: string, answer: string): Promise<JudgeResult> 
 ${WIKI_LIST}
 관련 위키가 없으면 none
 
-[한계 여부]
-- yes: 답변에 "자료 없음", "범위 밖", "한계 안내", "📝 한계", "⚠️ 자료의 한계", "포함되어 있지 않습니다", "확인되지 않습니다", "별도 자료 필요" 등 자료 부족·한계를 명시한 부분이 있음
-- no: 자료로 충분히 답변, 한계 명시 없음
+[한계 여부] — 엄격하게 판정하세요.
+- yes: 답변이 질문의 **핵심**에 대해 "위키 자료에 없다 / 범위 밖이다 / 확인 불가"라고 명시적으로 밝힌 경우.
+       또는 답변 전체가 자료 부족으로 핵심을 답하지 못한 경우.
+- no:  자료로 핵심을 답변한 경우. 답변에 표·목록·구체적 수치·인용이 있으면 거의 no.
+       답변 끝에 "일부 세부사항은 별도 자료 참고" 정도의 **부수적 보조 안내**가 있어도,
+       핵심 질문에 답했으면 no.
+  ※ quality가 answered면 대부분 no. 잘 답변했는데 한계로 분류하지 마세요.
 
 [한계 발췌]
-한계가 yes면 답변에서 한계 부분만 발췌 (최대 300자, 그대로). no면 빈 문자열.
+- yes인 경우만: 답변에서 한계를 명시한 **완결된 한 문장**을 그대로 복사하세요.
+  반드시 마침표로 끝나는 완전한 문장. 헤더(##)·각주(¹)·표 조각·문장 도중 끊기 금지.
+  예: "전문 관리자 채용 절차에 관한 자료는 제공된 범위에 포함되어 있지 않습니다."
+- no인 경우: 빈 문자열.
 
-JSON으로만 출력:
-{"q":"answered|partial|no_data","w":"위키ID","l":"yes|no","le":"발췌..."}`,
+JSON으로만 출력 (발췌 안의 따옴표·줄바꿈은 이스케이프):
+{"q":"answered|partial|no_data","w":"위키ID","l":"yes|no","le":"완결문장 또는 빈문자열"}`,
     }],
   });
 
@@ -377,8 +444,21 @@ function parseJudgeJson(raw: string): JudgeResult {
     const wRaw = String(parsed.w ?? '').toLowerCase().trim();
     const wiki = WIKI_LAYOUT[wRaw] ? wRaw : '';
     const lRaw = String(parsed.l ?? '').toLowerCase();
-    const limitation = lRaw === 'yes' || lRaw === 'true';
-    const excerpt = String(parsed.le ?? '').slice(0, 300);
+    let limitation = lRaw === 'yes' || lRaw === 'true';
+    let excerpt = String(parsed.le ?? '').slice(0, 300);
+
+    // 후처리 false-positive 강등: answered인데 발췌에 한계 키워드 없으면
+    // (Sonnet이 답변 본문 조각을 발췌로 잘못 고른 케이스) → 한계 아님으로 강등.
+    // partial/no_data는 한계 가능성 높으므로 유지.
+    if (limitation && quality === 'answered' && excerpt && !LIMIT_KEYWORD.test(excerpt)) {
+      limitation = false;
+      excerpt = '';
+    }
+    // 발췌 비었는데 limitation=yes면 신뢰 어려움 → 강등
+    if (limitation && !excerpt.trim()) {
+      limitation = false;
+    }
+
     return { quality, wiki, limitation, excerpt };
   } catch {
     return { quality: 'no_data', wiki: '', limitation: false, excerpt: '' };
