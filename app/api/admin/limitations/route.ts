@@ -100,7 +100,9 @@ export async function GET(req: Request) {
         createdAt: q.createdAt,
       })),
     };
-  });
+  })
+  // 한계 0건 클러스터는 아예 제외 — 답변도 못 보고 보충 신호 아님 (사용자 요청)
+  .filter(c => c.limited > 0);
 
   clusters = sortClusters(clusters, sortBy);
 
