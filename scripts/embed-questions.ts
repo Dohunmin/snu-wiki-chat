@@ -79,7 +79,16 @@ interface JudgeResult {
   wiki: string;
 }
 
+// 깨진 UTF-16 surrogate 정리 — 이모지 일부만 들어간 입력으로 Anthropic API가 JSON parse 거부하는 케이스 차단
+function sanitize(s: string): string {
+  return s
+    .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, '')   // high surrogate without low
+    .replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, ''); // low surrogate without high
+}
+
 async function judgeOne(question: string, answer: string): Promise<JudgeResult> {
+  const q = sanitize(question);
+  const a = sanitize(answer);
   const msg = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 60,
@@ -87,8 +96,8 @@ async function judgeOne(question: string, answer: string): Promise<JudgeResult> 
       role: 'user',
       content: `서울대 거버넌스 위키 챗봇 Q&A를 평가하세요.
 
-질문: ${question}
-답변(앞부분): ${answer.slice(0, 500)}
+질문: ${q}
+답변(앞부분): ${a.slice(0, 500)}
 
 [품질]
 - answered: 위키 자료로 핵심에 구체적으로 답변
@@ -130,7 +139,16 @@ async function judgeAll(pairs: { question: string; answer: string }[]): Promise<
   const CONCURRENCY = 5;
   for (let i = 0; i < pairs.length; i += CONCURRENCY) {
     const batch = pairs.slice(i, i + CONCURRENCY);
-    const batchResults = await Promise.all(batch.map(p => judgeOne(p.question, p.answer)));
+    // 개별 실패는 default로 처리 — 한 건 때문에 전체 멈추지 않도록
+    const batchResults = await Promise.all(batch.map(async p => {
+      try {
+        return await judgeOne(p.question, p.answer);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`\n  ⚠️ judge 실패 (default 처리): ${msg.slice(0, 120)}`);
+        return { quality: 'no_data' as const, wiki: '' };
+      }
+    }));
     results.push(...batchResults);
     process.stdout.write(`\r  Claude 평가 ${Math.min(i + CONCURRENCY, pairs.length)} / ${pairs.length}`);
   }

@@ -11,7 +11,9 @@
     "wiki:build": "npx tsx scripts/build-wiki-data.ts",
     "embed:build": "npx tsx --env-file=.env.local scripts/build-embeddings.ts",
     "qa:golden": "npx tsx --env-file=.env.local scripts/golden-qa.ts",
-    "watch": "npx tsx --env-file=.env.local scripts/watch.ts"
+    "watch": "npx tsx --env-file=.env.local scripts/watch.ts",
+    "knowledge:map": "npx tsx --env-file=.env.local scripts/generate-knowledge-map.ts",
+    "knowledge:questions": "npx tsx --env-file=.env.local scripts/embed-questions.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",
