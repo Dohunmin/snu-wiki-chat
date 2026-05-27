@@ -384,8 +384,35 @@ function sanitize(s: string): string {
     .replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '');
 }
 
-// 한계 명시 키워드 — 후처리 검증용. 발췌가 진짜 한계 문장인지 확인.
-const LIMIT_KEYWORD = /않습니다|없습니다|확인되지|확인할 수 없|제한적|범위(를| 내| 밖| 안)|포함되어 있지|별도 자료|미확인|찾을 수 없|누락|벗어|부족|드리지 못|제공되지/;
+// 한계 명시 키워드 — 답변에서 한계 문장 추출 + 후처리 검증용.
+const LIMIT_KEYWORD = /않습니다|없습니다|없어|없으|확인되지|확인할 수 없|제한적|범위(를| 내| 밖| 안)|포함되어 있지|별도 자료|추가 자료|미확인|찾을 수 없|누락|벗어|부족|드리지 못|제공되지|불가능|어렵습니다|어려운|단정|명시되지|나타나지|존재하지|다루지 않|알 수 없|확인 불가/;
+
+/**
+ * 답변 원문에서 한계를 명시한 완결 문장을 직접 추출.
+ * Sonnet 발췌(부정확·조각화)에 의존하지 않고 코드로 추출 → 항상 정확·완결.
+ * @returns 한계 문장 (최대 300자) 또는 빈 문자열(한계 문장 없음 = false positive 신호)
+ */
+function extractLimitationSentence(answer: string): string {
+  const lines = answer.split('\n');
+  // ⚠️/📝/"한계" 마커가 있는 줄 우선, 그 다음 일반 한계 키워드 줄
+  const marked: string[] = [];
+  const plain: string[] = [];
+  for (const raw of lines) {
+    // 마크다운 기호 제거 후 검사
+    const clean = raw.replace(/[#>*`|]/g, '').replace(/^\s*[-•]\s*/, '').trim();
+    if (clean.length < 12) continue;
+    if (!LIMIT_KEYWORD.test(clean)) continue;
+    if (/⚠️|📝|한계/.test(raw)) marked.push(clean);
+    else plain.push(clean);
+  }
+  const pick = marked[0] ?? plain[0];
+  if (!pick) return '';
+  // 그 줄에서 한계 키워드 포함하는 완결 문장만 추출 (마침표/종결어미 단위)
+  const sentences = pick.split(/(?<=[.!?])\s+/);
+  const hit = sentences.find(s => LIMIT_KEYWORD.test(s)) ?? pick;
+  // 앞부분의 이모지·깨진 surrogate·기호·콜론 등 제거 → 첫 한글/영숫자/따옴표부터 시작
+  return hit.replace(/^[^가-힣a-zA-Z0-9"'(]+/, '').trim().slice(0, 300);
+}
 
 async function judgeOne(question: string, answer: string): Promise<JudgeResult> {
   const q = sanitize(question);
@@ -417,22 +444,17 @@ ${WIKI_LIST}
        핵심 질문에 답했으면 no.
   ※ quality가 answered면 대부분 no. 잘 답변했는데 한계로 분류하지 마세요.
 
-[한계 발췌]
-- yes인 경우만: 답변에서 한계를 명시한 **완결된 한 문장**을 그대로 복사하세요.
-  반드시 마침표로 끝나는 완전한 문장. 헤더(##)·각주(¹)·표 조각·문장 도중 끊기 금지.
-  예: "전문 관리자 채용 절차에 관한 자료는 제공된 범위에 포함되어 있지 않습니다."
-- no인 경우: 빈 문자열.
-
-JSON으로만 출력 (발췌 안의 따옴표·줄바꿈은 이스케이프):
-{"q":"answered|partial|no_data","w":"위키ID","l":"yes|no","le":"완결문장 또는 빈문자열"}`,
+JSON으로만 출력:
+{"q":"answered|partial|no_data","w":"위키ID","l":"yes|no"}`,
     }],
   });
 
   const raw = (msg.content[0] as { text: string }).text.trim();
-  return parseJudgeJson(raw);
+  // 발췌는 Sonnet에 의존하지 않고 답변 원문에서 코드로 추출 (정확·완결 보장).
+  return parseJudgeJson(raw, a);
 }
 
-function parseJudgeJson(raw: string): JudgeResult {
+function parseJudgeJson(raw: string, answer: string): JudgeResult {
   // JSON 추출 — Sonnet이 가끔 코드 블록으로 감싸므로 {} 만 잡기
   const m = raw.match(/\{[\s\S]+\}/);
   try {
@@ -445,18 +467,16 @@ function parseJudgeJson(raw: string): JudgeResult {
     const wiki = WIKI_LAYOUT[wRaw] ? wRaw : '';
     const lRaw = String(parsed.l ?? '').toLowerCase();
     let limitation = lRaw === 'yes' || lRaw === 'true';
-    let excerpt = String(parsed.le ?? '').slice(0, 300);
+    // 발췌 = 답변 원문에서 한계 문장 직접 추출 (Sonnet le 무시)
+    let excerpt = limitation ? extractLimitationSentence(answer) : '';
 
     // 후처리 false-positive 강등: answered인데 발췌에 한계 키워드 없으면
     // (Sonnet이 답변 본문 조각을 발췌로 잘못 고른 케이스) → 한계 아님으로 강등.
-    // partial/no_data는 한계 가능성 높으므로 유지.
-    if (limitation && quality === 'answered' && excerpt && !LIMIT_KEYWORD.test(excerpt)) {
-      limitation = false;
-      excerpt = '';
-    }
-    // 발췌 비었는데 limitation=yes면 신뢰 어려움 → 강등
+    // false-positive 강등: Sonnet이 한계라 했지만 답변에서 한계 문장을 못 찾으면
+    // (= 답변에 실제 한계 표현 없음) → 한계 아님. quality 무관하게 적용.
     if (limitation && !excerpt.trim()) {
       limitation = false;
+      excerpt = '';
     }
 
     return { quality, wiki, limitation, excerpt };
