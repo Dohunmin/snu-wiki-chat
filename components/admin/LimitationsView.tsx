@@ -277,13 +277,15 @@ function ClusterCard({ cluster, expanded, onToggle }: { cluster: LimitationClust
       </button>
       {expanded && (
         <div className="border-t border-gray-100 px-4 py-3 space-y-3">
-          {cluster.questions.map(q => (
+          {cluster.questions.length === 0 ? (
+            <p className="text-xs text-gray-400">한계 답변이 없는 클러스터입니다. (이 주제는 자료가 충분)</p>
+          ) : cluster.questions.map(q => (
             <div key={q.id} className="text-xs">
               <div className="flex items-start gap-2">
-                <span className={`shrink-0 mt-0.5 w-2 h-2 rounded-full ${q.limitation ? 'bg-red-400' : 'bg-gray-200'}`} />
+                <span className="shrink-0 mt-0.5 w-2 h-2 rounded-full bg-red-400" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-gray-800">{q.question}</p>
-                  {q.limitation && q.limitationExcerpt && (
+                  <p className="text-gray-800 font-medium">{q.question}</p>
+                  {q.limitationExcerpt && (
                     <p className="mt-1 px-2 py-1 bg-amber-50 border border-amber-100 rounded text-amber-800 whitespace-pre-line">
                       ⚠️ {q.limitationExcerpt}
                     </p>

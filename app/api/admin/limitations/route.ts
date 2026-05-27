@@ -83,19 +83,24 @@ export async function GET(req: Request) {
     byCluster.set(q.clusterId, arr);
   }
 
-  let clusters: LimitationCluster[] = Array.from(byCluster.entries()).map(([cid, items]) => ({
-    clusterId: cid,
-    wiki: dominantWiki(items),
-    label: json.clusterLabels[String(cid)]?.label ?? `클러스터 ${cid}`,
-    total: items.length,
-    limited: items.filter(q => q.limitation).length,
-    rate: items.filter(q => q.limitation).length / items.length,
-    questions: items.map(q => ({
-      id: q.id, question: q.question,
-      limitation: q.limitation, limitationExcerpt: q.limitationExcerpt,
-      createdAt: q.createdAt,
-    })),
-  }));
+  // 카드 펼침에 한계 답변만 표시 — 한계 false 질문은 노이즈, 보충 도구 본질과 무관.
+  // 헤더의 total/limited/rate는 그대로 (한계율 신호 유지).
+  let clusters: LimitationCluster[] = Array.from(byCluster.entries()).map(([cid, items]) => {
+    const limitedItems = items.filter(q => q.limitation);
+    return {
+      clusterId: cid,
+      wiki: dominantWiki(items),
+      label: json.clusterLabels[String(cid)]?.label ?? `클러스터 ${cid}`,
+      total: items.length,
+      limited: limitedItems.length,
+      rate: limitedItems.length / items.length,
+      questions: limitedItems.map(q => ({
+        id: q.id, question: q.question,
+        limitation: q.limitation, limitationExcerpt: q.limitationExcerpt,
+        createdAt: q.createdAt,
+      })),
+    };
+  });
 
   clusters = sortClusters(clusters, sortBy);
 
@@ -153,10 +158,10 @@ function sortClusters(clusters: LimitationCluster[], sortBy: string): Limitation
   if (sortBy === 'limited') {
     return clusters.sort((a, b) => b.limited - a.limited || b.rate - a.rate);
   }
-  // recent
+  // recent — questions가 비어있는 cluster(한계 0건)는 0으로 처리(맨 뒤)
   return clusters.sort((a, b) => {
-    const ma = Math.max(...a.questions.map(q => +new Date(q.createdAt)));
-    const mb = Math.max(...b.questions.map(q => +new Date(q.createdAt)));
+    const ma = a.questions.length > 0 ? Math.max(...a.questions.map(q => +new Date(q.createdAt))) : 0;
+    const mb = b.questions.length > 0 ? Math.max(...b.questions.map(q => +new Date(q.createdAt))) : 0;
     return mb - ma;
   });
 }
