@@ -34,6 +34,7 @@ export function LimitationsView() {
   const [wikiFilter, setWikiFilter] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('rate');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());     // cluster id or "out:wiki"
+  const [search, setSearch] = useState('');                             // 질문 텍스트 검색
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [batchInfo, setBatchInfo] = useState<{ batchNum: number; totalProcessed: number } | null>(null);
@@ -86,12 +87,12 @@ export function LimitationsView() {
         setBatchInfo({ batchNum, totalProcessed });
 
         if (!result.hasMore) {
-          if (totalProcessed === 0) {
-            alert('새 질문이 없습니다. (DBSCAN/라벨링은 재계산됨)');
-          } else {
-            alert(`갱신 완료: ${totalProcessed}건 처리 (${batchNum} batch)`);
-          }
           await loadData();
+          if (totalProcessed === 0) {
+            alert('새 질문이 없습니다.');
+          } else {
+            alert(`갱신 완료: ${totalProcessed}건 처리.\n새로 추가된 한계 답변은 상단에 🆕 NEW로 표시됩니다.`);
+          }
           break;
         }
       }
@@ -117,6 +118,19 @@ export function LimitationsView() {
         ...data.outliers.map(o => o.wiki),
       ].filter(Boolean))).sort()
     : [];
+
+  // 질문 검색 — 매칭 질문이 있는 카드만, 매칭 질문만 노출 (client-side)
+  const kw = search.trim().toLowerCase();
+  const matchQ = (q: { question: string; limitationExcerpt: string }) =>
+    !kw || q.question.toLowerCase().includes(kw) || q.limitationExcerpt.toLowerCase().includes(kw);
+
+  const clusters = (data?.clusters ?? [])
+    .map(c => kw ? { ...c, label: c.label, questions: c.questions.filter(matchQ) } : c)
+    .filter(c => !kw || c.questions.length > 0 || c.label.toLowerCase().includes(kw));
+  const outliers = (data?.outliers ?? [])
+    .map(o => kw ? { ...o, questions: o.questions.filter(matchQ) } : o)
+    .filter(o => !kw || o.questions.length > 0);
+  const searching = kw.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -173,7 +187,17 @@ export function LimitationsView() {
           )}
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500">위키</label>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="🔍 질문·발췌 검색"
+              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 w-52 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="text-xs text-gray-400 hover:text-gray-700">✕</button>
+            )}
+            <label className="text-xs text-gray-500 ml-2">위키</label>
             <select
               value={wikiFilter}
               onChange={e => setWikiFilter(e.target.value)}
@@ -213,18 +237,24 @@ export function LimitationsView() {
           </div>
         )}
 
+        {searching && clusters.length === 0 && outliers.length === 0 && (
+          <div className="text-center text-sm text-gray-400 py-8">
+            &ldquo;{search}&rdquo; 검색 결과 없음
+          </div>
+        )}
+
         {/* 클러스터 섹션 */}
-        {data && data.clusters.length > 0 && (
+        {clusters.length > 0 && (
           <section>
             <h2 className="text-sm font-semibold text-gray-700 mb-3">
-              📊 클러스터된 주제 ({data.clusters.length}개) <span className="text-xs text-gray-400 font-normal">— 복수 질문, 우선순위 신호</span>
+              📊 클러스터된 주제 ({clusters.length}개) <span className="text-xs text-gray-400 font-normal">— 복수 질문, 우선순위 신호</span>
             </h2>
             <div className="space-y-2">
-              {data.clusters.map(c => (
+              {clusters.map(c => (
                 <ClusterCard
                   key={c.clusterId}
                   cluster={c}
-                  expanded={expanded.has(`c:${c.clusterId}`)}
+                  expanded={searching || expanded.has(`c:${c.clusterId}`)}
                   onToggle={() => toggleExpand(`c:${c.clusterId}`)}
                 />
               ))}
@@ -233,18 +263,18 @@ export function LimitationsView() {
         )}
 
         {/* outlier 섹션 */}
-        {data && data.outliers.length > 0 && (
+        {outliers.length > 0 && (
           <section>
             <h2 className="text-sm font-semibold text-gray-700 mb-3">
-              📌 단일 질문 — 한계 답변 ({data.outliers.reduce((s, o) => s + o.limited, 0)}건)
+              📌 단일 질문 — 한계 답변 ({outliers.reduce((s, o) => s + o.questions.length, 0)}건)
               <span className="text-xs text-gray-400 font-normal"> — 위키별로 그룹</span>
             </h2>
             <div className="space-y-2">
-              {data.outliers.map(o => (
+              {outliers.map(o => (
                 <OutlierCard
                   key={o.wiki}
                   group={o}
-                  expanded={expanded.has(`out:${o.wiki}`)}
+                  expanded={searching || expanded.has(`out:${o.wiki}`)}
                   onToggle={() => toggleExpand(`out:${o.wiki}`)}
                 />
               ))}
@@ -269,7 +299,20 @@ function ClusterCard({ cluster, expanded, onToggle }: { cluster: LimitationClust
         <span className={`shrink-0 px-2 py-0.5 text-xs rounded-md border ${wikiBadge}`}>
           {WIKI_LABELS[cluster.wiki] ?? cluster.wiki}
         </span>
-        <span className="flex-1 text-sm text-gray-800 font-medium truncate">{cluster.label}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-800 font-medium truncate">{cluster.label}</span>
+            {(cluster.newCount ?? 0) > 0 && (
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-500 text-white">🆕 NEW {cluster.newCount}</span>
+            )}
+          </div>
+          {/* 펼치기 전 대표 한계 발췌 1줄 미리보기 */}
+          {!expanded && cluster.questions[0]?.limitationExcerpt && (
+            <p className="text-[11px] text-gray-500 truncate mt-0.5">
+              ⚠️ {cluster.questions[0].limitationExcerpt}
+            </p>
+          )}
+        </div>
         <span className="text-xs text-gray-500 shrink-0">
           {cluster.total}건 (한계 <span className={rateColor}>{cluster.limited}</span>, <span className={`font-semibold ${rateColor}`}>{ratePct}%</span>)
         </span>
@@ -280,20 +323,7 @@ function ClusterCard({ cluster, expanded, onToggle }: { cluster: LimitationClust
           {cluster.questions.length === 0 ? (
             <p className="text-xs text-gray-400">한계 답변이 없는 클러스터입니다. (이 주제는 자료가 충분)</p>
           ) : cluster.questions.map(q => (
-            <div key={q.id} className="text-xs">
-              <div className="flex items-start gap-2">
-                <span className="shrink-0 mt-0.5 w-2 h-2 rounded-full bg-red-400" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-800 font-medium">{q.question}</p>
-                  {q.limitationExcerpt && (
-                    <p className="mt-1 px-2 py-1 bg-amber-50 border border-amber-100 rounded text-amber-800 whitespace-pre-line">
-                      ⚠️ {q.limitationExcerpt}
-                    </p>
-                  )}
-                  <p className="mt-1 text-gray-300">{new Date(q.createdAt).toLocaleString('ko-KR')}</p>
-                </div>
-              </div>
-            </div>
+            <QuestionRow key={q.id} q={q} />
           ))}
         </div>
       )}
@@ -309,30 +339,57 @@ function OutlierCard({ group, expanded, onToggle }: { group: OutlierGroup; expan
         <span className={`shrink-0 px-2 py-0.5 text-xs rounded-md border ${wikiBadge}`}>
           {WIKI_LABELS[group.wiki] ?? group.wiki}
         </span>
-        <span className="flex-1 text-sm text-gray-800">단일 질문 — 한계 답변 {group.limited}건</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-800">단일 질문 — 한계 답변 {group.questions.length}건</span>
+            {(group.newCount ?? 0) > 0 && (
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-500 text-white">🆕 NEW {group.newCount}</span>
+            )}
+          </div>
+          {/* 펼치기 전 대표 한계 발췌 1줄 미리보기 */}
+          {!expanded && group.questions[0]?.limitationExcerpt && (
+            <p className="text-[11px] text-gray-500 truncate mt-0.5">
+              ⚠️ {group.questions[0].limitationExcerpt}
+            </p>
+          )}
+        </div>
         <span className="text-xs text-gray-400 shrink-0">전체 {group.total}건 중</span>
         <span className="text-gray-300 text-xs">{expanded ? '▲' : '▼'}</span>
       </button>
       {expanded && (
         <div className="border-t border-gray-100 px-4 py-3 space-y-3">
           {group.questions.map(q => (
-            <div key={q.id} className="text-xs">
-              <div className="flex items-start gap-2">
-                <span className="shrink-0 mt-0.5 w-2 h-2 rounded-full bg-red-400" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-800 font-medium">{q.question}</p>
-                  {q.limitationExcerpt && (
-                    <p className="mt-1 px-2 py-1 bg-amber-50 border border-amber-100 rounded text-amber-800 whitespace-pre-line">
-                      ⚠️ {q.limitationExcerpt}
-                    </p>
-                  )}
-                  <p className="mt-1 text-gray-300">{new Date(q.createdAt).toLocaleString('ko-KR')}</p>
-                </div>
-              </div>
-            </div>
+            <QuestionRow key={q.id} q={q} />
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// 공통 질문 행 — NEW 배지 + 발췌 + 시각
+function QuestionRow({ q }: {
+  q: { id: string; question: string; limitationExcerpt: string; createdAt: string; isNew?: boolean }
+}) {
+  return (
+    <div className="text-xs">
+      <div className="flex items-start gap-2">
+        <span className="shrink-0 mt-0.5 w-2 h-2 rounded-full bg-red-400" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {q.isNew && (
+              <span className="shrink-0 px-1 py-0.5 text-[10px] font-bold rounded bg-blue-500 text-white">🆕 NEW</span>
+            )}
+            <p className="text-gray-800 font-medium">{q.question}</p>
+          </div>
+          {q.limitationExcerpt && (
+            <p className="mt-1 px-2 py-1 bg-amber-50 border border-amber-100 rounded text-amber-800 whitespace-pre-line">
+              ⚠️ {q.limitationExcerpt}
+            </p>
+          )}
+          <p className="mt-1 text-gray-300">{new Date(q.createdAt).toLocaleString('ko-KR')}</p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -41,12 +41,14 @@ export interface LimitationCluster {
   total: number;
   limited: number;
   rate: number;                        // limited / total
+  newCount?: number;                   // 최근 갱신(NEW) 한계 수
   questions: Array<{
     id: string;
     question: string;
     limitation: boolean;
     limitationExcerpt: string;
     createdAt: string;
+    isNew?: boolean;            // 최근 갱신 배치에 들어온 항목 (NEW 배지)
   }>;
 }
 

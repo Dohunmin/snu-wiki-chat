@@ -11,11 +11,13 @@ export interface OutlierGroup {
   wiki: string;
   total: number;            // 이 위키에 속한 outlier 총
   limited: number;          // 그 중 한계
+  newCount: number;         // 그 중 최근 갱신(NEW) 수
   questions: Array<{        // 한계 답변만 (limited만)
     id: string;
     question: string;
     limitationExcerpt: string;
     createdAt: string;
+    isNew?: boolean;
   }>;
 }
 
@@ -44,7 +46,8 @@ export async function GET(req: Request) {
   const qRes = await db.execute(sql`
     SELECT id, question, answer, question_created_at AS "createdAt", routed_agents AS "routedAgents",
            quality, wiki, limitation, limitation_excerpt AS "limitationExcerpt",
-           cluster_id AS "clusterId", pca_x AS "pcaX", pca_y AS "pcaY", placement_wiki AS "placementWiki"
+           cluster_id AS "clusterId", pca_x AS "pcaX", pca_y AS "pcaY", placement_wiki AS "placementWiki",
+           evaluated_at AS "evaluatedAt"
     FROM limitation_questions
   `);
   const labelRes = await db.execute(sql`SELECT cluster_id AS "clusterId", label FROM limitation_clusters`);
@@ -54,8 +57,9 @@ export async function GET(req: Request) {
     return m instanceof Date ? m.toISOString() : (m ? String(m) : '');
   })();
 
-  // DB row → LimitationQuestion 형태 (그룹핑 로직 재사용)
-  const allQs: LimitationQuestion[] = (qRes.rows as unknown as Array<Record<string, unknown>>).map(r => ({
+  // DB row → LimitationQuestion (+ evaluatedAt for NEW 판정)
+  type QWithEval = LimitationQuestion & { evaluatedAt: string };
+  const allQs: QWithEval[] = (qRes.rows as unknown as Array<Record<string, unknown>>).map(r => ({
     id: r.id as string,
     question: r.question as string,
     answer: r.answer as string,
@@ -69,12 +73,18 @@ export async function GET(req: Request) {
     clusterId: Number(r.clusterId),
     pcaCoord: [Number(r.pcaX), Number(r.pcaY)],
     placementWiki: (r.placementWiki as string) ?? '',
+    evaluatedAt: r.evaluatedAt instanceof Date ? r.evaluatedAt.toISOString() : String(r.evaluatedAt),
   }));
 
   const labelMap = new Map<number, string>();
   for (const row of labelRes.rows as unknown as Array<{ clusterId: number; label: string }>) {
     labelMap.set(Number(row.clusterId), row.label);
   }
+
+  // NEW 판정 — 마지막 갱신(updatedAt=MAX evaluated_at) 기준 10분 이내 평가된 항목
+  const maxAtMs = updatedAt ? new Date(updatedAt).getTime() : 0;
+  const NEW_WINDOW_MS = 10 * 60 * 1000;
+  const isNewQ = (q: QWithEval) => maxAtMs > 0 && new Date(q.evaluatedAt).getTime() >= maxAtMs - NEW_WINDOW_MS;
 
   if (allQs.length === 0) {
     return Response.json({
@@ -90,7 +100,7 @@ export async function GET(req: Request) {
     : allQs;
 
   // cluster 그룹핑
-  const byCluster = new Map<number, LimitationQuestion[]>();
+  const byCluster = new Map<number, QWithEval[]>();
   for (const q of filteredQs) {
     if (q.clusterId < 0) continue;
     const arr = byCluster.get(q.clusterId) ?? [];
@@ -109,10 +119,11 @@ export async function GET(req: Request) {
       total: items.length,
       limited: limitedItems.length,
       rate: limitedItems.length / items.length,
+      newCount: limitedItems.filter(q => isNewQ(q)).length,
       questions: limitedItems.map(q => ({
         id: q.id, question: q.question,
         limitation: q.limitation, limitationExcerpt: q.limitationExcerpt,
-        createdAt: q.createdAt,
+        createdAt: q.createdAt, isNew: isNewQ(q),
       })),
     };
   })
@@ -122,7 +133,7 @@ export async function GET(req: Request) {
   clusters = sortClusters(clusters, sortBy);
 
   // outlier (단일 질문) — 위키별 그룹핑, 한계 답변만 노출
-  const byWikiOutlier = new Map<string, LimitationQuestion[]>();
+  const byWikiOutlier = new Map<string, QWithEval[]>();
   for (const q of filteredQs) {
     if (q.clusterId !== -1) continue;
     const w = q.wiki || q.placementWiki || 'other';
@@ -138,15 +149,17 @@ export async function GET(req: Request) {
         wiki,
         total: items.length,
         limited: limited.length,
+        newCount: limited.filter(q => isNewQ(q)).length,
         questions: limited.map(q => ({
           id: q.id, question: q.question,
           limitationExcerpt: q.limitationExcerpt,
-          createdAt: q.createdAt,
+          createdAt: q.createdAt, isNew: isNewQ(q),
         })),
       };
     })
     .filter(g => g.limited > 0)      // 한계 없는 outlier 그룹은 노출 X (보충 신호 아님)
-    .sort((a, b) => b.limited - a.limited);
+    // NEW 있는 그룹 먼저, 그다음 한계 건수순 (갱신된 게 위로)
+    .sort((a, b) => (b.newCount - a.newCount) || (b.limited - a.limited));
 
   return Response.json({
     clusters,
@@ -168,12 +181,15 @@ function dominantWiki(items: LimitationQuestion[]): string {
 }
 
 function sortClusters(clusters: LimitationCluster[], sortBy: string): LimitationCluster[] {
+  // NEW 있는 클러스터는 항상 최상단 (갱신된 게 어디 들어갔는지 즉시 보이게)
+  const byNew = (a: LimitationCluster, b: LimitationCluster) => (b.newCount ?? 0) > 0 || (a.newCount ?? 0) > 0
+    ? (b.newCount ?? 0) - (a.newCount ?? 0)
+    : 0;
   if (sortBy === 'rate') {
-    // 한계율 우선, 동률은 한계 절대수, 동률은 size
-    return clusters.sort((a, b) => b.rate - a.rate || b.limited - a.limited || b.total - a.total);
+    return clusters.sort((a, b) => byNew(a, b) || b.rate - a.rate || b.limited - a.limited || b.total - a.total);
   }
   if (sortBy === 'limited') {
-    return clusters.sort((a, b) => b.limited - a.limited || b.rate - a.rate);
+    return clusters.sort((a, b) => byNew(a, b) || b.limited - a.limited || b.rate - a.rate);
   }
   // recent — questions가 비어있는 cluster(한계 0건)는 0으로 처리(맨 뒤)
   return clusters.sort((a, b) => {
