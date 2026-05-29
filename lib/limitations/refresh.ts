@@ -350,6 +350,11 @@ function sanitize(s: string): string {
 // 한계 명시 키워드 — 답변에서 한계 문장 추출 + 후처리 검증용.
 const LIMIT_KEYWORD = /않습니다|없습니다|없어|없으|확인되지|확인할 수 없|제한적|범위(를| 내| 밖| 안)|포함되어 있지|별도 자료|추가 자료|미확인|찾을 수 없|누락|벗어|부족|드리지 못|제공되지|불가능|어렵습니다|어려운|단정|명시되지|나타나지|존재하지|다루지 않|알 수 없|확인 불가/;
 
+// 한계 마커 — 챗봇이 의도적으로 단 한계 블록 표지. 이게 있을 때만 limitation=true.
+// 다양한 형식 수용: "📌 한계", "⚠️ 분석의 한계", "⚠️ 자료 한계 안내", "한계:", "한계가 있", 줄머리 "한계 안내"
+// false positive 차단 — 본문에 우연 등장하는 "~없습니다"는 무시.
+const HAS_LIMIT_MARKER = /[📌⚠️📝][^\n]{0,30}한계|(^|\n)\s*[*#>]*\s*한계\s*(가\s*있|[:：를는 ]|안내)/m;
+
 /**
  * 답변 원문에서 한계를 명시한 완결 문장을 직접 추출.
  * Sonnet 발췌(부정확·조각화)에 의존하지 않고 코드로 추출 → 항상 정확·완결.
@@ -377,18 +382,27 @@ function extractLimitationSentence(answer: string): string {
   return hit.replace(/^[^가-힣a-zA-Z0-9"'(]+/, '').trim().slice(0, 300);
 }
 
+// 답변 앞부분(맥락) + 뒷부분(한계 명시 블록은 거의 항상 답변 끝에 옴) 둘 다 Sonnet에 노출.
+// 1200자 단일 슬라이스 시 긴 답변(>1200자)의 "📌 한계" 블록을 못 보고 false 판정하던 버그 차단.
+function squeezeAnswerForJudge(a: string, head = 1200, tail = 1000): string {
+  if (a.length <= head + tail + 20) return a;
+  return `${a.slice(0, head)}\n\n[...중략...]\n\n${a.slice(-tail)}`;
+}
+
 async function judgeOne(question: string, answer: string): Promise<JudgeResult> {
   const q = sanitize(question);
   const a = sanitize(answer);
+  // Sonnet 호출은 quality + wiki만 (한계 판정은 코드로 답변 마커 추출 — Sonnet이 답변 핵심에만 집중해
+  // 명시적 "📌 한계" 블록을 부수적 보조로 분류하는 false-negative가 잦았음).
   const msg = await getAnthropic().messages.create({
     model: SONNET_MODEL,
-    max_tokens: 600,   // 발췌 완결 문장 + JSON 구조 여유 (한글 토큰 고려)
+    max_tokens: 200,
     messages: [{
       role: 'user',
       content: `서울대 거버넌스 위키 챗봇 Q&A를 평가하세요.
 
 질문: ${q}
-답변: ${a.slice(0, 1200)}
+답변: ${squeezeAnswerForJudge(a)}
 
 [품질]
 - answered: 위키 자료로 핵심에 구체적으로 답변
@@ -399,21 +413,12 @@ async function judgeOne(question: string, answer: string): Promise<JudgeResult> 
 ${WIKI_LIST}
 관련 위키가 없으면 none
 
-[한계 여부] — 엄격하게 판정하세요.
-- yes: 답변이 질문의 **핵심**에 대해 "위키 자료에 없다 / 범위 밖이다 / 확인 불가"라고 명시적으로 밝힌 경우.
-       또는 답변 전체가 자료 부족으로 핵심을 답하지 못한 경우.
-- no:  자료로 핵심을 답변한 경우. 답변에 표·목록·구체적 수치·인용이 있으면 거의 no.
-       답변 끝에 "일부 세부사항은 별도 자료 참고" 정도의 **부수적 보조 안내**가 있어도,
-       핵심 질문에 답했으면 no.
-  ※ quality가 answered면 대부분 no. 잘 답변했는데 한계로 분류하지 마세요.
-
 JSON으로만 출력:
-{"q":"answered|partial|no_data","w":"위키ID","l":"yes|no"}`,
+{"q":"answered|partial|no_data","w":"위키ID"}`,
     }],
   });
 
   const raw = (msg.content[0] as { text: string }).text.trim();
-  // 발췌는 Sonnet에 의존하지 않고 답변 원문에서 코드로 추출 (정확·완결 보장).
   return parseJudgeJson(raw, a);
 }
 
@@ -428,19 +433,12 @@ function parseJudgeJson(raw: string, answer: string): JudgeResult {
       qRaw.includes('partial')  ? 'partial'  : 'no_data';
     const wRaw = String(parsed.w ?? '').toLowerCase().trim();
     const wiki = WIKI_LAYOUT[wRaw] ? wRaw : '';
-    const lRaw = String(parsed.l ?? '').toLowerCase();
-    let limitation = lRaw === 'yes' || lRaw === 'true';
-    // 발췌 = 답변 원문에서 한계 문장 직접 추출 (Sonnet le 무시)
-    let excerpt = limitation ? extractLimitationSentence(answer) : '';
 
-    // 후처리 false-positive 강등: answered인데 발췌에 한계 키워드 없으면
-    // (Sonnet이 답변 본문 조각을 발췌로 잘못 고른 케이스) → 한계 아님으로 강등.
-    // false-positive 강등: Sonnet이 한계라 했지만 답변에서 한계 문장을 못 찾으면
-    // (= 답변에 실제 한계 표현 없음) → 한계 아님. quality 무관하게 적용.
-    if (limitation && !excerpt.trim()) {
-      limitation = false;
-      excerpt = '';
-    }
+    // 한계 판정 = 답변 원문에서 명시적 마커("📌 한계" / "⚠️ 한계" / 줄머리 "한계:") 있을 때만
+    // extractLimitationSentence로 추출. Sonnet 판정 무시 — 코드 추출이 더 정확.
+    const hasExplicitMarker = HAS_LIMIT_MARKER.test(answer);
+    const excerpt = hasExplicitMarker ? extractLimitationSentence(answer) : '';
+    const limitation = excerpt.length > 0;
 
     return { quality, wiki, limitation, excerpt };
   } catch {
