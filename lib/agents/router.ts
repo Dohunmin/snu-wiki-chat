@@ -18,7 +18,7 @@ const MIN_ABSOLUTE_SCORE = 3;
 const RELATIVE_THRESHOLD = 0.4;
 const MAX_WIKIS = 6;
 const ALWAYS_CONTEXT_CAP = 5;
-const TOTAL_CHUNK_BUDGET = 30;
+const TOTAL_CHUNK_BUDGET = 22;   // 30→22: B-2 가중분배라 하위 청크는 토큰만 먹고 기여 적음(입력 토큰 절감)
 
 function prefilterScore(agent: ReturnType<typeof registry.getAll>[0], queryWords: string[]): number {
   let score = 0;

@@ -168,11 +168,14 @@ export async function POST(req: NextRequest) {
 
         const client = getAnthropicClient();
 
-        // 직전 5회 교환(user + assistant 쌍 5개 = 최대 10개 메시지) 전문 포함
-        // 토큰 증가 최소화하면서 직전 답변 맥락 보존
+        // 직전 5회 교환(user + assistant 쌍 5개 = 최대 10개 메시지) 전문 포함.
+        // 단, **연속 대화로 판단될 때만** 로드 — 개별 독립 질문은 이력 생략(토큰 절감).
+        //   신호: 매우 짧은 질문(맥락 의존) 또는 지시어·접속·후속 표현.
         type AnthropicMessage = { role: 'user' | 'assistant'; content: string };
         const history: AnthropicMessage[] = [];
-        if (convId) {
+        const followupRe = /그럼|그러면|그리고|그래서|또 |추가로|그 외|이것 외|이 외|위에서|위 질문|방금|아까|앞서|앞에|지금까지|이어서|계속|왜냐|이거|그거|저거|이건|그건|그렇다면|이를 |위 내용|방금 답변|정리해|요약해|다시 |더 |그것/;
+        const isContinuation = [...message.trim()].length <= 12 || followupRe.test(message);
+        if (convId && isContinuation) {
           const allPrev = await db
             .select({ role: messages.role, content: messages.content })
             .from(messages)
