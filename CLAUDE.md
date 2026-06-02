@@ -7,7 +7,9 @@
 
 ## 0. 프로젝트 한 줄 요약
 
-서울대 거버넌스 자료(평의원회·이사회·총장연설·재무공시 등 **9개 위키**)를 LLM으로 질의응답하는 Next.js 웹앱. 다중 위키 자동 라우팅 + 청크 스코어링 + 권한 관리 + Lens 페르소나.
+서울대 거버넌스 자료(평의원회·이사회·총장연설·재무공시 등 **9개 위키**)를 LLM으로 질의응답하는 Next.js 웹앱. 다중 위키 자동 라우팅 + **하이브리드 검색(키워드 + Voyage 임베딩/pgvector 벡터 + RRF 융합)** + 권한 관리 + Lens 페르소나 + 한계답변 추적.
+
+> ⚠️ **문서 정합성(2026-05-29 갱신)**: 한때 "벡터 검색 미도입"으로 적혀 있었으나 실제로는 `lib/embed/`(Voyage + pgvector + RRF)가 **이미 도입**됨. `lib/limitations/`(DBSCAN/ANN 클러스터링), `lib/llm/citations.ts`(번호 인용), `lib/agents/recency.ts`, `lib/google-sheets.ts`도 문서에 누락돼 있었음 → §18에 보강. 전반 점검은 [docs/코드_감사_보고서_2026-05-29.md](docs/코드_감사_보고서_2026-05-29.md) 참조.
 
 ---
 
@@ -17,10 +19,13 @@
 |------|------|------------------|
 | Framework | Next.js 15 (App Router) | [next.config.ts](next.config.ts), [app/layout.tsx](app/layout.tsx) |
 | Styling | Tailwind CSS v4 | [postcss.config.mjs](postcss.config.mjs), [app/globals.css](app/globals.css) |
-| LLM | `@anthropic-ai/sdk` — `claude-sonnet-4-6` | [lib/llm/client.ts](lib/llm/client.ts) (16 lines) |
-| DB | Vercel Postgres + Drizzle ORM | [lib/db/schema.ts](lib/db/schema.ts), [lib/db/client.ts](lib/db/client.ts), [drizzle.config.ts](drizzle.config.ts) |
-| Auth | NextAuth v5 (Credentials) | [lib/auth/config.ts](lib/auth/config.ts), [middleware.ts](middleware.ts) |
-| Build script | tsx | [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (573 lines) |
+| LLM | `@anthropic-ai/sdk` — `claude-sonnet-4-6`, `MAX_TOKENS=16000` | [lib/llm/client.ts](lib/llm/client.ts) (17 lines) |
+| DB | `@vercel/postgres`(Neon) + **pgvector** + Drizzle ORM | [lib/db/schema.ts](lib/db/schema.ts), [lib/db/client.ts](lib/db/client.ts) (`drizzle-orm/vercel-postgres`), [drizzle.config.ts](drizzle.config.ts) |
+| 임베딩/벡터검색 | Voyage `voyage-4-large`(1024d) + pgvector + RRF | [lib/embed/](lib/embed/) — §18 |
+| 한계 추적 | DBSCAN/ANN 클러스터링(pgvector) + Sonnet 평가 | [lib/limitations/](lib/limitations/) — §18 |
+| 외부 연동 | Google Sheets 질의로그 (RS256 JWT) | [lib/google-sheets.ts](lib/google-sheets.ts) — §18 |
+| Auth | NextAuth v5 (Credentials, JWT 세션) | [lib/auth/config.ts](lib/auth/config.ts), [middleware.ts](middleware.ts) |
+| Build script | tsx | [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (503 lines), [scripts/build-embeddings.ts](scripts/build-embeddings.ts) |
 | 패키지 | `package.json` | [package.json](package.json) |
 
 ---
@@ -144,7 +149,9 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 
 ## 7. 채팅 API — 메인 엔드포인트
 
-**파일**: [app/api/chat/route.ts](app/api/chat/route.ts) (218 lines)
+**파일**: [app/api/chat/route.ts](app/api/chat/route.ts) (~320 lines)
+> ⚠️ 아래 표의 라인 번호는 작성 당시 기준 — 이후 번호 인용(§18.2)·H-4 수정 등으로 이동됨. 흐름만 참고하고 실제 라인은 코드 확인.
+> 추가 흐름: chunk마다 `safeFlushPoint`+`resolveText`로 `[N]` 인용 안전 변환, 완료 후 old-format 검출 시 1회 retry(`replace` 이벤트), 스트림 실패 시 부분답변 저장(H-4).
 
 | 단계 | 위치 |
 |------|------|
@@ -156,7 +163,7 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 | 대화 신규 생성 (없으면) + user 메시지 저장 | [route.ts:84-101](app/api/chat/route.ts#L84-L101) |
 | **SSE 스트리밍 시작** | [route.ts:107-194](app/api/chat/route.ts#L107-L194) |
 | `routing` 이벤트 (선택된 에이전트 즉시 전달) | [route.ts:115-121](app/api/chat/route.ts#L115-L121) |
-| 직전 3회(user+assistant×3) 대화 이력 포함 | [route.ts:128-145](app/api/chat/route.ts#L128-L145) |
+| 직전 5회 교환(user+assistant×5 = 10개) 대화 이력 포함 | [route.ts:162-181](app/api/chat/route.ts#L162-L181) |
 | Anthropic 스트림 → `chunk` 이벤트 | [route.ts:147-162](app/api/chat/route.ts#L147-L162) |
 | `sources` 이벤트 (출처 목록) | [route.ts:164-165](app/api/chat/route.ts#L164-L165) |
 | assistant 메시지 DB 저장 | [route.ts:167-175](app/api/chat/route.ts#L167-L175) |
@@ -171,12 +178,17 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 | `/api/auth/[...nextauth]` | [app/api/auth/](app/api/auth/) | - | - |
 | `/api/register` | [app/api/register/](app/api/register/) | POST | 비인증 |
 | `/api/chat` | [app/api/chat/route.ts](app/api/chat/route.ts) | POST | `canChat` |
-| `/api/conversations` | [app/api/conversations/route.ts](app/api/conversations/route.ts) | GET | 인증 |
-| `/api/conversations/[id]` | [app/api/conversations/[id]/](app/api/conversations/%5Bid%5D/) | GET | 인증 |
+| `/api/conversations` | [app/api/conversations/route.ts](app/api/conversations/route.ts) | GET | 인증 (본인 것만) |
+| `/api/conversations/[id]` | [app/api/conversations/[id]/](app/api/conversations/%5Bid%5D/) | GET/DELETE | 인증. ⚠️ **GET은 소유권 미검사**(공개뷰어 의도) — 감사 H-3 |
+| `/api/conversations/public` | [app/api/conversations/public/route.ts](app/api/conversations/public/route.ts) | GET | 인증. **타 유저 대화 title 노출** — 감사 H-3 연관 |
 | `/api/wiki` | [app/api/wiki/route.ts](app/api/wiki/route.ts) | GET | 인증 |
 | `/api/wiki/[agentId]` | [app/api/wiki/[agentId]/](app/api/wiki/%5BagentId%5D/) | GET | 인증 |
 | `/api/wiki/syntheses` | [app/api/wiki/syntheses/](app/api/wiki/syntheses/) | GET/POST | 인증 |
 | `/api/admin/users` | [app/api/admin/users/](app/api/admin/users/) | GET/PATCH | admin |
+| `/api/admin/uploads` · `/api/admin/uploads/[id]` | [app/api/admin/uploads/](app/api/admin/uploads/) | GET/PATCH | admin |
+| `/api/admin/limitations` | [app/api/admin/limitations/route.ts](app/api/admin/limitations/route.ts) | GET | admin (한계 클러스터 조회) |
+| `/api/admin/limitations/refresh` | [app/api/admin/limitations/refresh/route.ts](app/api/admin/limitations/refresh/route.ts) | POST | admin (batch 증분 갱신) |
+| `/api/admin/backfill-sheets` | [app/api/admin/backfill-sheets/route.ts](app/api/admin/backfill-sheets/route.ts) | POST | admin |
 | `/api/uploads` | [app/api/uploads/](app/api/uploads/) | POST | `canUpload` |
 
 **라우팅 보호**: [middleware.ts](middleware.ts) (42 lines) — `/admin/*` admin 전용, `/`·`/api/chat` `canChat`, 비인증은 `/login` 리다이렉트, `pending`은 `/pending` 페이지.
@@ -267,6 +279,10 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 | `npm run build` | 프로덕션 빌드 |
 | `npm run start` | 프로덕션 서버 |
 | `npm run wiki:build` | Obsidian → `data/*.json` 전처리 (에이전트 데이터 갱신 시) |
+| `npm run embed:build` | `data/*.json` → Voyage 임베딩 → `chunk_embeddings` 적재 (증분, contentHash 기반) |
+| `npm run qa:golden` | 골든 QA 회귀 테스트 ([scripts/golden-qa.ts](scripts/golden-qa.ts)) |
+| `npm run watch` | 파일 변경 감시 → 자동 재빌드 ([scripts/watch.ts](scripts/watch.ts)) |
+| `npm run knowledge:map` / `knowledge:questions` | 지식 지형도(PCA proj) / 질문 임베딩 생성 |
 | `npm run db:generate` | Drizzle 마이그레이션 SQL 생성 |
 | `npm run db:migrate` | DB에 마이그레이션 적용 |
 
@@ -275,23 +291,27 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 ## 14. 환경 변수
 
 ```
-ANTHROPIC_API_KEY       # Claude API (lib/llm/client.ts:6)
-MASTER_ADMIN_EMAIL      # 마스터 어드민 이메일
-MASTER_ADMIN_PASSWORD   # 마스터 어드민 비밀번호 (Credentials provider)
-OBSIDIAN_PATH           # Obsidian 폴더 경로 (기본: ../Obsidian)
-AUTH_SECRET             # NextAuth 시크릿
-POSTGRES_URL            # Vercel Postgres
+ANTHROPIC_API_KEY            # Claude API (lib/llm/client.ts:6)
+VOYAGE_API_KEY               # Voyage 임베딩 API (lib/embed/voyage.ts, lib/limitations/refresh.ts)
+MASTER_ADMIN_EMAIL           # 마스터 어드민 이메일
+MASTER_ADMIN_PASSWORD        # 마스터 어드민 비밀번호 (Credentials provider)
+OBSIDIAN_PATH                # Obsidian 폴더 경로 (기본: ../Obsidian)
+AUTH_SECRET                  # NextAuth 시크릿
+POSTGRES_URL                 # @vercel/postgres (Neon, pgvector 확장 필요)
+GOOGLE_SERVICE_ACCOUNT_JSON  # Google Sheets 질의로그용 서비스계정 JSON (선택)
+GOOGLE_SHEET_ID              # 로그 기록 대상 시트 ID (선택)
+RAG_DEBUG                    # 'true'면 RRF/시맨틱라우팅 디버그 로그 (선택)
 ```
 
 ---
 
 ## 15. 알려진 한계 / 향후 과제
 
-- 데이터 갱신이 수동 (`npm run wiki:build` 실행 필요)
-- Synthesis 저장이 Vercel Postgres에만 — Obsidian 역방향 동기화 없음
-- 검색이 키워드/빈도 기반 — 벡터 유사도 검색 미도입
+- 데이터 갱신이 수동 (`npm run wiki:build` → `npm run embed:build` 순서로 실행 필요)
+- Synthesis 저장이 Postgres에만 — Obsidian 역방향 동기화 없음
 - 모바일 UI 미최적화
 - LLM 응답 캐싱 없음 (매번 새 호출)
+- **2026-05-29 감사에서 보안/정합성 이슈 다수 발견** — [docs/코드_감사_보고서_2026-05-29.md](docs/코드_감사_보고서_2026-05-29.md) (HIGH 6 / MEDIUM 33 등). 미해결 항목 추적 필요.
 
 ---
 
@@ -302,6 +322,7 @@ POSTGRES_URL            # Vercel Postgres
 - [docs/스코어링_및_답변_생성_보고서.md](docs/스코어링_및_답변_생성_보고서.md)
 - [docs/01-plan/features/](docs/01-plan/features/) — smart-retrieval, multi-wiki-integration 등 plan
 - [docs/02-design/features/](docs/02-design/features/) — multi-wiki-integration 등 design
+- [docs/코드_감사_보고서_2026-05-29.md](docs/코드_감사_보고서_2026-05-29.md) — **전체 코드 감사** (버그 63 / 개선 25 / 죽은코드 4, file:line + 수정안)
 
 ---
 
@@ -320,4 +341,60 @@ aeaadbe Fix middleware 504: remove DB query from session callback
 278b62d Fix global routing: always use all wikis when global keyword present
 ```
 
-**핵심 흐름**: Candidate Lens 기능(M1~M3) 완성 → 위키 nav/citation 정선 → Obsidian 동기화 자동화 강화.
+**핵심 흐름**: Candidate Lens 기능(M1~M3) 완성 → 위키 nav/citation 정선 → Obsidian 동기화 자동화 강화 → **RAG(Voyage+pgvector+RRF) 도입** → **한계답변 추적(pgvector ANN 클러스터링)** 추가.
+
+---
+
+## 18. 추가 서브시스템 (문서 보강 — 2026-05-29)
+
+> §1~§17이 작성된 이후 추가됐으나 본문에 누락돼 있던 모듈들. 실제 코드는 각 경로에서 확인.
+
+### 18.1 RAG — 하이브리드 검색 ([lib/embed/](lib/embed/))
+
+키워드 스코어링(WikiAgent) 결과와 벡터 검색 결과를 **RRF(Reciprocal Rank Fusion)** 로 융합. 9개 위키 모두 `ragEnabled: true`.
+
+| 파일 | 역할 |
+|------|------|
+| [lib/embed/voyage.ts](lib/embed/voyage.ts) | Voyage REST 클라이언트. `voyage-4-large`, `output_dimension=1024`, 128배치, 지수백오프 재시도, 차원검증 |
+| [lib/embed/search.ts](lib/embed/search.ts) | `searchVector(query, wikiId, role, k)` — Voyage 쿼리임베딩 → pgvector cosine(`<=>`) top-K. `semanticRoutingHints()` — 위키 자동 라우팅 후보 |
+| [lib/embed/rrf.ts](lib/embed/rrf.ts) | `rrfFuse(keyword, vector, {k:60, limit})` — 순위 기반 융합, 순수 함수 |
+| [lib/embed/chunker.ts](lib/embed/chunker.ts) | 임베딩용 청크 분할 (WikiAgent `splitIntoChunks`와 동일 규칙) |
+
+- **통합 지점**: [wiki-agent.ts](lib/agents/wiki-agent.ts) `getContext` 내 `if (this.config.ragEnabled)` 블록 — 키워드 결과를 RRF 입력으로 변환 후 융합, 실패 시 키워드 단독 fallback(try/catch).
+- **DB**: `chunk_embeddings` 테이블 (`vector(1024)`, `sensitive`, `contentHash`). 적재는 `npm run embed:build`.
+- **권한**: `searchVector`가 `wiki_id` + `canAccessSensitive` 기반 `sensitive` 필터를 SQL WHERE에 적용 (다층 방어).
+
+### 18.2 번호 인용 ([lib/llm/citations.ts](lib/llm/citations.ts))
+
+LLM이 긴 source ID 대신 `[N]` 번호만 쓰게 하고 서버에서 `[위키명] sid`로 resolve (wrong-attribution 차단, Perplexity 방식).
+
+| 함수 | 역할 |
+|------|------|
+| `buildNumberedContexts` | unique source에 `[N]` 부여 + 헤더에 주입(sid 숨김) + 매핑/요약 생성 |
+| `resolveText` / `extractCitedNumbers` / `resolveCitations` | `[N]` → 출처 텍스트/링크 변환, 인용된 번호 추출 |
+| `safeFlushPoint` | SSE 스트리밍 중 미완성 `[N]`이 잘리지 않는 안전 flush 지점 |
+| `detectOldFormatCitations` / `buildOldFormatRetryPrompt` | LLM이 옛 형식(`[위키] sid`) 출력 시 1회 재요청 |
+
+**호출**: [app/api/chat/route.ts](app/api/chat/route.ts) 스트리밍 루프에서 chunk마다 `safeFlushPoint`+`resolveText`, 완료 후 old-format 검출 시 retry.
+
+### 18.3 recency-boost ([lib/agents/recency.ts](lib/agents/recency.ts))
+
+`detectRecencyIntent` — "최근/최신/이번/올해…" 시간성 키워드 감지 시 `getRecencySources`로 date 최신 N개 source를 **컨텍스트에 직접 주입**(점수 가산 아님). WikiAgent `getContext` 말미에서 호출. ⚠️ 감사 M-15/M-16: cap 초과·과발동 이슈.
+
+### 18.4 한계답변 추적 ([lib/limitations/](lib/limitations/))
+
+챗봇이 "자료 없음/한계"를 명시한 답변을 추적·클러스터링해 보충 우선순위를 시각화 (admin 전용).
+
+| 파일 | 역할 |
+|------|------|
+| [lib/limitations/refresh.ts](lib/limitations/refresh.ts) | 증분 처리 핵심: 미처리 질문 → Voyage 임베딩 + Sonnet 품질평가 + 코드기반 한계마커 추출 → INSERT + ANN 클러스터 할당 + 라벨 재생성 |
+| [lib/limitations/cluster-ann.ts](lib/limitations/cluster-ann.ts) | `assignClusterANN` — pgvector 이웃검색 기반 증분 클러스터 할당. `rebuildAllClusters` — 전체 DBSCAN 보정 |
+| [lib/limitations/dbscan.ts](lib/limitations/dbscan.ts) | 순수 DBSCAN (cosine distance) |
+
+- **DB**: `limitation_questions`(질문/답변/임베딩/quality/limitation/clusterId/PCA좌표), `limitation_clusters`(라벨 캐시).
+- **API**: GET `/api/admin/limitations`(클러스터 조회), POST `/api/admin/limitations/refresh`(batch 증분). UI: [components/admin/LimitationsView.tsx](components/admin/LimitationsView.tsx).
+- ⚠️ 감사 M-8~M-10: 트랜잭션 부재·클러스터ID 경쟁·NEW배지 정합성 이슈.
+
+### 18.5 Google Sheets 질의 로그 ([lib/google-sheets.ts](lib/google-sheets.ts))
+
+`logQuestionToSheet` — 매 채팅 완료 시 질문/답변/위키/모드를 시트에 기록 (RS256 서비스계정 JWT). `GOOGLE_SERVICE_ACCOUNT_JSON`/`GOOGLE_SHEET_ID` 없으면 no-op. [app/api/chat/route.ts](app/api/chat/route.ts) 말미에서 호출. ⚠️ 감사 M-26: 토큰 캐시 포이즈닝.

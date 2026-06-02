@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
 import { conversations } from '@/lib/db/schema';
 import { desc, ne } from 'drizzle-orm';
+import { canAccessSensitive } from '@/lib/auth/roles';
 import { z } from 'zod';
 
 // Design Ref: §2.3 — limit 100→300, ?offset 지원.
@@ -15,6 +16,10 @@ export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+  }
+  // 공개 뷰어는 canAccessSensitive(admin/tier1)만 — tier2는 타 유저 대화 목록/열람 차단(감사 H-3)
+  if (!canAccessSensitive(session.user.role)) {
+    return Response.json({ error: '접근 권한이 없습니다.' }, { status: 403 });
   }
 
   const url = new URL(req.url);

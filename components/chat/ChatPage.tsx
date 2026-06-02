@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Role } from '@/lib/auth/roles';
-import { canUpload, canAccessAdmin, ROLE_LABELS } from '@/lib/auth/roles';
+import { canUpload, canAccessAdmin, canAccessSensitive, ROLE_LABELS } from '@/lib/auth/roles';
 import type { SourceRef } from '@/lib/agents/types';
 import Link from 'next/link';
 import { ConversationsListModal } from './ConversationsListModal';
@@ -338,6 +338,16 @@ export default function ChatPage({ user }: { user: User }) {
           }
 
           if (data.type === 'error') {
+            if (data.keepContent) {
+              // 부분 답변 보존 — throw하지 않고 경고 노트만 덧붙임(스트리밍으로 받은 내용 유지)
+              const note = `\n\n---\n\n⚠️ ${data.message || '응답 생성 중 오류가 발생했습니다.'} (일부만 표시됩니다.)`;
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId
+                  ? { ...m, content: m.content + note, streaming: false }
+                  : m
+              ));
+              return;
+            }
             throw new Error(data.message || '오류가 발생했습니다.');
           }
         }
@@ -486,7 +496,8 @@ export default function ChatPage({ user }: { user: User }) {
             )}
           </div>
 
-          {/* 모든 유저 질문 */}
+          {/* 모든 유저 질문 — tier2(canAccessSensitive=false)에는 미노출: 타 유저의 민감 답변 교차 열람 차단(감사 H-3) */}
+          {canAccessSensitive(user.role) && (
           <div>
             <button
               onClick={() => {
@@ -546,6 +557,7 @@ export default function ChatPage({ user }: { user: User }) {
               </div>
             )}
           </div>
+          )}
         </div>
 
         <div className="border-t border-gray-200 p-3 space-y-0.5">

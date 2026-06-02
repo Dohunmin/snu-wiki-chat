@@ -97,19 +97,26 @@ export async function searchVector(
  * @param maxDistance distance 이내만 (0.85 이내면 의미 있는 매칭, 너무 멀면 노이즈)
  * @returns 추천 위키 ID 집합 (forcedWikis와 합쳐서 사용)
  */
+export interface SemanticRouting {
+  /** forcedWikis 후보 — 임계 통과한 위키 (라우팅 강제 포함) */
+  hints: Set<string>;
+  /** 라우팅 가능한 모든 위키의 min cosine distance — chunk 예산 가중 분배용 */
+  distances: Map<string, number>;
+}
+
 export async function semanticRoutingHints(
   query: string,
   userRole: Role,
   opts: {
-    topK?: number;
     maxWikis?: number;
     /** top-1 위키는 무조건 포함하는 상한 (그 이상 멀면 진짜 무관) */
     absoluteMax?: number;
     /** top-2 이후 추가 위키의 거리 임계 (의미적으로 명확한 매칭만) */
     tightMax?: number;
   } = {},
-): Promise<Set<string>> {
-  const { topK = 50, maxWikis = 5, absoluteMax = 1.0, tightMax = 0.85 } = opts;
+): Promise<SemanticRouting> {
+  const { maxWikis = 5, absoluteMax = 1.0, tightMax = 0.85 } = opts;
+  const empty: SemanticRouting = { hints: new Set(), distances: new Map() };
 
   try {
     // 1) 쿼리 임베딩
@@ -117,22 +124,14 @@ export async function semanticRoutingHints(
     const lit = `[${queryEmbed.join(',')}]`;
     const sensitiveAllowed = canAccessSensitive(userRole);
 
-    // 2) 위키 단위 min distance 집계 (임계값 필터 없이 — 후처리에서 결정)
+    // 2) 위키별 min distance 직접 집계 (전역 LIMIT 없이 — 감사 M-5: 큰 위키가 top-K를
+    //    점유해 작은 위키가 굶던 문제 제거 + 가중 분배에 전체 위키 거리가 필요).
     const result = await db.execute(sql`
-      WITH ranked AS (
-        SELECT
-          wiki_id,
-          embedding <=> ${lit}::vector AS distance
-        FROM chunk_embeddings
-        WHERE (${sensitiveAllowed} OR sensitive = FALSE)
-        ORDER BY embedding <=> ${lit}::vector
-        LIMIT ${topK}
-      )
-      SELECT wiki_id, MIN(distance) AS min_dist
-      FROM ranked
+      SELECT wiki_id, MIN(embedding <=> ${lit}::vector) AS min_dist
+      FROM chunk_embeddings
+      WHERE (${sensitiveAllowed} OR sensitive = FALSE)
       GROUP BY wiki_id
       ORDER BY min_dist
-      LIMIT ${maxWikis}
     `);
 
     const rows: Array<{ wiki_id: string; min_dist: number | string }> = Array.isArray(result)
@@ -143,34 +142,31 @@ export async function semanticRoutingHints(
       if (process.env.RAG_DEBUG === 'true') {
         console.log(`[SemRoute] query="${query.slice(0, 40)}..." → (no chunks in DB)`);
       }
-      return new Set();
+      return empty;
     }
 
-    // 3) 계층적 필터링:
-    //    - top-1: 거리 ≤ absoluteMax(1.0)면 무조건 포함 (약한 매칭이라도 가장 가까운 건 살림)
-    //    - top-2 이후: 거리 ≤ tightMax(0.85)인 위키만 추가 (확실한 의미 매칭만)
-    const selected: typeof rows = [];
-    if (Number(rows[0].min_dist) <= absoluteMax) {
-      selected.push(rows[0]);
-    }
-    for (let i = 1; i < rows.length; i++) {
-      if (Number(rows[i].min_dist) <= tightMax) {
-        selected.push(rows[i]);
-      }
+    const distances = new Map(rows.map(r => [r.wiki_id, Number(r.min_dist)]));
+
+    // 3) hints(강제 포함 후보) — 기존 계층 임계 유지(recall 보존):
+    //    top-1은 absoluteMax 이내면 포함, top-2 이후는 tightMax 이내인 것만. (top maxWikis 한정)
+    const top = rows.slice(0, maxWikis);
+    const hints = new Set<string>();
+    if (Number(top[0].min_dist) <= absoluteMax) hints.add(top[0].wiki_id);
+    for (let i = 1; i < top.length; i++) {
+      if (Number(top[i].min_dist) <= tightMax) hints.add(top[i].wiki_id);
     }
 
     if (process.env.RAG_DEBUG === 'true') {
       const debugAll = rows.map(r => `${r.wiki_id}(${Number(r.min_dist).toFixed(3)})`).join(', ');
-      const debugSel = selected.map(r => `${r.wiki_id}(${Number(r.min_dist).toFixed(3)})`).join(', ');
       console.log(`[SemRoute] query="${query.slice(0, 40)}..."`);
-      console.log(`           top-${rows.length} (all):  ${debugAll}`);
-      console.log(`           selected:    ${debugSel || '(none)'}`);
+      console.log(`           all:  ${debugAll}`);
+      console.log(`           hints: ${[...hints].join(', ') || '(none)'}`);
     }
 
-    return new Set(selected.map(r => r.wiki_id));
+    return { hints, distances };
   } catch (err) {
     // Fallback: 의미 라우팅 실패해도 키워드/concept-index 라우팅으로 작동
     console.error('[SemRoute] failed, falling back to keyword routing:', err);
-    return new Set();
+    return empty;
   }
 }

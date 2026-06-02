@@ -142,9 +142,20 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false;
       const send = (data: object) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          // 클라이언트 연결 끊김 — 이후 송신 중단
+          closed = true;
+        }
       };
+
+      // catch에서 부분 응답 저장에 쓰이므로 try 밖에 선언(스코프 노출)
+      let fullContentRaw = '';   // LLM 원본 ([N] 포함)
+      let buffer = '';            // 스트리밍 중 [N] 버퍼
 
       try {
         send({
@@ -156,11 +167,9 @@ export async function POST(req: NextRequest) {
         });
 
         const client = getAnthropicClient();
-        let fullContentRaw = '';   // LLM 원본 ([N] 포함)
-        let buffer = '';            // 스트리밍 중 [N] 버퍼
 
-        // 직전 1회 교환(user + assistant 쌍)만 전문 포함
-        // 토큰 증가 최소화하면서 직전 답변 맥락 완전 보존
+        // 직전 5회 교환(user + assistant 쌍 5개 = 최대 10개 메시지) 전문 포함
+        // 토큰 증가 최소화하면서 직전 답변 맥락 보존
         type AnthropicMessage = { role: 'user' | 'assistant'; content: string };
         const history: AnthropicMessage[] = [];
         if (convId) {
@@ -191,6 +200,7 @@ export async function POST(req: NextRequest) {
         // buffer에 누적하다가 safe flush point 까지만 resolve해서 송신
         // → 부분 [N] (예: "[1" 가 chunk 경계에 걸린 경우) 안전 처리
         for await (const chunk of anthropicStream) {
+          if (closed || req.signal?.aborted) break;  // 클라 연결 끊김 → LLM 스트림 소비 중단
           if (
             chunk.type === 'content_block_delta' &&
             chunk.delta.type === 'text_delta'
@@ -216,7 +226,7 @@ export async function POST(req: NextRequest) {
         // LLM이 P2 무시하고 옛 형식 직접 출력 시 1회 재요청.
         // 발견되면 비-스트리밍 retry → 'replace' 이벤트로 답변 영역 교체.
         const oldFormats = detectOldFormatCitations(fullContentRaw);
-        if (oldFormats.length > 0) {
+        if (!closed && oldFormats.length > 0) {
           console.log(`[citation] ${oldFormats.length} old-format detected, retrying once...`);
           try {
             const retryPrompt = buildOldFormatRetryPrompt(oldFormats, citationSummary);
@@ -283,9 +293,34 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error('Chat stream failed', err);
         const errMsg = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-        send({ type: 'error', message: errMsg });
+        // 부분 응답이라도 저장 — user 메시지 고아화 방지(다음 턴 user-user 연속 → Anthropic 거부 차단)
+        //               + 사용자가 읽던 부분 답변 보존
+        try {
+          const partial = resolveText(fullContentRaw, citationMapping).trim();
+          if (partial) {
+            await db.insert(messages).values({
+              id: crypto.randomUUID(),
+              conversationId: convId!,
+              role: 'assistant',
+              content: `${partial}\n\n---\n\n⚠️ 응답 생성 중 오류가 발생해 일부만 저장되었습니다.`,
+              routedAgents: routing.selectedAgentIds,
+              sources: resolveCitations(extractCitedNumbers(fullContentRaw), citationMapping),
+              mode,
+            });
+            send({ type: 'error', message: errMsg, keepContent: true });
+          } else {
+            send({ type: 'error', message: errMsg });
+          }
+        } catch (persistErr) {
+          console.error('Failed to persist partial answer', persistErr);
+          send({ type: 'error', message: errMsg });
+        }
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {
+          // 이미 닫힘(클라 disconnect) — 무시
+        }
       }
     },
   });

@@ -95,7 +95,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // 최초 로그인 — authorize()가 준 role 사용
         token.role = user.role;
+        token.roleSyncedAt = Date.now();
+        return token;
+      }
+      // 후속 요청 — DB role 재동기화 (TTL throttle).
+      // 매 요청 DB 조회는 미들웨어 504 회귀(커밋 aeaadbe)를 유발하므로 5분 간격으로만 조회.
+      // → 권한 강등/거부가 약 5분 내 반영. DB 오류 시 기존 토큰 유지(가용성 우선).
+      const SYNC_TTL_MS = 5 * 60 * 1000;
+      const syncedAt = typeof token.roleSyncedAt === 'number' ? token.roleSyncedAt : 0;
+      if (token.sub && Date.now() - syncedAt > SYNC_TTL_MS) {
+        try {
+          const [dbUser] = await db
+            .select({ role: users.role })
+            .from(users)
+            .where(eq(users.id, token.sub))
+            .limit(1);
+          // 삭제(거부)된 사용자 → 권한 없는 'pending'으로 강등(canChat/canAccessAdmin 모두 false)
+          token.role = dbUser ? (dbUser.role as Role) : 'pending';
+          token.roleSyncedAt = Date.now();
+        } catch (err) {
+          console.error('[auth] role re-sync failed, keeping cached role:', err);
+        }
       }
       return token;
     },

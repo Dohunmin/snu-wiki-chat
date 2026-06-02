@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
 import { conversations, messages } from '@/lib/db/schema';
+import { canAccessSensitive } from '@/lib/auth/roles';
 import { eq, and, asc } from 'drizzle-orm';
 
 
@@ -16,15 +17,18 @@ export async function GET(
 
   const { id } = await params;
 
-  // 모든 인증 사용자가 읽기 가능 (공개 대화 뷰어 지원)
+  // 본인 대화는 항상, 타인 대화는 canAccessSensitive(admin/tier1)만 열람 — tier2 교차 열람 차단(감사 H-3)
   const [conv] = await db
-    .select({ id: conversations.id })
+    .select({ userId: conversations.userId })
     .from(conversations)
     .where(eq(conversations.id, id))
     .limit(1);
 
   if (!conv) {
     return Response.json({ error: '대화를 찾을 수 없습니다.' }, { status: 404 });
+  }
+  if (conv.userId !== session.user.id && !canAccessSensitive(session.user.role)) {
+    return Response.json({ error: '본인 대화만 열람할 수 있습니다.' }, { status: 403 });
   }
 
   const rows = await db

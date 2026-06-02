@@ -130,19 +130,19 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   // - semanticRoutingHints: 임베딩 기반 의미 매칭 (Phase B, ~80ms)
   //   동의어 의존 쿼리("장학금" ↔ "학생경비")에서 키워드 매칭 약해도
   //   벡터 유사도로 위키를 자동 포함시킴.
-  const [conceptResult, semanticHints] = await Promise.all([
+  const [conceptResult, semantic] = await Promise.all([
     Promise.resolve(lookupConceptIndex(queryWords)),
-    // 계층 필터: top-1은 absoluteMax(1.0)면 OK (약한 매칭이라도 살림),
-    //           top-2 이후는 tightMax(0.85)인 위키만 (명확한 매칭만 추가)
-    semanticRoutingHints(query, userRole, { topK: 50, maxWikis: 5, absoluteMax: 1.0, tightMax: 0.85 }),
+    // hints(강제 포함 후보) + 전체 위키 거리(distances, chunk 예산 가중 분배용)
+    semanticRoutingHints(query, userRole, { maxWikis: 5, absoluteMax: 1.0, tightMax: 0.85 }),
   ]);
   const { guaranteedPages } = conceptResult;
+  const semanticDist = semantic.distances;
   // forcedWikis = concept-index hits + semantic routing hints (union)
   //   단, 라우팅 가능한 위키(getRoutableAgents)에 한정 — adminOnly/lensPersona 자동 제외
   const routableIds = new Set(agents.map(a => a.config.id));
   const forcedWikis = new Set<string>();
   for (const w of conceptResult.forcedWikis) if (routableIds.has(w)) forcedWikis.add(w);
-  for (const w of semanticHints) if (routableIds.has(w)) forcedWikis.add(w);
+  for (const w of semantic.hints) if (routableIds.has(w)) forcedWikis.add(w);
 
   const topScore = scored[0]?.score ?? 0;
   const relativeThreshold = topScore * RELATIVE_THRESHOLD;
@@ -176,19 +176,48 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
 
   const finalSelected = cappedSelected.length > 0 ? cappedSelected : scored.slice(0, MAX_WIKIS);
 
-  // === Stage 2: chunk cap 분배 ===
+  // === Stage 2: 신뢰도 가중 chunk cap 분배 ===
+  // 균등 분배(이전: 모두 floor 5) 대신, 임베딩 근접도 + 키워드 점수가 높은 위키에 예산을 더 배정.
+  //   → 관련 위키가 더 풍부한 컨텍스트 확보(답변 품질↑), 한계 위키도 CAP_FLOOR로 유지(recall 보존).
   const refCount = finalSelected.filter(s => s.agent.config.alwaysContext).length;
-  const normalCount = finalSelected.length - refCount;
-  const normalCap = normalCount > 0
-    ? Math.max(
-        Math.floor((TOTAL_CHUNK_BUDGET - refCount * ALWAYS_CONTEXT_CAP) / normalCount),
-        5
-      )
-    : ALWAYS_CONTEXT_CAP;
+  const normalWikis = finalSelected.filter(s => !s.agent.config.alwaysContext);
+  const budget = TOTAL_CHUNK_BUDGET - refCount * ALWAYS_CONTEXT_CAP;
+  const CAP_FLOOR = 3;     // 선택된 위키 최소 보장 청크 (recall)
+  const CAP_MAX = 25;      // 한 위키 독점 방지 (= MAX_CHUNKS_RAG)
+  const TEMP = 0.07;       // 임베딩 거리 softmax 온도 (작을수록 최상위에 집중)
+  const KW_COEF = 0.4;     // 키워드 가중치 비중 (임베딩이 주, 키워드는 보조)
+
+  const knownDists = normalWikis
+    .map(s => semanticDist.get(s.agent.config.id))
+    .filter((d): d is number => typeof d === 'number');
+  const minDist = knownDists.length > 0 ? Math.min(...knownDists) : 0;
+  const maxScore = Math.max(1, ...normalWikis.map(s => s.score));
+
+  // 가중치 = 임베딩 근접(softmax, 주) + 키워드(정규화, 보조) — 둘 중 하나만 강해도 예산 확보(하이브리드)
+  const weights = normalWikis.map(s => {
+    const d = semanticDist.get(s.agent.config.id);
+    const emb = typeof d === 'number' ? Math.exp(-(d - minDist) / TEMP) : 0.2;
+    const kw = s.score / maxScore;
+    return Math.max(emb + KW_COEF * kw, 0.05);
+  });
+  const sumW = weights.reduce((a, b) => a + b, 0) || 1;
+
+  const capByWiki = new Map<string, number>();
+  normalWikis.forEach((s, i) => {
+    const raw = Math.round((budget * weights[i]) / sumW);
+    // 다중 위키 대비: concept-index(정밀 큐레이션) 또는 키워드 강한 위키는 임베딩이 멀어도 floor 상향
+    //   → 다중-위키 질문의 2번째 위키(키워드/개념으로 잡힌)가 충분한 컨텍스트 확보.
+    //   (느슨한 의미-forcing(tightMax)은 제외 — noise까지 floor 받아 컨텍스트 비대해짐)
+    const relevant = conceptResult.forcedWikis.has(s.agent.config.id) || s.score >= MIN_ABSOLUTE_SCORE;
+    const floor = relevant ? CAP_FLOOR + 2 : CAP_FLOOR;
+    capByWiki.set(s.agent.config.id, Math.min(CAP_MAX, Math.max(floor, raw)));
+  });
 
   const contexts = await Promise.all(finalSelected.map(s =>
     s.agent.getContext(query, userRole, hasGlobalKeyword, {
-      chunkCap: s.agent.config.alwaysContext ? ALWAYS_CONTEXT_CAP : normalCap,
+      chunkCap: s.agent.config.alwaysContext
+        ? ALWAYS_CONTEXT_CAP
+        : (capByWiki.get(s.agent.config.id) ?? CAP_FLOOR),
       guaranteedPageIds: guaranteedPages.get(s.agent.config.id),
     })
   ));
