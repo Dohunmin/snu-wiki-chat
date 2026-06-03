@@ -11,6 +11,7 @@ import { semanticRoutingHints } from '@/lib/embed/search';
 import { globalTopK, partitionByWiki } from '@/lib/embed/global-retrieve';
 import type { KeywordRankedChunk } from '@/lib/embed/types';
 import { detectBreadthIntent } from './recency';
+import { isCollegeGroup, isCollegeReferenced } from './college-route';
 // college-grad-wiki — tier 분류 (T3/T4 게이트)
 import { classifyTier, type Tier } from './tier-classifier';
 
@@ -106,11 +107,13 @@ function lookupConceptIndex(queryWords: string[]): {
   return { forcedWikis, guaranteedPages };
 }
 
-/** lensPersona는 일반 라우팅에서 항상 제외, adminOnly는 비admin에게 제외 */
-function getRoutableAgents(userRole: Role) {
+/** lensPersona 항상 제외, adminOnly는 비admin 제외, 단과대/대학원은 *명시 지칭* 질문에만 포함(wiki_id 격리). */
+function getRoutableAgents(userRole: Role, query: string) {
   return registry.getAll().filter(a => {
     if (a.config.lensPersona) return false;
     if (a.config.adminOnly && userRole !== 'admin') return false;
+    // 단과대는 질문이 그 단과대를 명시적으로 지칭할 때만 — 거버넌스 질문 오염 차단(college-route.ts).
+    if (isCollegeGroup(a.config) && !isCollegeReferenced(query, a.config)) return false;
     return true;
   });
 }
@@ -119,7 +122,7 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
   const globalKeywords: string[] = agentsConfig.routing.globalKeywords;
-  const agents = getRoutableAgents(userRole);
+  const agents = getRoutableAgents(userRole, query);
 
   // === Tier 0: 글로벌 키워드 → 전체 위키 full coverage ===
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
