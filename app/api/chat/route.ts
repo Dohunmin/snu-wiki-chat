@@ -4,6 +4,9 @@ import { auth } from '@/lib/auth/config';
 import { canChat } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
+import { enforceContextBudget } from '@/lib/agents/context-budget';
+import { complexityBudget } from '@/lib/agents/complexity';
+import { getStructuredFact, getLiveBoard, type DirectAnswer } from '@/lib/agents/structured';
 import { loadPersonaContext } from '@/lib/agents/lens';
 import {
   buildSystemPromptParts,
@@ -33,6 +36,15 @@ const chatSchema = z.object({
   conversationId: z.string().optional(),
   mode: z.string().regex(/^(normal|lens:[a-z0-9-]+)$/).default('normal'),
 });
+
+// college-grad-wiki / web-search-fallback — 위키로 못 답하는 외부·최신·비교 질문만 라이브 검색.
+//   max_uses:1로 비용 캡(검색 결과 본문이 입력토큰 → 1회로 제한해 ~$0.09/질문). 평소 질문은 미발동 → $0.
+const WEB_SEARCH_TOOL = { type: 'web_search_20250305', name: 'web_search', max_uses: 1 };
+const WEB_SEARCH_GUIDANCE = `\n\n[웹 검색 도구]\n` +
+  `- 기본은 위 위키 컨텍스트([N])로만 답한다. 위키에 있는 내용은 절대 웹 검색하지 않는다(비용·정확도).\n` +
+  `- 다음 경우에만 web_search 사용: (1) 위키에 없는 외부 기관·타 대학·인물(예: 카이스트) (2) 위키 범위를 벗어난 최신/실시간 정보 (3) 위키와 외부를 비교 요청.\n` +
+  `- 웹 결과를 사용하면 반드시 본문에 출처를 마크다운 링크 [제목](URL)로 명시한다.\n` +
+  `- 위키로 충분하면 web_search를 호출하지 않는다.`;
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -94,8 +106,39 @@ export async function POST(req: NextRequest) {
   try {
     routing = await routeQuery(message, role);
 
+    // Design Ref: §4.1 I-9 — Tier3/4 직답 분기 (college-grad-wiki).
+    //   governance 쿼리는 routing.tier === undefined → 이 블록 통째로 skip → 아래 일반 RAG와 byte-identical.
+    //   T3 적중: structured_facts 1레코드 → LLM 0토큰. T4 적중: live_cache 게시판 리스트.
+    //   미스/TTL 만료(direct === null) → fall through → 일반 RAG(Tier1 degrade).
+    if ((routing.tier === 3 || routing.tier === 4) && routing.college) {
+      const direct =
+        routing.tier === 3
+          ? await getStructuredFact(routing.college, message)
+          : await getLiveBoard(routing.college, message);
+      if (direct) {
+        return streamDirectAnswer({
+          direct,
+          message,
+          conversationId,
+          userId,
+          mode,
+          selectedAgentIds: routing.selectedAgentIds,
+          agentNames: routing.contexts.map((c) => c.agentName),
+          userName: session.user.name ?? '',
+          userEmail: session.user.email ?? '',
+          role,
+        });
+      }
+    }
+
+    // 보편 컨텍스트 예산 — 모든 경로 합류점에서 총량 캡(비용 꼬리 차단) + 질문 복잡도별 예산.
+    //   단순 factoid=작은 예산(저렴), 종합형=큰 예산(OLD급 품질). 실측 75% 단순 → 평균↓ + 깊은 품질 보존.
+    //   CONTEXT_BUDGET_CHARS 설정 시 고정값으로 override(실험용).
+    const budgetChars = process.env.CONTEXT_BUDGET_CHARS ? Number(process.env.CONTEXT_BUDGET_CHARS) : complexityBudget(message);
+    const budgetedContexts = await enforceContextBudget(message, routing.contexts, budgetChars);
+
     // 번호 인용 매핑 구축 — LLM이 [N]만 사용하도록
-    const numbered = buildNumberedContexts(routing.contexts);
+    const numbered = buildNumberedContexts(budgetedContexts);
     citationMapping = numbered.mapping;
     citationSummary = numbered.summary;
 
@@ -105,7 +148,7 @@ export async function POST(req: NextRequest) {
       if (!persona) {
         return Response.json({ error: '존재하지 않는 페르소나입니다.' }, { status: 400 });
       }
-      systemPrompt = buildLensSystemPrompt(routing.contexts, persona, role);
+      systemPrompt = buildLensSystemPrompt(budgetedContexts, persona, role);
       userMessage = buildLensUserMessage(message, numbered.contextMarkdown, numbered.summary, persona);
       lensPersonaInfo = {
         id: persona.id,
@@ -117,10 +160,10 @@ export async function POST(req: NextRequest) {
       //   stable(고정 P0~P6 + 가이드)에 cache_control 부여 → 재시도/멀티턴/동시질의서 입력단가 ~1/10.
       //   tail(agentList·tier2 경고)은 가변이라 캐시 밖. lens 모드는 회귀위험 커 현재 미적용(후속).
       //   본문(userMessage) 캐싱은 적중률 실측(M0c [chat-usage] cacheR/cacheW) 후 결정.
-      const parts = buildSystemPromptParts(routing.contexts, role);
+      const parts = buildSystemPromptParts(budgetedContexts, role);
       systemPrompt = [
         { type: 'text', text: parts.stable, cache_control: { type: 'ephemeral' } },
-        { type: 'text', text: parts.tail },
+        { type: 'text', text: parts.tail + WEB_SEARCH_GUIDANCE },
       ];
       userMessage = buildUserMessage(message, numbered.contextMarkdown, numbered.summary);
     }
@@ -202,11 +245,13 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        // web_search: normal 모드만(lens는 페르소나 전용, 회귀위험 회피). 위키로 답하면 미발동 → 비용 0.
         const anthropicStream = client.messages.stream({
           model: LLM_MODEL,
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
           messages: [...history, { role: 'user', content: userMessage }],
+          ...(mode.startsWith('lens:') ? {} : { tools: [WEB_SEARCH_TOOL] as unknown as never }),
         });
 
         // 스트리밍 + [N] → [위키] sid resolve
@@ -217,7 +262,7 @@ export async function POST(req: NextRequest) {
         //   usage: input/output + 캐시 토큰 로깅 → Phase 1 prompt-caching 적중률 의사결정 데이터.
         //   출력은 불변(로깅만 추가) — 회귀 표면 0.
         let stopReason: string | null = null;
-        const streamUsage: { input?: number; output?: number; cacheRead?: number; cacheWrite?: number } = {};
+        const streamUsage: { input?: number; output?: number; cacheRead?: number; cacheWrite?: number; webSearches?: number } = {};
 
         for await (const chunk of anthropicStream) {
           if (closed || req.signal?.aborted) break;  // 클라 연결 끊김 → LLM 스트림 소비 중단
@@ -229,6 +274,8 @@ export async function POST(req: NextRequest) {
           } else if (chunk.type === 'message_delta') {
             stopReason = chunk.delta.stop_reason ?? stopReason;
             streamUsage.output = chunk.usage.output_tokens;
+            const stu = (chunk.usage as { server_tool_use?: { web_search_requests?: number } }).server_tool_use;
+            if (stu?.web_search_requests) streamUsage.webSearches = stu.web_search_requests;
           } else if (
             chunk.type === 'content_block_delta' &&
             chunk.delta.type === 'text_delta'
@@ -254,8 +301,13 @@ export async function POST(req: NextRequest) {
         console.log(
           `[chat-usage] agents=${routing.selectedAgentIds.join('+') || '-'} ` +
           `in=${streamUsage.input ?? '?'} out=${streamUsage.output ?? '?'} ` +
-          `cacheR=${streamUsage.cacheRead ?? 0} cacheW=${streamUsage.cacheWrite ?? 0} stop=${stopReason ?? '?'}`,
+          `cacheR=${streamUsage.cacheRead ?? 0} cacheW=${streamUsage.cacheWrite ?? 0} ` +
+          `web=${streamUsage.webSearches ?? 0} stop=${stopReason ?? '?'}`,
         );
+        if (streamUsage.webSearches) {
+          // 웹검색 발동 = 유료(검색비 + 결과 입력토큰). 비용 모니터링.
+          console.log(`[chat-usage] 🌐 web_search ${streamUsage.webSearches}회 — 외부/최신 정보 보강(유료 ~$0.05~0.09)`);
+        }
         if (stopReason === 'max_tokens') {
           console.warn('[chat-usage] ⚠️ max_tokens 절단 발생 — 답변 말미(P5 한계마커/인용) 손실 가능');
         }
@@ -394,6 +446,87 @@ export async function POST(req: NextRequest) {
           // 이미 닫힘(클라 disconnect) — 무시
         }
       }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
+}
+
+// Design Ref: college-grad-wiki §4.1 I-9 — Tier3/4 직답 스트림.
+//   일반 LLM 경로와 동일한 SSE 이벤트(routing→chunk→sources→done)를 내되 Anthropic 호출 없음.
+//   대화 생성·user/assistant 메시지 저장·Sheets 로깅은 일반 경로와 동일하게 수행(이력 일관성).
+async function streamDirectAnswer(args: {
+  direct: DirectAnswer;
+  message: string;
+  conversationId: string | undefined;
+  userId: string;
+  mode: string;
+  selectedAgentIds: string[];
+  agentNames: string[];
+  userName: string;
+  userEmail: string;
+  role: Role;
+}): Promise<Response> {
+  const { direct, message, userId, mode, selectedAgentIds, agentNames, userName, userEmail, role } = args;
+  let convId = args.conversationId;
+
+  // 대화 생성 + user 메시지 저장 (일반 경로 line 128-145와 동일 패턴)
+  if (!convId) {
+    convId = crypto.randomUUID();
+    await db.insert(conversations).values({ id: convId, userId, title: message.slice(0, 50) });
+  }
+  await db.insert(messages).values({
+    id: crypto.randomUUID(),
+    conversationId: convId,
+    role: 'user',
+    content: message,
+    routedAgents: selectedAgentIds,
+    sources: null,
+    mode,
+  });
+
+  // assistant 메시지 저장 (LLM 없이 즉시 — Tier 출처 포함)
+  await db.insert(messages).values({
+    id: crypto.randomUUID(),
+    conversationId: convId,
+    role: 'assistant',
+    content: direct.answer,
+    routedAgents: selectedAgentIds,
+    sources: direct.sources,
+    mode,
+  });
+
+  // Sheets 로깅 (best-effort, 일반 경로와 동일)
+  if (direct.answer.trim()) {
+    logQuestionToSheet({
+      name: userName,
+      email: userEmail,
+      role,
+      question: message,
+      answer: direct.answer,
+      wikis: selectedAgentIds.join(', '),
+      mode,
+      conversationId: convId,
+    }).catch((err) => console.error('[Sheets] direct log failed:', err));
+  }
+
+  const encoder = new TextEncoder();
+  const finalConvId = convId;
+  const stream = new ReadableStream({
+    start(controller) {
+      const send = (data: object) =>
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      send({ type: 'routing', agents: selectedAgentIds, agentNames, conversationId: finalConvId, tier: direct.tier });
+      send({ type: 'chunk', content: direct.answer });
+      send({ type: 'sources', refs: direct.sources });
+      send({ type: 'done', conversationId: finalConvId });
+      controller.close();
     },
   });
 

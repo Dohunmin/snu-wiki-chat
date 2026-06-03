@@ -111,3 +111,34 @@ export const limitationClusters = pgTable('limitation_clusters', {
   memberIds: jsonb('member_ids').$type<string[]>().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// ─── college-grad-wiki (per-college) ──────────────────────────────────────────
+// Design Ref: §3.3 — Tier3/Tier4 additive 테이블. 기존 11테이블·chunk_embeddings 무변경.
+//   per-college 피봇: 조직 격리는 wiki_id가 담당하므로 chunk_embeddings에 college/tier 컬럼 추가 안 함.
+//   여기 2테이블만 신규 — 자주 변하는 연락처(T3)·최신 공지(T4)를 정적 wiki 밖으로 분리해 신선도 유지.
+
+// Tier3 — 구조화 사실 캐시 (연락처·인원·명단). 1레코드 직답 → LLM 0토큰.
+// Plan SC: "공대 학장 이메일?" → 1레코드 직접반환
+export const structuredFacts = pgTable('structured_facts', {
+  id:        text('id').primaryKey(),                                  // `${org}:${field}`
+  org:       text('org').notNull(),                                    // org.id (= 단과대/대학원 wiki_id)
+  field:     text('field').notNull(),                                  // dean_contact | faculty_count | student_count | faculty_roster | dept_count
+  value:     jsonb('value').$type<Record<string, unknown>>().notNull(),
+  sourceUrl: text('source_url').notNull(),
+  fetchedAt: timestamp('fetched_at').defaultNow().notNull(),
+  ttlDays:   integer('ttl_days').default(90).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Tier4 — 라이브 게시판 캐시 (최신 공지·뉴스). 크롤 produces, chat reads(읽기 전용 — §9.2 격리).
+// 갱신은 오프라인(crawl --tier 4 / 백그라운드). 런타임은 캐시만 읽고, 미스/만료 시 Tier1 degrade.
+export const liveCache = pgTable('live_cache', {
+  id:        text('id').primaryKey(),                                  // `${org}:${board}`
+  org:       text('org').notNull(),
+  board:     text('board').notNull(),                                  // notice | news | research
+  payload:   jsonb('payload').$type<unknown>().notNull(),              // BoardItem[]
+  sourceUrl: text('source_url'),
+  fetchedAt: timestamp('fetched_at').defaultNow().notNull(),
+  ttlHours:  integer('ttl_hours').default(6).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

@@ -52,6 +52,8 @@ export interface VectorSearchResult {
   distance: number;
   similarity: number;
   metadata: ChunkMetadata;
+  /** Phase 3 전역 검색 시 set(searchVectorGlobal). per-wiki searchVector는 undefined. */
+  wikiId?: string;
 }
 
 /**
@@ -65,6 +67,8 @@ export interface KeywordRankedChunk {
   title: string;
   chunk: string;
   score: number;
+  /** Phase 3 전역 키워드 풀에서 set. 레거시(단일 위키)는 undefined. */
+  wikiId?: string;
   // 기타 필드 (topic, date, meta 등) — 통과만 시킴
   [key: string]: unknown;
 }

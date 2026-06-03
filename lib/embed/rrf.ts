@@ -48,17 +48,22 @@ export function rrfFuse(
 ): FusedChunk[] {
   const { k = DEFAULT_K, limit = DEFAULT_LIMIT, debug = false } = opts;
 
+  // Phase 3: 전역 융합 시 wikiId를 키에 포함(위키 간 동명 페이지 충돌 방지).
+  //   레거시(단일 위키 호출)는 wikiId 없어 '' 접두사로 일관 — 동작 불변.
+  const kKey = (c: KeywordRankedChunk) => `${c.wikiId ?? ''}|${c.type}:${c.id}`;
+  const vKey = (v: VectorSearchResult) => `${v.wikiId ?? ''}|${v.pageType}:${v.pageId}`;
+
   // 1) 키워드 결과: 페이지 ID 기준 1-based 순위 매핑
   const keywordRankMap = new Map<string, number>();
   keywordRanked.forEach((c, i) => {
-    const key = `${c.type}:${c.id}`;
+    const key = kKey(c);
     if (!keywordRankMap.has(key)) keywordRankMap.set(key, i + 1);
   });
 
   // 2) 벡터 결과: 같은 키 포맷으로 순위 매핑
   const vectorRankMap = new Map<string, number>();
   vectorRanked.forEach((r, i) => {
-    const key = `${r.pageType}:${r.pageId}`;
+    const key = vKey(r);
     if (!vectorRankMap.has(key)) vectorRankMap.set(key, i + 1);
   });
 
@@ -84,13 +89,13 @@ export function rrfFuse(
   // 키워드에 있으면 그것을, 없으면 벡터 결과를 청크 형태로 변환
   const keywordIndex = new Map<string, KeywordRankedChunk>();
   keywordRanked.forEach(c => {
-    const key = `${c.type}:${c.id}`;
+    const key = kKey(c);
     if (!keywordIndex.has(key)) keywordIndex.set(key, c);
   });
 
   const vectorIndex = new Map<string, VectorSearchResult>();
   vectorRanked.forEach(v => {
-    const key = `${v.pageType}:${v.pageId}`;
+    const key = vKey(v);
     if (!vectorIndex.has(key)) vectorIndex.set(key, v);
   });
 
@@ -125,6 +130,7 @@ export function rrfFuse(
         chunk: vr.chunkText,
         score: item.score,
         similarity: vr.similarity,   // M2a: 벡터-only similarity 전파
+        wikiId: vr.wikiId,           // P3a-1b: 전역 융합 시 위키 식별
         ...(debug && { rrfSource: item.source }),
         // 메타데이터 통과 (출력 포맷에서 사용)
         meta: vr.metadata,

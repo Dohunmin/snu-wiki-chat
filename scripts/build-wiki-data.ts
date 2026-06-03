@@ -7,6 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import yaml from 'js-yaml';
 
 const OBSIDIAN_PATH = process.env.OBSIDIAN_PATH || '../Obsidian';
 
@@ -537,6 +538,102 @@ function updateAgentKeywords(
   console.log(`   → keywords 갱신: ${agent.keywords.length}개`);
 }
 
+// ─── college-grad-wiki: per-college 독립 wiki_id 생성 (colleges.yaml 레지스트리 구동) ──
+// 각 단과대/대학원 = 독립 wiki_id (기존 9위키와 동일 격리). "공대 X"는 eng 위키로만 라우팅.
+// Obsidian은 SNU_단과대/대학원_LLM_Wiki/wiki/{type}/{org.id}/ 하위폴더, build가 org별 data로 split.
+interface ActiveOrg {
+  id: string;
+  display_name: string;
+  org_type: string;
+  parent_wiki: '단과대' | '대학원';
+  active: boolean;
+}
+
+function loadActiveOrgs(): ActiveOrg[] {
+  const p = path.join(process.cwd(), 'config', 'colleges.yaml');
+  if (!fs.existsSync(p)) return [];
+  const cfg = yaml.load(fs.readFileSync(p, 'utf-8')) as { orgs?: ActiveOrg[] };
+  return (cfg.orgs ?? []).filter(o => o.active);
+}
+
+/** 한 조직의 하위폴더(wiki/{type}/{org.id}/)를 읽어 WikiData(id=org.id) 생성. */
+function buildCollegeWiki(org: ActiveOrg): WikiData {
+  const parentFolder = org.parent_wiki === '단과대' ? 'SNU_단과대_LLM_Wiki' : 'SNU_대학원_LLM_Wiki';
+  const base = path.resolve(OBSIDIAN_PATH, parentFolder, 'wiki');
+  const sub = (type: string) => path.join(base, type, org.id);
+
+  const overviews: WikiOverview[] = [];
+  for (const { id, content } of collectMdFiles(sub('overviews'))) {
+    const { meta, body } = parseFrontmatter(content);
+    if (meta.type !== 'overview') continue;
+    overviews.push({
+      id, title: extractTitle(body, id),
+      편: (meta.category as string) || '소개',   // college overview엔 편 없음 → category로
+      시기: undefined, 관련_stance: undefined,
+      tags: (meta.tags as string[]) ?? [], content: body, sensitive: false,
+    });
+  }
+
+  const facts: WikiFact[] = [];
+  for (const { id, content } of collectMdFiles(sub('facts'))) {
+    const { meta, body } = parseFrontmatter(content);
+    if (meta.type !== 'fact') continue;
+    facts.push({
+      id, title: extractTitle(body, id),
+      category: (meta.category as string) ?? '', sources: (meta.sources as string[]) ?? [],
+      verifiedAt: meta.verified_at as string | undefined,
+      tags: (meta.tags as string[]) ?? [], content: body, sensitive: false,
+    });
+  }
+
+  const sources: WikiSource[] = [];
+  for (const { id, content } of collectMdFiles(sub('sources'))) {
+    const { meta, body } = parseFrontmatter(content);
+    if (meta.type !== 'source') continue;
+    sources.push({
+      id, title: extractTitle(body, id), date: meta.fetched_at as string | undefined,
+      tags: (meta.tags as string[]) ?? [], topics: [], entities: [],
+      content: body, sensitive: false,
+    });
+  }
+
+  const entities: WikiEntity[] = [];
+  for (const { id, content } of collectMdFiles(sub('entities'))) {
+    const { meta, body } = parseFrontmatter(content);
+    if (meta.type !== 'entity') continue;
+    entities.push({
+      id, name: extractTitle(body, id), entityType: (meta.entity_type as string) ?? '',
+      aliases: [], tags: (meta.tags as string[]) ?? [],
+      sources: (meta.sources as string[]) ?? [], content: body,
+    });
+  }
+
+  return {
+    id: org.id, name: org.display_name,
+    sources, topics: [], entities, syntheses: [], facts, stances: [], overviews, index: '',
+  };
+}
+
+/** active 조직에 대응하는 agent 항목이 없으면 생성(idempotent). 조직 추가 = yaml만 → O(1). */
+function ensureCollegeAgent(org: ActiveOrg, configPath: string): void {
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  if (config.agents.some((a: { id: string }) => a.id === org.id)) return;
+  config.agents.push({
+    id: org.id,
+    name: org.display_name,
+    type: 'wiki',
+    dataFile: `${org.id}.json`,
+    enabled: true,
+    ragEnabled: true,
+    group: org.parent_wiki,         // 단과대 | 대학원 — UI 그룹 + 라우터 tier 게이트
+    keywords: [org.display_name],   // 최소 시드 (나머지는 updateAgentKeywords가 콘텐츠에서 보강)
+    sensitiveTopics: [],
+    description: `서울대학교 ${org.display_name} 정보 (인사말·연혁·비전·학과)`,
+  });
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+  console.log(`   + agent 생성: ${org.id} (${org.display_name}, group=${org.parent_wiki})`);
+}
+
 // ─── 메인 실행 ─────────────────────────────────────────────────────
 console.log('🔄 위키 데이터 전처리 시작...');
 console.log(`   Obsidian 경로: ${path.resolve(OBSIDIAN_PATH)}`);
@@ -555,6 +652,23 @@ for (const wikiConfig of WIKI_MAP) {
   fs.writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
   console.log(`   → ${outputPath} 저장 완료`);
   updateAgentKeywords(wikiConfig.id, data, agentsConfigPath);
+}
+
+// ─── per-college 위키 (colleges.yaml active 조직 → org별 독립 wiki_id) ──────────────
+const activeOrgs = loadActiveOrgs();
+if (activeOrgs.length > 0) {
+  console.log(`\n🏫 단과대/대학원 per-college 위키 ${activeOrgs.length}개 처리 중...`);
+  for (const org of activeOrgs) {
+    ensureCollegeAgent(org, agentsConfigPath);
+    const data = buildCollegeWiki(org);
+    allWikis.push(data);
+    fs.writeFileSync(path.join(outputDir, `${org.id}.json`), JSON.stringify(data, null, 2), 'utf-8');
+    console.log(
+      `   → ${org.id}.json (${org.display_name}): ` +
+      `overviews ${data.overviews.length}, facts ${data.facts.length}, sources ${data.sources.length}, entities ${data.entities.length}`,
+    );
+    updateAgentKeywords(org.id, data, agentsConfigPath);
+  }
 }
 
 console.log('\n🔗 Concept Index 생성 중...');

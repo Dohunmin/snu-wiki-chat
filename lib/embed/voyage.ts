@@ -163,4 +163,67 @@ export async function embedOne(
   return emb;
 }
 
+// ─── Stage-2 리랭커 (rag 감사 rank1 — cross-encoder 진짜 관련도 재채점) ───
+//   cosine은 0.55~0.80 좁은 띠에서 무관>관련 역전을 일으킴(야구부 0.63>정부출연금 0.58).
+//   rerank-2.5는 (query, chunk)를 함께 읽어 관련도를 0~1로 재채점 → 작은 컨텍스트 예산을 안전하게.
+const VOYAGE_RERANK_URL = 'https://api.voyageai.com/v1/rerank';
+const RERANK_MODEL = 'rerank-2.5';   // 최신 최고 품질 cross-encoder
+
+export interface RerankResult {
+  index: number;          // 입력 documents 배열에서의 원래 인덱스
+  relevanceScore: number; // 0~1 (높을수록 관련)
+}
+
+/**
+ * 문서들을 질문 관련도로 재채점·재정렬. 입력 순서 보존 없이 relevanceScore 내림차순.
+ * @param query 사용자 질문
+ * @param documents 후보 청크 텍스트들 (최대 1000)
+ * @param topK 상위 K개만 반환 (생략 시 전체)
+ * @returns { index, relevanceScore } 배열 (relevanceScore desc 정렬)
+ */
+export async function rerankDocuments(
+  query: string,
+  documents: string[],
+  topK?: number,
+): Promise<RerankResult[]> {
+  if (documents.length === 0) return [];
+  const apiKey = getApiKey();
+
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+    try {
+      const res = await fetch(VOYAGE_RERANK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: RERANK_MODEL,
+          query,
+          documents,
+          top_k: topK,
+          truncation: true,   // 긴 청크 자동 절단(에러 대신)
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        throw new VoyageError(`Voyage rerank ${res.status}: ${body}`, res.status);
+      }
+
+      const data = (await res.json()) as { data: Array<{ index: number; relevance_score: number }> };
+      return data.data
+        .map(d => ({ index: d.index, relevanceScore: d.relevance_score }))
+        .sort((a, b) => b.relevanceScore - a.relevanceScore);
+    } catch (err) {
+      lastError = err;
+      const isRetryable = err instanceof VoyageError &&
+        (err.status === 429 || (err.status !== undefined && err.status >= 500));
+      if (!isRetryable || attempt === MAX_RETRY) throw err;
+      const delay = RETRY_DELAY_MS * Math.pow(2, attempt);
+      console.warn(`[voyage] rerank retry ${attempt + 1}/${MAX_RETRY} after ${delay}ms (${(err as Error).message})`);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
+}
+
 export { VoyageError };

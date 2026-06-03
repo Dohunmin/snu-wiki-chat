@@ -7,11 +7,21 @@ import { WikiAgent } from './wiki-agent';
 import agentsConfig from '@/data/agents.config.json';
 // Phase B — Semantic Routing (의미 기반 위키 후보 추천)
 import { semanticRoutingHints } from '@/lib/embed/search';
+// Phase 3 — 전역 top-K 검색 (rag-cost-reduction)
+import { globalTopK, partitionByWiki } from '@/lib/embed/global-retrieve';
+import type { KeywordRankedChunk } from '@/lib/embed/types';
+import { detectBreadthIntent } from './recency';
+// college-grad-wiki — tier 분류 (T3/T4 게이트)
+import { classifyTier, type Tier } from './tier-classifier';
 
 export interface RoutingResult {
   selectedAgentIds: string[];
   contexts: AgentContext[];
   isGlobal: boolean;
+  /** college-grad-wiki — 단과대/대학원 위키가 선택됐을 때만 set. 기존 9위키는 undefined. */
+  tier?: Tier;
+  /** 선택된 college/grad wiki_id (= org.id, e.g. 'eng'). T3/T4 핸들러가 사용. */
+  college?: string;
 }
 
 const MIN_ABSOLUTE_SCORE = 3;
@@ -144,6 +154,68 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   for (const w of conceptResult.forcedWikis) if (routableIds.has(w)) forcedWikis.add(w);
   for (const w of semantic.hints) if (routableIds.has(w)) forcedWikis.add(w);
 
+  // === Phase 3: 전역 top-K 검색 (rag-cost-reduction.phase3.design) — flag 게이트 ===
+  //   위키 통째 덤프 → 전 코퍼스 청크 top-K. 무관 위키는 dispatch 안 됨(0 토큰).
+  //   실패 시 catch → 아래 per-wiki 레거시 경로로 fallback(회귀 안전).
+  if (process.env.GLOBAL_TOPK_ENABLED === 'true') {
+    try {
+      const allowedWikiIds = agents.map(a => a.config.id);   // ★ lensPersona/adminOnly 제외(보안)
+      // 키워드 풀: prefilterScore>0 위키들의 keywordCandidates 합집합(희귀 고유명사 recall)
+      const keywordPool: KeywordRankedChunk[] = [];
+      for (const s of scored) {
+        if (s.score <= 0) continue;
+        if (s.agent instanceof WikiAgent) {
+          keywordPool.push(...s.agent.keywordCandidates(query, userRole, 12, guaranteedPages.get(s.agent.config.id)));
+        }
+      }
+      const chunks = await globalTopK(query, userRole, {
+        allowedWikiIds, keywordPool, forceIncludeIds: guaranteedPages,
+      });
+      const byWiki = partitionByWiki(chunks);
+      // dispatch = 전역 등장 위키 ∪ alwaysContext(status)만.
+      //   ⚠️ concept-forced 위키는 dispatch 안 함 — guaranteed 페이지는 globalTopK forceIncludeIds로
+      //      이미 청크 union됨(중복 방지). 전체 dispatch하면 각자 전체검색 재실행 → over-retrieval 재현(S1서 -8% 원인).
+      const dispatch = new Set<string>(byWiki.keys());
+      for (const a of agents) {
+        if (a.config.alwaysContext) dispatch.add(a.config.id);
+      }
+      // step3(rag 감사 rank2/3): 폭형 질문("최신 N차"·"시간순 정리"·"모든 기록")은 키워드-매칭 위키를
+      //   dispatch에 강제 추가 → cand=[]면 getContext가 full 검색 + recency 주입 실행(7,8차/시간순 처리).
+      //   semantic top-K가 폭형을 못 풀어 dispatch에서 누락되던 회귀(eval-gold) 교정.
+      //   over-retrieval은 보편 예산(route.ts enforceContextBudget 14k)이 캡 → 비용 안전.
+      if (detectBreadthIntent(query)) {
+        for (const w of forcedWikis) dispatch.add(w);
+        for (const s of scored) {
+          if (s.score >= MIN_ABSOLUTE_SCORE) dispatch.add(s.agent.config.id);
+        }
+      }
+      const gCtxs = await Promise.all([...dispatch].map(id => {
+        const agent = agents.find(a => a.config.id === id);
+        if (!agent) return Promise.resolve(null);
+        const cand = byWiki.get(id) ?? [];
+        const chunkCap = cand.length > 0 ? cand.length
+          : (agent.config.alwaysContext ? ALWAYS_CONTEXT_CAP : 5);
+        return agent.getContext(query, userRole, false, {
+          vectorCandidates: cand, guaranteedPageIds: guaranteedPages.get(id), chunkCap,
+        });
+      }));
+      const gContexts = gCtxs.filter((c): c is AgentContext => c !== null);
+      const gFinal = gContexts.filter(c => c.confidence > 0.3);
+      const gOut = gFinal.length > 0 ? gFinal : gContexts;
+      if (gOut.length > 0) {
+        const cSel = [...dispatch].map(id => agents.find(a => a.config.id === id))
+          .find(a => a?.config.group === '단과대' || a?.config.group === '대학원');
+        return {
+          selectedAgentIds: gOut.map(c => c.agentId), contexts: gOut, isGlobal: false,
+          tier: cSel ? classifyTier(query) : undefined, college: cSel?.config.id,
+        };
+      }
+      // gOut 비면 아래 per-wiki로 fallback
+    } catch (err) {
+      console.error('[globalTopK] failed, per-wiki fallback:', err);
+    }
+  }
+
   const topScore = scored[0]?.score ?? 0;
   const relativeThreshold = topScore * RELATIVE_THRESHOLD;
   const gapCutoff = detectScoreGap(scored.map(s => s.score));
@@ -232,9 +304,20 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   const filteredContexts = contexts.filter(c => c.confidence > 0.3);
   const finalContexts = filteredContexts.length > 0 ? filteredContexts : contexts;
 
+  // === college-grad-wiki: 단과대/대학원 위키가 선택됐을 때만 tier 분류 + college 식별 ===
+  //   college = 선택된 college wiki_id (wiki_id 자체가 단과대 → detectCollege 휴리스틱 불필요).
+  //   기존 9위키만 선택된 governance 쿼리는 tier/college 모두 undefined → 핸들러 분기 미발동.
+  const collegeSel = finalSelected.find(
+    s => s.agent.config.group === '단과대' || s.agent.config.group === '대학원',
+  );
+  const tier = collegeSel ? classifyTier(query) : undefined;
+  const college = collegeSel?.agent.config.id;
+
   return {
     selectedAgentIds: finalContexts.map(c => c.agentId),
     contexts: finalContexts,
     isGlobal: false,
+    tier,
+    college,
   };
 }

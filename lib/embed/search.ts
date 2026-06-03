@@ -83,6 +83,57 @@ export async function searchVector(
 }
 
 /**
+ * Phase 3 (rag-cost-reduction.phase3.design §4.1) — 전 코퍼스 전역 top-K 벡터 검색.
+ *
+ * searchVector에서 `WHERE wiki_id = $` 만 제거 → 전 위키 청크에서 가장 가까운 top-K.
+ * ★ 보안: lensPersona/adminOnly 제외 **양성 allowlist**(`wiki_id IN (...)`)로 leesj 등 누출 차단(R5).
+ *   allowedWikiIds = getRoutableAgents(role).map(id). 신규 위키도 명시 포함 전엔 누출 0.
+ */
+export interface GlobalVectorResult extends VectorSearchResult { wikiId: string; }
+
+export async function searchVectorGlobal(
+  query: string,
+  userRole: Role,
+  k: number,
+  opts: { allowedWikiIds: string[] },
+): Promise<GlobalVectorResult[]> {
+  if (opts.allowedWikiIds.length === 0) return [];
+
+  const queryEmbed = await embedOne(query, 'query');
+  const embeddingLiteral = `[${queryEmbed.join(',')}]`;
+  const sensitiveAllowed = canAccessSensitive(userRole);
+  // 파라미터화된 allowlist (sql.join — 인젝션 안전, 빈배열은 위에서 차단)
+  const allowlist = sql.join(opts.allowedWikiIds.map(id => sql`${id}`), sql`, `);
+
+  const result = await db.execute(sql`
+    SELECT
+      id, wiki_id, page_id, page_type, chunk_text, metadata,
+      embedding <=> ${embeddingLiteral}::vector AS distance
+    FROM chunk_embeddings
+    WHERE wiki_id IN (${allowlist})
+      AND (${sensitiveAllowed} OR sensitive = FALSE)
+    ORDER BY embedding <=> ${embeddingLiteral}::vector
+    LIMIT ${k}
+  `);
+
+  type GRow = RawRow & { wiki_id: string };
+  const rows: GRow[] = Array.isArray(result)
+    ? (result as unknown as GRow[])
+    : ((result as unknown as { rows?: GRow[] }).rows ?? []);
+
+  return rows.map(r => ({
+    id: r.id,
+    wikiId: r.wiki_id,
+    pageId: r.page_id,
+    pageType: r.page_type as PageType,
+    chunkText: r.chunk_text,
+    metadata: r.metadata ?? { title: r.page_id, pageType: r.page_type as PageType },
+    distance: Number(r.distance),
+    similarity: 1 - Number(r.distance) / 2,
+  }));
+}
+
+/**
  * Semantic Routing — wiki_id 필터 *없이* 모든 임베딩된 위키에서 의미적 매칭.
  * 라우터에서 forcedWikis 후보로 활용.
  *

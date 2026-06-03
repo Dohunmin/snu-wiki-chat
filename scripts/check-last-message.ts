@@ -14,7 +14,7 @@ async function main() {
     .from(messages)
     .where(eq(messages.role, 'assistant'))
     .orderBy(desc(messages.createdAt))
-    .limit(3);
+    .limit(5);
 
   for (const m of recent) {
     console.log('═'.repeat(80));

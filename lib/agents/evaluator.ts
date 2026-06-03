@@ -136,6 +136,7 @@ export async function evaluateRetrieval(
     const msg = await client.messages.create({
       model: EVALUATOR_MODEL,
       max_tokens: 1024, // §11.1: 절단 방지 위해 넉넉히
+      temperature: 0,   // rag 감사 step0: 게이트 결정론화 — 경계질문 판정 흔들림(노이즈)을 실회귀와 분리
       messages: [{ role: 'user', content: buildEvaluatorPrompt(question, contextText) }],
     });
     const raw = msg.content

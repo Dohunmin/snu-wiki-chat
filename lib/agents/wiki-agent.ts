@@ -21,6 +21,9 @@ function stripInternalIds(text: string): string {
   return text.replace(INTERNAL_ID_PATTERN, '').replace(/\s{2,}/g, ' ').trim();
 }
 
+/** 일부 위키 데이터에서 entity.sources/aliases·topic.sources가 비배열(문자열/객체)로 들어오는 경우 방어. */
+function asArr<T>(x: unknown): T[] { return Array.isArray(x) ? (x as T[]) : []; }
+
 /**
  * Design Ref: §4.2 — chunker가 재사용 (lib/embed/chunker.ts에서 import)
  * ## 헤더 단위로 분할, 최소 100자 미만 청크는 다음과 병합
@@ -44,6 +47,34 @@ export function splitIntoChunks(content: string): string[] {
   if (pending.trim().length >= 100) chunks.push(pending.trim());
 
   return chunks.length > 0 ? chunks : [content];
+}
+
+/** labeled 청크 = 섹션명 + 본문(헤더 제외). getContext가 "## [type] title — section (id) | meta"로 감쌈. */
+export interface LabeledChunk { section: string; text: string; }
+
+/**
+ * labeled 항목(fact/stance/overview/entity)을 flat-pool용으로 청크화 (rag 감사 차원#2, A1).
+ *   - fact/stance: 통째 (표·원자적 — 자르면 헤더/연도 분리로 구조 파괴. 측정상 fact 90%·표)
+ *   - 작은 서술형(≤1200자): 통째 (청크 가치 낮음)
+ *   - 큰 서술형(entity/overview): `##` 섹션 경계로만 분할 → 표는 한 섹션 내라 안 깨짐.
+ * getContext가 각 청크에 (id) 유지해 citation 정합(같은 id의 여러 블록 = 같은 [N]).
+ */
+export function chunkLabeled(type: string, content: string): LabeledChunk[] {
+  if (type === 'fact' || type === 'stance') return [{ section: '', text: content }];
+  if (content.length <= 1200) return [{ section: '', text: content }];
+
+  const parts = content.split(/(?=^##\s)/m).map(s => s.trim()).filter(Boolean);
+  if (parts.length <= 1) return [{ section: '', text: content }];
+
+  const merged: string[] = [];
+  for (const p of parts) {
+    if (merged.length > 0 && p.length < 100) merged[merged.length - 1] += '\n' + p;  // 파편 병합
+    else merged.push(p);
+  }
+  return merged.map(m => {
+    const hm = m.match(/^##\s*(.+?)\n([\s\S]*)$/);          // "## 섹션명\n본문"
+    return hm ? { section: hm[1].trim(), text: hm[2].trim() } : { section: '', text: m };  // 머리말은 section=''
+  });
 }
 
 /**
@@ -146,15 +177,15 @@ export class WikiAgent implements AgentPlugin {
     const guaranteedIds = new Set<string>();
 
     for (const entity of data.entities) {
-      const names = [entity.name, entity.id, ...entity.aliases].map(n => n.toLowerCase());
+      const names = [entity.name, entity.id, ...asArr<string>(entity.aliases)].map(n => n.toLowerCase());
       if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n)))) {
-        entity.sources.filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
+        asArr<string>(entity.sources).filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
       }
     }
     for (const topic of data.topics) {
       const names = [topic.name, topic.id].map(n => n.toLowerCase());
       if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n)))) {
-        topic.sources.filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
+        asArr<string>(topic.sources).filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
       }
     }
     // concept-index에서 온 강제 포함 페이지 ID 추가
@@ -278,10 +309,13 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
+    // Phase 3 — 전역 top-K 모드: 주입된 후보가 있으면 자체 벡터검색/RRF 생략(전역 랭킹 보존).
+    const useCandidates = !!(options.vectorCandidates && options.vectorCandidates.length > 0);
+
     // ─── 🆕 RRF 통합 (Design §5) — ragEnabled 위키만, 단일 지점 ──────
     // 기존 키워드 결과(scoredChunks + labeledItems)와 벡터 결과를 RRF 융합.
     // 실패 시 try/catch로 키워드 단독 fallback (회귀 안전).
-    if (this.config.ragEnabled) {
+    if (this.config.ragEnabled && !useCandidates) {
       try {
         // (1) 키워드 결과를 RRF 입력 형식으로 통합 + 점수순 정렬
         const keywordCombined: KeywordRankedChunk[] = [
@@ -347,6 +381,28 @@ export class WikiAgent implements AgentPlugin {
       }
     }
     // ─── 🆕 RRF 통합 끝 ──────────────────────────────────────────
+
+    // Phase 3 — 전역 모드: 주입된 전역 후보로 scoredChunks/labeledItems 교체.
+    //   이후 validIds 위생화·coverage·recency·entity·sources 조립은 그대로(Option C).
+    if (useCandidates) {
+      scoredChunks.length = 0;
+      labeledItems.length = 0;
+      for (const c of options.vectorCandidates!) {
+        if (c.type === 'fact' || c.type === 'stance' || c.type === 'overview') {
+          labeledItems.push({
+            type: c.type, id: c.id, title: c.title, chunk: c.chunk,
+            meta: typeof c.meta === 'string' ? c.meta : metaToString(c.meta),
+            score: c.score, similarity: c.similarity, kwScore: c.kwScore,
+          });
+        } else {
+          // source / topic / entity → source로 취급(rrf와 동일). validIds 위생화가 bogus 걸러냄.
+          scoredChunks.push({
+            type: 'source', title: c.title, id: c.id, topic: c.topic ?? '', date: c.date,
+            chunk: c.chunk, score: c.score, similarity: c.similarity, kwScore: c.kwScore,
+          });
+        }
+      }
+    }
 
     // ─── 🆕 source ID 위생화 (citation-validator 보호) ────────────────
     // vector search가 chunk_embeddings에서 topic 페이지를 'source' type으로
@@ -467,7 +523,7 @@ export class WikiAgent implements AgentPlugin {
       if (!entity.content.trim()) continue;
       const nameL = entity.name.toLowerCase();
       const idL = entity.id.toLowerCase();
-      const aliasesL = entity.aliases.map(a => a.toLowerCase());
+      const aliasesL = asArr<string>(entity.aliases).map(a => a.toLowerCase());
       let strength = 0;
       for (const w of queryWords) {
         if (w.length < 2) continue;
@@ -479,15 +535,20 @@ export class WikiAgent implements AgentPlugin {
       if (strength > 0) scoredEntities.push({ name: entity.name, content: entity.content, strength });
     }
     scoredEntities.sort((a, b) => b.strength - a.strength);
-    const entityBlocks = scoredEntities.slice(0, 3).map(e => `## [entity] ${e.name}\n${cap(e.content)}`);
+    // A1: entity를 ## 섹션으로 청크화 (서술형 — 관련 섹션만 예산 경쟁). entity는 citation 대상 아님(id 없음).
+    const entityBlocks = scoredEntities.slice(0, 3).flatMap(e =>
+      chunkLabeled('entity', e.content).map(s =>
+        `## [entity] ${e.name}${s.section ? ` — ${s.section}` : ''}\n${cap(s.text)}`));
 
-    const sourceBlocks = chunksToUse.map(item => {
+    const sourceBlocks = chunksToUse.flatMap(item => {
       if (item.type === 'source') {
-        return `## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${cap(sanitize(item.chunk))}`;
-      } else {
-        const labeled = item as LabeledItem;
-        return `## [${labeled.type}] ${labeled.title} (${labeled.id}) | ${labeled.meta}\n${cap(sanitize(labeled.chunk))}`;
+        return [`## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${cap(sanitize(item.chunk))}`];
       }
+      // A1: labeled(fact/stance/overview)를 ## 섹션으로 청크화 — 각 블록이 (id) 유지 → 같은 [N]으로 citation 정합.
+      //   fact/stance는 chunkLabeled가 통째 반환(표 보호). overview 큰 것만 섹션 분할.
+      const labeled = item as LabeledItem;
+      return chunkLabeled(labeled.type, labeled.chunk).map(s =>
+        `## [${labeled.type}] ${labeled.title}${s.section ? ` — ${s.section}` : ''} (${labeled.id}) | ${labeled.meta}\n${cap(sanitize(s.text))}`);
     }).join('\n\n---\n\n');
 
     const relevantData = entityBlocks.length > 0
@@ -510,5 +571,76 @@ export class WikiAgent implements AgentPlugin {
       sources,
       confidence: (scoredChunks.length > 0 || labeledItems.length > 0) ? 0.8 : 0.3,
     };
+  }
+
+  // Phase 3 (rag-cost-reduction.phase3.design §4.2) — 전역 키워드 풀용.
+  //   이 위키의 키워드 상위 청크(source + fact/overview)를 wikiId 태그로 반환(globalTopK RRF 입력).
+  //   희귀 고유명사·정확매칭(회차ID·인명) recall 보강(R2). DB/API 0(순수 in-memory).
+  //   stance는 lens 전용이라 전역 풀 제외. getContext 키워드 경로와 동일 스코어링(향후 dedup 가능).
+  keywordCandidates(query: string, userRole: Role, limit = 12, guaranteedPageIds?: Set<string>): KeywordRankedChunk[] {
+    const data = this.loadData();
+    const isSensitiveAllowed = canAccessSensitive(userRole);
+    const queryLower = query.toLowerCase();
+    const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
+    const allowedSources = data.sources.filter(s => isSensitiveAllowed || !s.sensitive);
+    const allowedSourceIds = new Set(allowedSources.map(s => s.id));
+
+    const guaranteedIds = new Set<string>();
+    for (const entity of data.entities) {
+      const names = [entity.name, entity.id, ...asArr<string>(entity.aliases)].map(n => n.toLowerCase());
+      if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n)))) {
+        asArr<string>(entity.sources).filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
+      }
+    }
+    for (const topic of data.topics) {
+      const names = [topic.name, topic.id].map(n => n.toLowerCase());
+      if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n)))) {
+        asArr<string>(topic.sources).filter(sid => allowedSourceIds.has(sid)).forEach(sid => guaranteedIds.add(sid));
+      }
+    }
+    if (guaranteedPageIds) for (const pid of guaranteedPageIds) if (allowedSourceIds.has(pid)) guaranteedIds.add(pid);
+
+    const out: KeywordRankedChunk[] = [];
+    const wikiId = this.config.id;
+    // source 청크
+    const candidate = allowedSources.filter(source => {
+      let score = 0;
+      if (guaranteedIds.has(source.id)) score += 5;
+      for (const t of source.topics) { const tl = t.toLowerCase(); if (queryLower.includes(tl) || queryWords.some(w => tl.includes(w))) score += 3; }
+      for (const e of source.entities) { const el = e.toLowerCase(); if (queryLower.includes(el) || queryWords.some(w => el.includes(w))) score += 2; }
+      for (const tag of source.tags) { const tl = tag.toLowerCase(); if (queryWords.some(w => tl.includes(w) || w.includes(tl))) score += 2; }
+      const cl = source.content.toLowerCase();
+      for (const word of queryWords) if (cl.includes(word)) score += 1;
+      return score > 0;
+    });
+    for (const source of candidate) {
+      const isG = guaranteedIds.has(source.id);
+      for (const chunk of splitIntoChunks(source.content)) {
+        let score = scoreChunk(chunk, queryWords);
+        if (isG) score = score * 2 + 1;
+        if (score > 0) out.push({ type: 'source', id: source.id, title: source.title, chunk, score, wikiId, topic: source.topics[0] ?? source.tags[0] ?? '', date: source.date });
+      }
+    }
+    // labeled: fact / overview (정형·개요)
+    // B(군살 제거): content 점수를 빈도합(scoreChunk)이 아니라 '매칭된 고유 질의어 수'(presence)로.
+    //   기존엔 긴 본문일수록 빈도가 뻥튀기돼 정밀 source 청크를 finalK에서 밀어냈음.
+    //   presence는 queryWords 길이에 bound → source 청크와 같은 스케일. 구조 부스트(category/편/guaranteed)는
+    //   유지해 numeric·정형 질문의 fact 검색가능성은 보존(벡터가 약한 영역 방어).
+    for (const f of data.facts) {
+      if (!isSensitiveAllowed && f.sensitive) continue;
+      const cl = (f.content + ' ' + f.category).toLowerCase();
+      let score = queryWords.filter(w => cl.includes(w)).length;
+      if (guaranteedPageIds?.has(f.id)) score += 5;
+      if (queryWords.some(w => f.category.toLowerCase().includes(w))) score += 3;
+      if (score > 0) out.push({ type: 'fact', id: f.id, title: f.title, chunk: f.content, score, wikiId, meta: `category: ${f.category}${f.yearsCovered ? ` / years: ${f.yearsCovered}` : ''}${f.unit ? ` / unit: ${f.unit}` : ''}` });
+    }
+    for (const o of data.overviews) {
+      if (!isSensitiveAllowed && o.sensitive) continue;
+      const cl = (o.content + ' ' + o.편).toLowerCase();
+      let score = queryWords.filter(w => cl.includes(w)).length;
+      if (queryWords.some(w => o.편.toLowerCase().includes(w))) score += 3;
+      if (score > 0) out.push({ type: 'overview', id: o.id, title: o.title, chunk: o.content, score, wikiId, meta: `편: ${o.편}` });
+    }
+    return out.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 }

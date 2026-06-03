@@ -1,4 +1,5 @@
 import type { Role } from '@/lib/auth/roles';
+import type { GlobalChunk } from '@/lib/embed/global-retrieve';
 
 export type AgentType = 'wiki' | 'task';
 export type PageType = 'source' | 'topic' | 'entity' | 'synthesis' | 'fact' | 'stance' | 'overview';
@@ -22,6 +23,11 @@ export interface AgentConfig {
   /** UI 표시명 (모드 메뉴·배지) */
   displayName?: string;
   /**
+   * college-grad-wiki — 단과대/대학원 그룹. per-college 독립 wiki_id를 UI에서 묶고,
+   * 라우터가 tier 분류(T3/T4) 대상인지 판별하는 게이트. (기존 9위키는 undefined)
+   */
+  group?: '단과대' | '대학원';
+  /**
    * Design Ref: §2.3 — ragEnabled 플래그 패턴
    * Plan SC: SC3 (RRF 융합 작동)
    * true면 하이브리드 RAG (키워드 + 벡터). false/undefined면 기존 키워드만.
@@ -35,6 +41,8 @@ export interface GetContextOptions {
   guaranteedPageIds?: Set<string>;
   /** true이면 stance 청크 포함 (Lens 모드 전용). 기본 false → stance 제외 */
   lensMode?: boolean;
+  /** Phase 3 — 전역 top-K가 분배한 이 위키 청크. 비어있지 않으면 getContext가 자체 검색 생략. */
+  vectorCandidates?: GlobalChunk[];
 }
 
 export interface SourceRef {
