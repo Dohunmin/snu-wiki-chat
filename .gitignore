@@ -4,3 +4,7 @@
 node_modules/
 !data/*.json
 drizzle/
+
+# rag-cost-reduction M0: 런타임 생성 회귀 기준선(머신·DB 상태 의존, 커밋 안 함)
+scripts/golden-qa.baseline.json
+scripts/gold-eval.baseline.json

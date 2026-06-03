@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
+import type Anthropic from '@anthropic-ai/sdk';
 import { auth } from '@/lib/auth/config';
 import { canChat } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
 import { loadPersonaContext } from '@/lib/agents/lens';
 import {
-  buildSystemPrompt,
+  buildSystemPromptParts,
   buildUserMessage,
   buildLensSystemPrompt,
   buildLensUserMessage,
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
   }
 
   let routing;
-  let systemPrompt;
+  let systemPrompt: string | Anthropic.TextBlockParam[];
   let userMessage;
   let citationMapping: Map<number, { wiki: string; page: string; topic?: string }>;
   let citationSummary: string;
@@ -112,7 +113,15 @@ export async function POST(req: NextRequest) {
         insufficient: persona.insufficient,
       };
     } else {
-      systemPrompt = buildSystemPrompt(routing.contexts, role);
+      // Design Ref: rag-cost-reduction §2 M1b — 안정 system prefix에 prompt caching 적용.
+      //   stable(고정 P0~P6 + 가이드)에 cache_control 부여 → 재시도/멀티턴/동시질의서 입력단가 ~1/10.
+      //   tail(agentList·tier2 경고)은 가변이라 캐시 밖. lens 모드는 회귀위험 커 현재 미적용(후속).
+      //   본문(userMessage) 캐싱은 적중률 실측(M0c [chat-usage] cacheR/cacheW) 후 결정.
+      const parts = buildSystemPromptParts(routing.contexts, role);
+      systemPrompt = [
+        { type: 'text', text: parts.stable, cache_control: { type: 'ephemeral' } },
+        { type: 'text', text: parts.tail },
+      ];
       userMessage = buildUserMessage(message, numbered.contextMarkdown, numbered.summary);
     }
 
@@ -203,9 +212,24 @@ export async function POST(req: NextRequest) {
         // 스트리밍 + [N] → [위키] sid resolve
         // buffer에 누적하다가 safe flush point 까지만 resolve해서 송신
         // → 부분 [N] (예: "[1" 가 chunk 경계에 걸린 경우) 안전 처리
+        // Design Ref: rag-cost-reduction §2 M0c — 사용량·절단 계측(Phase 0)
+        //   stop_reason: max_tokens 절단을 감지(현재는 무음 통과 → 답변 말미 P5 한계마커/인용 손실).
+        //   usage: input/output + 캐시 토큰 로깅 → Phase 1 prompt-caching 적중률 의사결정 데이터.
+        //   출력은 불변(로깅만 추가) — 회귀 표면 0.
+        let stopReason: string | null = null;
+        const streamUsage: { input?: number; output?: number; cacheRead?: number; cacheWrite?: number } = {};
+
         for await (const chunk of anthropicStream) {
           if (closed || req.signal?.aborted) break;  // 클라 연결 끊김 → LLM 스트림 소비 중단
-          if (
+          if (chunk.type === 'message_start') {
+            const u = chunk.message.usage;
+            streamUsage.input = u.input_tokens;
+            streamUsage.cacheRead = u.cache_read_input_tokens ?? undefined;
+            streamUsage.cacheWrite = u.cache_creation_input_tokens ?? undefined;
+          } else if (chunk.type === 'message_delta') {
+            stopReason = chunk.delta.stop_reason ?? stopReason;
+            streamUsage.output = chunk.usage.output_tokens;
+          } else if (
             chunk.type === 'content_block_delta' &&
             chunk.delta.type === 'text_delta'
           ) {
@@ -224,6 +248,16 @@ export async function POST(req: NextRequest) {
         if (buffer.length > 0) {
           const resolved = resolveText(buffer, citationMapping);
           send({ type: 'chunk', content: resolved });
+        }
+
+        // Design Ref: rag-cost-reduction §2 M0c — 계측 로깅(평균 비용·캐시 적중·절단 추적)
+        console.log(
+          `[chat-usage] agents=${routing.selectedAgentIds.join('+') || '-'} ` +
+          `in=${streamUsage.input ?? '?'} out=${streamUsage.output ?? '?'} ` +
+          `cacheR=${streamUsage.cacheRead ?? 0} cacheW=${streamUsage.cacheWrite ?? 0} stop=${stopReason ?? '?'}`,
+        );
+        if (stopReason === 'max_tokens') {
+          console.warn('[chat-usage] ⚠️ max_tokens 절단 발생 — 답변 말미(P5 한계마커/인용) 손실 가능');
         }
 
         // ─── 옛 형식 [위키] sid 검출 + retry ──────────────────────────

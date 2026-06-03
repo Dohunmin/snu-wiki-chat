@@ -34,6 +34,8 @@ async function main() {
   const limit = limIdx >= 0 ? parseInt(args[limIdx + 1], 10) : Infinity;
   const roleIdx = args.indexOf('--role');
   const role = (roleIdx >= 0 ? args[roleIdx + 1] : 'tier1') as Role;
+  // Design Ref: rag-cost-reduction §2 M0b — 기준선 저장/비교
+  const saveBaseline = args.includes('--baseline');
 
   const path = 'scripts/gold-questions.json';
   if (!fs.existsSync(path)) {
@@ -104,6 +106,53 @@ async function main() {
   }
   console.log(`  ⚠️ PARSE_FAIL: ${failCount}/${targets.length}`);
   console.log(`\n💾 scripts/gold-results.json (goldVerdict 칸을 검수해 채우면 일치율 측정 가능)`);
+
+  // ── Design Ref: rag-cost-reduction §2 M0b — 기준선 게이트 + 교차근거 위키 분포 diff ──
+  //   --baseline: 현 코드 verdict/routedWikis 스냅샷 저장(그린 기준선).
+  //   기본: 기준선 비교 → 'answerable→그외' 후퇴 건수 집계, >0이면 exit(1).
+  //   교차근거 위키 분포 축소는 silent regression 신호로 보고(정보용).
+  const BASELINE_PATH = 'scripts/gold-eval.baseline.json';
+  const snapshot = results
+    .filter(r => r.verdict)
+    .map(r => ({ question: r.question as string, verdict: r.verdict as Verdict, routedWikis: (r.routedWikis ?? []) as string[] }));
+
+  if (saveBaseline) {
+    fs.writeFileSync(BASELINE_PATH, JSON.stringify(snapshot, null, 2), 'utf-8');
+    console.log(`\n💾 ${BASELINE_PATH} 저장 (${snapshot.length}질문) — 변경후 'npx tsx scripts/eval-gold.ts'로 비교`);
+    return;
+  }
+
+  if (!fs.existsSync(BASELINE_PATH)) {
+    console.log(`\n⚠️ 기준선 ${BASELINE_PATH} 없음 — '--baseline'으로 먼저 생성하세요. (비교 생략)`);
+    return;
+  }
+
+  const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf-8')) as Array<{ question: string; verdict: Verdict; routedWikis: string[] }>;
+  const baseByQ = new Map(baseline.map(b => [b.question, b]));
+  let answerableRegressions = 0, wikiShrinkQ = 0, compared = 0;
+  const regressionDetail: string[] = [];
+
+  for (const r of snapshot) {
+    const base = baseByQ.get(r.question);
+    if (!base) continue;
+    compared++;
+    // 답변가능성 후퇴: answerable → 그 외(특히 internal-gap/external-needed)
+    if (base.verdict === 'answerable' && r.verdict !== 'answerable') {
+      answerableRegressions++;
+      regressionDetail.push(`  🔴 "${r.question.slice(0, 40)}..." ${base.verdict} → ${r.verdict}`);
+    }
+    // 교차근거 위키 분포 후퇴(silent regression 신호)
+    if (base.routedWikis.some(w => !r.routedWikis.includes(w))) wikiShrinkQ++;
+  }
+
+  console.log(`\n${'═'.repeat(80)}`);
+  console.log(`📊 기준선 대비 (${compared}질문)`);
+  console.log('═'.repeat(80));
+  regressionDetail.forEach(d => console.log(d));
+  console.log(`  답변가능성 후퇴(answerable→그외): ${answerableRegressions}/${compared}`);
+  console.log(`  교차근거 위키 줄어든 질문: ${wikiShrinkQ}/${compared} (silent regression 신호 — 정보용)`);
+  console.log(`\n🏁 ${answerableRegressions === 0 ? '✅ PASS — 답변가능성 후퇴 0' : '🔴 FAIL — 답변가능성 후퇴 발생'}`);
+  if (answerableRegressions > 0) process.exit(1);
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

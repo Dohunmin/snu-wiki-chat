@@ -15,8 +15,11 @@
 import process from 'process';
 try { if (typeof process.loadEnvFile === 'function') process.loadEnvFile('.env.local'); } catch {}
 
+import fs from 'fs';
 import { WikiAgent } from '@/lib/agents/wiki-agent';
+import { routeQuery } from '@/lib/agents/router';
 import type { AgentConfig } from '@/lib/agents/types';
+import type { Role } from '@/lib/auth/roles';
 import agentsConfig from '@/data/agents.config.json';
 
 interface GoldenQuery {
@@ -131,7 +134,10 @@ async function runQuery(q: GoldenQuery, ragEnabled: boolean): Promise<RunResult>
   };
 }
 
-async function main() {
+// ─────────────────────────────────────────────────────────────────────────
+// 레이어 1: finance 알려진-정답 픽스처 (기존 — 결정적·무료, RAG OFF vs ON)
+// ─────────────────────────────────────────────────────────────────────────
+async function runFinanceFixtures(): Promise<boolean> {
   console.log(`\n${'═'.repeat(80)}`);
   console.log(`🧪 GOLDEN Q&A — Plan SC5 (회귀 ≥18/20) + SC6 (갭 개선 ≥3/5)`);
   console.log(`   PoC 범위: finance 1개 위키, 회귀 10개 + 갭 5개 = 15개 질문`);
@@ -214,11 +220,114 @@ async function main() {
 
   console.log(`\n${'═'.repeat(80)}\n`);
 
-  if (sc5Pass && sc6Pass) {
-    console.log('✅✅ 전체 PASS — Report 단계 진입 가능');
+  return sc5Pass && sc6Pass;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// 레이어 2: 실제 gold 질문 self-baseline (Design Ref: rag-cost-reduction §2 M0a)
+//   실제 시트 64질문(gold-questions.json)을 routeQuery로 돌려 '검색 시그니처' 스냅샷.
+//   --baseline: 현 코드 시그니처 저장(그린 기준선).
+//   기본: 기준선과 비교 → 카타스트로픽 회귀(라우팅/소스 통째로 0)만 exit(1).
+//   의도적 축소(위키·청크 감소)는 diff로 보고하되 fail 아님 — 의미적 품질 게이트는 eval-gold 담당.
+//   ⚠️ 합성 질문 없음: 입력은 실제 시트(gold-questions.json)만. (사용자 지시)
+// ─────────────────────────────────────────────────────────────────────────
+interface Signature { question: string; wikis: string[]; sourceIds: string[]; chunks: number; chars: number }
+const BASELINE_PATH = 'scripts/golden-qa.baseline.json';
+
+async function captureSignatures(role: Role): Promise<Signature[]> {
+  const path = 'scripts/gold-questions.json';
+  if (!fs.existsSync(path)) {
+    console.error(`❌ ${path} 없음 — 'npx tsx scripts/fetch-sheet-questions.ts --json scripts/gold-questions.json' 먼저 실행`);
+    process.exit(2);
+  }
+  const all = JSON.parse(fs.readFileSync(path, 'utf-8')) as Array<{ question: string; mode?: string }>;
+  const questions = all.filter(q => !(q.mode || '').startsWith('lens:'));
+  const sigs: Signature[] = [];
+  for (let i = 0; i < questions.length; i++) {
+    const q = questions[i];
+    process.stdout.write(`\r  시그니처 캡처 ${i + 1}/${questions.length}...`);
+    try {
+      const routing = await routeQuery(q.question, role);
+      const sourceIds = [...new Set(routing.contexts.flatMap(c => c.sources.map(s => s.page)))].sort();
+      sigs.push({
+        question: q.question,
+        wikis: [...routing.selectedAgentIds].sort(),
+        sourceIds,
+        chunks: sourceIds.length,
+        chars: routing.contexts.reduce((s, c) => s + [...c.relevantData].length, 0),
+      });
+    } catch (err) {
+      console.error(`\n  ⚠️ "${q.question.slice(0, 30)}..." 라우팅 실패:`, err instanceof Error ? err.message : err);
+      sigs.push({ question: q.question, wikis: [], sourceIds: [], chunks: 0, chars: 0 });
+    }
+  }
+  process.stdout.write('\n');
+  return sigs;
+}
+
+async function runBaselineLayer(role: Role, saveBaseline: boolean): Promise<boolean> {
+  console.log(`\n${'═'.repeat(80)}`);
+  console.log(`🧪 SELF-BASELINE — 실제 gold 질문 검색 시그니처 (role=${role})`);
+  console.log('═'.repeat(80));
+  const sigs = await captureSignatures(role);
+
+  if (saveBaseline) {
+    fs.writeFileSync(BASELINE_PATH, JSON.stringify(sigs, null, 2), 'utf-8');
+    const totChars = sigs.reduce((s, x) => s + x.chars, 0);
+    const avgWikis = sigs.reduce((s, x) => s + x.wikis.length, 0) / sigs.length;
+    console.log(`\n💾 ${BASELINE_PATH} 저장 (${sigs.length}질문)`);
+    console.log(`   평균 컨텍스트 ${Math.round(totChars / sigs.length).toLocaleString()}자, 평균 위키 ${avgWikis.toFixed(1)}개`);
+    return true;
+  }
+
+  if (!fs.existsSync(BASELINE_PATH)) {
+    console.log(`\n⚠️ 기준선 ${BASELINE_PATH} 없음 — 'npm run qa:golden -- --baseline'으로 먼저 생성하세요. (이번 비교 생략)`);
+    return true;
+  }
+
+  const baseline: Signature[] = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf-8'));
+  const byQ = new Map(baseline.map(b => [b.question, b]));
+  let catastrophic = 0, wikiShrink = 0, sourceShrink = 0, charDelta = 0, baseChars = 0, compared = 0;
+
+  for (const cur of sigs) {
+    const base = byQ.get(cur.question);
+    if (!base) continue;
+    compared++;
+    baseChars += base.chars;
+    charDelta += cur.chars - base.chars;
+    if (base.wikis.some(w => !cur.wikis.includes(w))) wikiShrink++;
+    if (base.sourceIds.some(s => !cur.sourceIds.includes(s))) sourceShrink++;
+    // 카타스트로픽: 검색 결과가 있었는데 이제 통째로 0
+    if ((base.wikis.length > 0 && cur.wikis.length === 0) || (base.sourceIds.length > 0 && cur.sourceIds.length === 0)) {
+      catastrophic++;
+      console.log(`  🔴 CATASTROPHIC "${cur.question.slice(0, 40)}..." 위키 ${base.wikis.length}→${cur.wikis.length}, 소스 ${base.sourceIds.length}→${cur.sourceIds.length}`);
+    }
+  }
+
+  console.log(`\n📊 기준선 대비 (${compared}질문 비교 — 축소는 의도적이라 fail 아님, 정보용 diff)`);
+  console.log(`  위키 줄어든 질문: ${wikiShrink}/${compared}`);
+  console.log(`  소스 줄어든 질문: ${sourceShrink}/${compared}`);
+  console.log(`  평균 컨텍스트 변화: ${baseChars ? ((charDelta / baseChars) * 100).toFixed(1) : '0'}% (음수=절감)`);
+  console.log(`\n🏁 카타스트로픽 회귀(라우팅/소스 0): ${catastrophic} ${catastrophic === 0 ? '✅ PASS' : '🔴 FAIL'}`);
+  console.log(`   (의미적 품질 게이트 = answerable→partial 후퇴는 eval-gold가 담당)`);
+  return catastrophic === 0;
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const saveBaseline = args.includes('--baseline');
+  const roleIdx = args.indexOf('--role');
+  const role = (roleIdx >= 0 ? args[roleIdx + 1] : 'admin') as Role;
+
+  const financePass = await runFinanceFixtures();
+  const baselinePass = await runBaselineLayer(role, saveBaseline);
+
+  console.log(`\n${'═'.repeat(80)}`);
+  if (financePass && baselinePass) {
+    console.log('✅✅ 전체 PASS');
     process.exit(0);
   } else {
-    console.log('🟡 일부 FAIL — Design 동기화 또는 후속 튜닝 필요');
+    console.log(`🔴 FAIL — finance픽스처:${financePass ? 'PASS' : 'FAIL'} / self-baseline:${baselinePass ? 'PASS' : 'FAIL'}`);
     process.exit(1);
   }
 }

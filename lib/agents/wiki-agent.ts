@@ -432,25 +432,47 @@ export class WikiAgent implements AgentPlugin {
       }
     }
 
-    // ─── entity 블록 (기존 유지) ───────────────────────────────────
-    const entityBlocks: string[] = [];
-    for (const entity of data.entities) {
-      const names = [entity.name, entity.id, ...entity.aliases].map(n => n.toLowerCase());
-      if (names.some(n => queryWords.some(w => n.includes(w) || w.includes(n))) && entity.content.trim()) {
-        entityBlocks.push(`## [entity] ${entity.name}\n${entity.content}`);
-      }
-    }
-
     // ─── 출력 포맷 (타입 라벨링) ───────────────────────────────────
     // non-Lens 모드: 내부 페이지 ID 참조를 콘텐츠에서 제거
     const sanitize = options.lensMode ? (s: string) => s : stripInternalIds;
 
+    // 청크 본문 상한 — 입력 토큰 절감(긴 섹션은 앞부분만; 회의록 핵심은 앞에 위치).
+    //   소스 개수는 안 줄여 인용 커버리지 유지. 문장 경계 근처에서 자름.
+    const CHUNK_CHAR_CAP = 3000;
+    const cap = (s: string) => {
+      if (s.length <= CHUNK_CHAR_CAP) return s;
+      const nl = s.lastIndexOf('\n', CHUNK_CHAR_CAP);
+      return s.slice(0, nl > CHUNK_CHAR_CAP * 0.6 ? nl : CHUNK_CHAR_CAP);
+    };
+
+    // ─── entity 블록 (Design Ref: rag-cost-reduction §2 M1d) ──────────────
+    //   기존: 매칭 entity content를 cap 없이 raw로 전부 부착 → 다기관 위키(예: 16학과 단과대)서 토큰 폭증.
+    //   변경: 매칭강도(정확>alias>부분) 점수 → 상위 3개만 + cap() 적용 + 단어길이 가드(3자+ 부분매칭, 과발동 차단).
+    const scoredEntities: { name: string; content: string; strength: number }[] = [];
+    for (const entity of data.entities) {
+      if (!entity.content.trim()) continue;
+      const nameL = entity.name.toLowerCase();
+      const idL = entity.id.toLowerCase();
+      const aliasesL = entity.aliases.map(a => a.toLowerCase());
+      let strength = 0;
+      for (const w of queryWords) {
+        if (w.length < 2) continue;
+        if (nameL === w || idL === w) strength = Math.max(strength, 3);            // 정확 매칭
+        else if (aliasesL.includes(w)) strength = Math.max(strength, 2);            // alias 정확
+        else if (w.length >= 3 && (nameL.includes(w) || aliasesL.some(a => a.includes(w)) || w.includes(nameL)))
+          strength = Math.max(strength, 1);                                         // 부분(3자+ 가드)
+      }
+      if (strength > 0) scoredEntities.push({ name: entity.name, content: entity.content, strength });
+    }
+    scoredEntities.sort((a, b) => b.strength - a.strength);
+    const entityBlocks = scoredEntities.slice(0, 3).map(e => `## [entity] ${e.name}\n${cap(e.content)}`);
+
     const sourceBlocks = chunksToUse.map(item => {
       if (item.type === 'source') {
-        return `## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${sanitize(item.chunk)}`;
+        return `## ${item.title} (${item.id})${item.date ? ` | 회의일: ${item.date}` : ''}\n${cap(sanitize(item.chunk))}`;
       } else {
         const labeled = item as LabeledItem;
-        return `## [${labeled.type}] ${labeled.title} (${labeled.id}) | ${labeled.meta}\n${sanitize(labeled.chunk)}`;
+        return `## [${labeled.type}] ${labeled.title} (${labeled.id}) | ${labeled.meta}\n${cap(sanitize(labeled.chunk))}`;
       }
     }).join('\n\n---\n\n');
 
