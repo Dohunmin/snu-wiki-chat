@@ -19,6 +19,7 @@ import {
   detectOldFormatCitations,
   buildOldFormatRetryPrompt,
 } from '@/lib/llm/citations';
+import { validateTables, buildTableFixPrompt } from '@/lib/llm/table-audit';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
 import { logQuestionToSheet } from '@/lib/google-sheets';
 import { db } from '@/lib/db/client';
@@ -258,6 +259,39 @@ export async function POST(req: NextRequest) {
           } catch (err) {
             console.error('[citation] retry failed:', err);
             // 실패 시 원본 그대로 진행
+          }
+        }
+
+        // ─── 표 산수 검산 + 자동 교정 ──────────────────────────────────
+        // 표의 비중 합·항목 합이 안 맞으면(LLM 첫 계산 오류) 정확한 불일치를 콕 집어 1회 재요청.
+        // 사용자에겐 경고가 아니라 '맞는 답'만 보임. 틀린 표가 있을 때만 호출(평소 비용 영향 0).
+        if (!closed) {
+          const tableIssues = validateTables(resolveText(fullContentRaw, citationMapping));
+          if (tableIssues.length > 0) {
+            console.log(`[table-audit] ${tableIssues.length} arithmetic issue(s), fixing once...`);
+            try {
+              const fixResp = await client.messages.create({
+                model: LLM_MODEL,
+                max_tokens: MAX_TOKENS,
+                system: systemPrompt,
+                messages: [
+                  ...history,
+                  { role: 'user', content: userMessage },
+                  { role: 'assistant', content: fullContentRaw },
+                  { role: 'user', content: buildTableFixPrompt(tableIssues) },
+                ],
+              });
+              const fixRaw = fixResp.content[0]?.type === 'text' ? fixResp.content[0].text : '';
+              // 교정본이 오류를 줄였을 때만 채택(악화 방지)
+              if (fixRaw && validateTables(resolveText(fixRaw, citationMapping)).length < tableIssues.length) {
+                fullContentRaw = fixRaw;
+                send({ type: 'replace', content: resolveText(fixRaw, citationMapping) });
+              } else {
+                console.error('[table-audit] fix did not reduce issues, keeping original');
+              }
+            } catch (err) {
+              console.error('[table-audit] fix failed:', err);
+            }
           }
         }
 

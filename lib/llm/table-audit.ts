@@ -16,16 +16,19 @@ export interface TableIssue {
   actual: number;
 }
 
+// 인용([…](url) 또는 [위키] sid) 앞부분만 사용 — 인용 안의 숫자(회차 등)가 합산 오염 안 되게
+const beforeCite = (cell: string) => cell.split('[')[0].replace(/\*\*/g, '').trim();
+
 function parseAmount(cell: string): number | null {
-  const c = cell.replace(/\*\*/g, '').trim();
-  if (/\d\s*~\s*\d|약|내외|미정|개선/.test(c)) return null;   // 범위·추정 제외
+  const c = beforeCite(cell);
+  if (!c || /\d\s*~\s*\d|약|내외|미정|개선/.test(c)) return null;   // 범위·추정 제외
   const m = c.match(/-?[\d,]+(?:\.\d+)?/);
   if (!m) return null;
   const n = parseFloat(m[0].replace(/,/g, ''));
   return Number.isNaN(n) ? null : n;
 }
 function parsePercent(cell: string): number | null {
-  const m = cell.replace(/\*\*/g, '').match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
+  const m = beforeCite(cell).match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
   if (!m) return null;
   const n = parseFloat(m[1].replace(/,/g, ''));
   return Number.isNaN(n) ? null : n;
@@ -88,4 +91,19 @@ export function validateTables(text: string): TableIssue[] {
   }
   const seen = new Set<string>();
   return issues.filter(i => { const k = i.kind + i.detail; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+/** 검산 실패 시 LLM에 줄 자동 교정 프롬프트 (정확한 불일치를 콕 집어줌 → 거의 고침) */
+export function buildTableFixPrompt(issues: TableIssue[]): string {
+  const lines = issues.map(i => `- ${i.detail}`).join('\n');
+  return `이전 답변의 수치 표에 산수 오류가 있습니다:
+${lines}
+
+표를 다시 계산해 정확히 고치세요:
+- 비중(%) 합은 정확히 100%가 되어야 합니다.
+- 항목 금액의 합은 '합계' 행 값과 일치해야 합니다.
+- 각주(¹)나 "별도"로 표시된 행(예: 적립금)은 합계·비중 계산에서 **제외**하고, 표 아래에 별도 항목으로 분리해 표기하세요.
+- 누락된 항목이 있어 합이 안 맞으면, 자료에 있는 항목을 빠짐없이 채우거나 합계를 항목 합과 맞추세요.
+
+다른 서술·인용([N] 번호)은 그대로 유지하고, **틀린 표의 숫자만** 정확히 고친 전체 답변을 다시 출력하세요.`;
 }
