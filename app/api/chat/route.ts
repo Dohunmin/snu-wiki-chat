@@ -270,13 +270,14 @@ export async function POST(req: NextRequest) {
           if (tableIssues.length > 0) {
             console.log(`[table-audit] ${tableIssues.length} arithmetic issue(s), fixing once...`);
             try {
-              const fixResp = await client.messages.create({
+              // 경량 retry — 산수 교정엔 위키 컨텍스트 불필요(표 안 숫자만 재계산).
+            //   전체 컨텍스트(~72k) 재전송 안 함 → 비용 ~10배 절감. [N] 인용·서술은 그대로 유지 지시.
+            const fixResp = await client.messages.create({
                 model: LLM_MODEL,
                 max_tokens: MAX_TOKENS,
-                system: systemPrompt,
+                system: '당신은 서울대학교 거버넌스 위키 어시스턴트입니다. 인용은 [N] 번호 형식만 유지하고 내부 ID를 노출하지 마세요. 아래 답변의 수치 표 산수만 정확히 교정합니다.',
                 messages: [
-                  ...history,
-                  { role: 'user', content: userMessage },
+                  { role: 'user', content: '직전에 작성한 답변의 수치 표를 검토합니다.' },
                   { role: 'assistant', content: fullContentRaw },
                   { role: 'user', content: buildTableFixPrompt(tableIssues) },
                 ],
