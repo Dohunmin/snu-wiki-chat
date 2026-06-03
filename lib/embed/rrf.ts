@@ -29,6 +29,11 @@ export interface RRFOptions {
 export interface FusedChunk extends KeywordRankedChunk {
   /** 'keyword-only' | 'vector-only' | 'both' — 디버그용 */
   rrfSource?: 'keyword-only' | 'vector-only' | 'both';
+  // Design Ref: rag-cost-reduction §2 M2a — 유사도 cutoff용 신호 전파.
+  /** 벡터 cosine similarity(1-dist/2). both 케이스도 벡터에서 병합. 키워드-only면 undefined. */
+  similarity?: number;
+  /** RRF로 덮이기 전 키워드 원점수 — 강매칭 cutoff 면제 판정용. */
+  kwScore?: number;
 }
 
 /**
@@ -97,6 +102,8 @@ export function rrfFuse(
       result.push({
         ...existing,
         score: item.score,
+        kwScore: existing.score,                            // M2a: 키워드 원점수 보존(RRF 덮기 전)
+        similarity: vectorIndex.get(item.key)?.similarity,  // M2a: both 케이스 벡터 similarity 병합
         ...(debug && { rrfSource: item.source }),
       });
     } else {
@@ -117,6 +124,7 @@ export function rrfFuse(
         title: vr.metadata.title,
         chunk: vr.chunkText,
         score: item.score,
+        similarity: vr.similarity,   // M2a: 벡터-only similarity 전파
         ...(debug && { rrfSource: item.source }),
         // 메타데이터 통과 (출력 포맷에서 사용)
         meta: vr.metadata,

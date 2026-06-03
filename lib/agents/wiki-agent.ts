@@ -197,6 +197,7 @@ export class WikiAgent implements AgentPlugin {
       type: 'source';
       title: string; id: string; topic: string; date?: string;
       chunk: string; score: number;
+      similarity?: number; kwScore?: number;   // M2b: cutoff 신호 전파
     }[] = [];
 
     for (const source of sourcesToProcess) {
@@ -224,6 +225,7 @@ export class WikiAgent implements AgentPlugin {
       type: 'stance' | 'fact' | 'overview';
       id: string; title: string; chunk: string;
       meta: string; score: number;
+      similarity?: number; kwScore?: number;   // M2b: cutoff 신호 전파
     };
     const labeledItems: LabeledItem[] = [];
 
@@ -322,6 +324,7 @@ export class WikiAgent implements AgentPlugin {
               date: typeof f.date === 'string' ? f.date : undefined,
               chunk: f.chunk,
               score: f.score,
+              similarity: f.similarity, kwScore: f.kwScore,   // M2b 전파
             });
           } else {
             const metaStr = typeof f.meta === 'string'
@@ -334,6 +337,7 @@ export class WikiAgent implements AgentPlugin {
               chunk: f.chunk,
               meta: metaStr,
               score: f.score,
+              similarity: f.similarity, kwScore: f.kwScore,   // M2b 전파
             });
           }
         }
@@ -396,7 +400,17 @@ export class WikiAgent implements AgentPlugin {
         ...restChunks,
       ].sort((a, b) => b.score - a.score);
 
-      chunksToUse = combined.slice(0, chunkCap);
+      // Design Ref: rag-cost-reduction §2 M2b — dist 정렬 유사도 cutoff (tightMax 0.85 정렬, sweep 튜닝).
+      //   면제: guaranteed(큐레이션) · 키워드 강매칭(kwScore≥강) · similarity 없음(키워드-only=벡터신호 부재≠무관).
+      //   ⚠️ OOD/in-corpus dist 분포 겹침(retrieval-confidence-gate §9) → 보수적: 명백히 먼 꼬리만 컷.
+      const SIM_CUT_CHUNK = Number(process.env.SIM_CUT_CHUNK ?? '0.40');   // env override(sweep). 기본 0.40 ≈ dist>1.2.
+      const KW_STRONG = 3;
+      chunksToUse = combined.filter(c =>
+        guaranteedIds.has(c.id)
+        || (c.kwScore ?? 0) >= KW_STRONG
+        || c.similarity === undefined
+        || c.similarity >= SIM_CUT_CHUNK,
+      ).slice(0, chunkCap);
     } else {
       chunksToUse = sourcesToProcess.map(source => ({
         type: 'source' as const,

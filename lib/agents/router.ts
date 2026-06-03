@@ -174,7 +174,14 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
     ...otherSelected.slice(0, remainingCapacity),
   ];
 
-  const finalSelected = cappedSelected.length > 0 ? cappedSelected : scored.slice(0, MAX_WIKIS);
+  // Design Ref: rag-cost-reduction §2 M2c — fallback 보수화.
+  //   기존: selected가 비면 점수 무관 상위 MAX_WIKIS를 끌어옴(무관 위키 진입).
+  //   변경: MIN_ABSOLUTE_SCORE 통과분 우선, 그것도 없으면 top-1만(컨텍스트 0 방지).
+  //   (semantic-hint-only 위키 컷은 동의어 recall 안전장치라 보류 — Plan Open Decision #2 + sweep 후 결정.)
+  const scorePassing = scored.filter(s => s.score >= MIN_ABSOLUTE_SCORE);
+  const finalSelected = cappedSelected.length > 0
+    ? cappedSelected
+    : (scorePassing.length > 0 ? scorePassing.slice(0, MAX_WIKIS) : scored.slice(0, 1));
 
   // === Stage 2: 신뢰도 가중 chunk cap 분배 ===
   // 균등 분배(이전: 모두 floor 5) 대신, 임베딩 근접도 + 키워드 점수가 높은 위키에 예산을 더 배정.
