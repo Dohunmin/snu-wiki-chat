@@ -13,7 +13,9 @@
     "qa:golden": "npx tsx --env-file=.env.local scripts/golden-qa.ts",
     "watch": "npx tsx --env-file=.env.local scripts/watch.ts",
     "knowledge:map": "npx tsx --env-file=.env.local scripts/generate-knowledge-map.ts",
-    "knowledge:questions": "npx tsx --env-file=.env.local scripts/embed-questions.ts"
+    "knowledge:questions": "npx tsx --env-file=.env.local scripts/embed-questions.ts",
+    "crawl:colleges": "npx tsx --env-file=.env.local scripts/crawl/index.ts",
+    "test:governance": "npx tsx scripts/test/governance-regression.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",
@@ -21,6 +23,7 @@
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.36.0",
     "isomorphic-dompurify": "^2.15.0",
+    "js-yaml": "^4.1.0",
     "next": "^15.0.0",
     "next-auth": "^5.0.0-beta.25",
     "react-markdown": "^9.0.0",
@@ -30,14 +33,18 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "cheerio": "^1.0.0",
     "chokidar": "^5.0.0",
     "drizzle-kit": "^0.28.0",
     "pg": "^8.21.0",
+    "playwright": "^1.60.0",
     "postcss": "^8.5.0",
+    "robots-parser": "^3.0.1",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
