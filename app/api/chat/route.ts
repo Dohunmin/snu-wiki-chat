@@ -15,6 +15,7 @@ import {
   buildLensUserMessage,
   buildPolicySystemPrompt,
 } from '@/lib/llm/prompts';
+import { selectRecentHistory, type ChatTurn } from '@/lib/llm/memory';
 import {
   buildNumberedContexts,
   resolveText,
@@ -256,21 +257,23 @@ export async function POST(req: NextRequest) {
         const history: AnthropicMessage[] = [];
         const followupRe = /그럼|그러면|그리고|그래서|또 |추가로|그 외|이것 외|이 외|위에서|위 질문|방금|아까|앞서|앞에|지금까지|이어서|계속|왜냐|이거|그거|저거|이건|그건|그렇다면|이를 |위 내용|방금 답변|정리해|요약해|다시 |더 |그것/;
         const isContinuation = [...message.trim()].length <= 12 || followupRe.test(message);
-        if (convId && isContinuation) {
+        // 공약설계(policy)는 토론 모드 → 후속 여부와 무관하게 항상 직전 맥락 로드 (Design: memory.ts/FR6).
+        const isPolicyDebate = mode === 'policy';
+        if (convId && (isContinuation || isPolicyDebate)) {
           const allPrev = await db
             .select({ role: messages.role, content: messages.content })
             .from(messages)
             .where(eq(messages.conversationId, convId))
             .orderBy(asc(messages.createdAt));
 
-          // 현재 저장된 user 메시지 제외 (마지막 1개)
-          // 직전 5회 교환(user+assistant 쌍 5개)까지 포함
-          const prev = allPrev.slice(0, -1).slice(-10);
-          for (const m of prev) {
-            if (m.role === 'user' || m.role === 'assistant') {
-              history.push({ role: m.role, content: m.content });
-            }
-          }
+          // 현재 저장된 user 메시지 제외 (마지막 1개) 후 user/assistant만
+          const prevTurns = allPrev.slice(0, -1)
+            .filter((m): m is { role: 'user' | 'assistant'; content: string } => m.role === 'user' || m.role === 'assistant') as ChatTurn[];
+          // policy: 넓은 창(8교환)+char 예산(12k)으로 토론 연속성. normal/lens: 기존 직전 5교환.
+          const selected = isPolicyDebate
+            ? selectRecentHistory(prevTurns, { maxMessages: 16, maxChars: 12000 })
+            : prevTurns.slice(-10);
+          for (const m of selected) history.push({ role: m.role, content: m.content });
         }
 
         // web_search: normal 모드만(lens는 페르소나 전용, 회귀위험 회피). 위키로 답하면 미발동 → 비용 0.

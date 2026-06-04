@@ -206,10 +206,10 @@ export default function ChatPage({ user }: { user: User }) {
     setIsReadOnly(effectiveReadOnly);
     setLensInsufficient(null);
 
-    // 내 대화일 때만 lens 모드 이어받음 (isOwn 기준)
+    // 내 대화일 때만 lens·policy 모드 이어받음 (isOwn 기준, admin 전용)
     if (!effectiveReadOnly && isOwn) {
       const conv = conversations.find(c => c.id === convId);
-      if (conv?.mode?.startsWith('lens:') && isAdmin) {
+      if ((conv?.mode?.startsWith('lens:') || conv?.mode === 'policy') && isAdmin) {
         setChatMode(conv.mode);
       } else {
         setChatMode('normal');
@@ -670,6 +670,21 @@ export default function ChatPage({ user }: { user: User }) {
               </div>
             )}
 
+            {/* 공약설계 모드 배지 */}
+            {chatMode === 'policy' && (
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs">
+                <span>💡</span>
+                <span className="font-medium text-indigo-700">공약설계 모드 — 근거 기반 찬반·전망·제안 (외부검색 자동)</span>
+                <button
+                  onClick={() => setChatMode('normal')}
+                  className="ml-1 text-indigo-600 hover:text-indigo-900"
+                  aria-label="공약설계 모드 해제"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
               {/* 통합 + 메뉴 (자료 업로드 + 모드 전환) */}
               <div ref={modeMenuRef} className="relative shrink-0 flex h-8 items-center">
@@ -735,6 +750,36 @@ export default function ChatPage({ user }: { user: User }) {
                         </button>
                       );
                     })}
+
+                    {/* 공약설계 모드 (admin 전용) */}
+                    <button
+                      onClick={() => {
+                        if (!isAdmin) {
+                          setNotice('관리자 전용 기능입니다.');
+                          setTimeout(() => setNotice(''), 3000);
+                          setModeMenuOpen(false);
+                          return;
+                        }
+                        setChatMode('policy');
+                        setModeMenuOpen(false);
+                      }}
+                      disabled={!isAdmin}
+                      className={`w-full text-left px-3 py-2.5 flex items-start gap-2.5 ${
+                        isAdmin ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      <span className="text-base">💡</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                          {chatMode === 'policy' && <span className="text-emerald-600">✓</span>}
+                          공약설계 모드
+                          {!isAdmin && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">관리자 전용</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">근거 기반 찬반·전망·제안 — 외부 검색 자동 판단</p>
+                      </div>
+                    </button>
 
                     {canUpload(user.role) && (
                       <>
