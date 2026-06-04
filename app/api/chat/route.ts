@@ -91,9 +91,13 @@ export async function POST(req: NextRequest) {
   const { message, conversationId, mode } = parsed.data;
   const userId = session.user.id;
 
-  // lens·policy 모드 권한 검증 — admin 전용 (D5)
-  if ((mode.startsWith('lens:') || mode === 'policy') && role !== 'admin') {
+  // lens 모드 — admin 전용
+  if (mode.startsWith('lens:') && role !== 'admin') {
     return Response.json({ error: '관리자 전용 모드입니다.' }, { status: 403 });
+  }
+  // 공약설계 — admin + tier1 (D5: tier1까지 확대). tier2·pending 제외.
+  if (mode === 'policy' && role !== 'admin' && role !== 'tier1') {
+    return Response.json({ error: '접근 권한이 없습니다.' }, { status: 403 });
   }
 
   // Design Ref: §2.2 — conversationId ownership 검증 (보안 floor).

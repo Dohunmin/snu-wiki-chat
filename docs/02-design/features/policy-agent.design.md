@@ -121,7 +121,7 @@ fact 프롬프트(P0~P7) 위에 **공약설계 레이어** 추가:
 
 ## 9. 권한 · 호출 (D5)
 
-- **admin 전용**(1차). 권한 게이트는 fact 모드의 다층 방어 패턴 재사용. (추후 tier1 확대)
+- **admin + tier1** (2026-06-04 tier1까지 개방). tier2·pending 제외. 권한 게이트는 route.ts에서 role 체크.
 - 호출: `POST /api/chat` body `mode='policy'` (lens 모드와 동형). 라우터 자동분기는 Phase 3.
 
 ---
