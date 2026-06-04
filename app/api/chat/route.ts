@@ -13,6 +13,7 @@ import {
   buildUserMessage,
   buildLensSystemPrompt,
   buildLensUserMessage,
+  buildPolicySystemPrompt,
 } from '@/lib/llm/prompts';
 import {
   buildNumberedContexts,
@@ -34,7 +35,7 @@ import { z } from 'zod';
 const chatSchema = z.object({
   message: z.string().min(1).max(2000),
   conversationId: z.string().optional(),
-  mode: z.string().regex(/^(normal|lens:[a-z0-9-]+)$/).default('normal'),
+  mode: z.string().regex(/^(normal|policy|lens:[a-z0-9-]+)$/).default('normal'),
 });
 
 // college-grad-wiki / web-search-fallback — 위키로 못 답하는 외부·최신·비교 질문만 라이브 검색.
@@ -45,6 +46,29 @@ const WEB_SEARCH_GUIDANCE = `\n\n[웹 검색 도구]\n` +
   `- 다음 경우에만 web_search 사용: (1) 위키에 없는 외부 기관·타 대학·인물(예: 카이스트) (2) 위키 범위를 벗어난 최신/실시간 정보 (3) 위키와 외부를 비교 요청.\n` +
   `- 웹 결과를 사용하면 반드시 본문에 출처를 마크다운 링크 [제목](URL)로 명시한다.\n` +
   `- 위키로 충분하면 web_search를 호출하지 않는다.`;
+
+// 공약설계 모드(policy-agent §8) — 외부 벤치마크·사례. max_uses:1로 하드 바운드(비용: web 페이지 본문이 입력토큰).
+const WEB_SEARCH_TOOL_POLICY = { type: 'web_search_20250305', name: 'web_search', max_uses: 1 };
+const WEB_SEARCH_GUIDANCE_POLICY = `\n\n[웹 검색 도구 — 공약설계 (능동 판단·직접 실행)]\n` +
+  `- 답에 외부 정보가 필요한지 네가 판단하고, *필요하면 직접 web_search로 가져온다*(최대 1회).\n` +
+  `- 외부가 필요한 경우 → **즉시 검색**: 질문이 타 대학·외부 기관과의 *비교를 전제*하거나, 현행 외부 법령·제도·외부 사례·통계가 답의 핵심인데 내부 위키에 없을 때.\n` +
+  `- ⛔ 금지: "자료에 없다"며 거절하거나 "원하시면 검색해 드리겠다"고 사용자에게 되묻는 것. 외부가 필요하다 판단한 순간 *네가 바로 검색해 답에 반영*하라. "내부에 없음"의 해결책은 거절이 아니라 검색이다.\n` +
+  `- 내부 거버넌스 사실로 충분히 답할 수 있으면 검색하지 않는다(비용). 검색 내용은 (외부지식)으로 표시, 출처 URL은 시스템이 자동 첨부.`;
+
+/** web_search 출처를 본문 끝 "🌐 외부 출처" 블록으로 렌더 — 메타데이터 직접(모델 인라인 의존 X). URL+제목 중복제거 + 상위 6개. */
+function renderWebSources(cites: { url: string; title: string }[]): string {
+  const seenUrl = new Set<string>(), seenTitle = new Set<string>();
+  const uniq = cites.filter(c => {
+    if (!c.url || seenUrl.has(c.url)) return false;
+    const key = (c.title || '').slice(0, 24).trim();
+    if (key && seenTitle.has(key)) return false;
+    seenUrl.add(c.url); if (key) seenTitle.add(key);
+    return true;
+  }).slice(0, 6);
+  if (uniq.length === 0) return '';
+  const list = uniq.map(c => `- [${c.title || c.url}](${c.url})`).join('\n');
+  return `\n\n---\n\n### 🌐 외부 출처 (web_search)\n${list}`;
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -66,8 +90,8 @@ export async function POST(req: NextRequest) {
   const { message, conversationId, mode } = parsed.data;
   const userId = session.user.id;
 
-  // lens 모드 권한 검증
-  if (mode.startsWith('lens:') && role !== 'admin') {
+  // lens·policy 모드 권한 검증 — admin 전용 (D5)
+  if ((mode.startsWith('lens:') || mode === 'policy') && role !== 'admin') {
     return Response.json({ error: '관리자 전용 모드입니다.' }, { status: 403 });
   }
 
@@ -155,6 +179,10 @@ export async function POST(req: NextRequest) {
         displayName: persona.displayName,
         insufficient: persona.insufficient,
       };
+    } else if (mode === 'policy') {
+      // 공약설계 — fact 프롬프트 + 공약 레이어. 외부지식은 web_search(max 2) 경유로 [제목](URL) 인용.
+      systemPrompt = buildPolicySystemPrompt(budgetedContexts, role) + WEB_SEARCH_GUIDANCE_POLICY;
+      userMessage = buildUserMessage(message, numbered.contextMarkdown, numbered.summary);
     } else {
       // Design Ref: rag-cost-reduction §2 M1b — 안정 system prefix에 prompt caching 적용.
       //   stable(고정 P0~P6 + 가이드)에 cache_control 부여 → 재시도/멀티턴/동시질의서 입력단가 ~1/10.
@@ -251,7 +279,11 @@ export async function POST(req: NextRequest) {
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
           messages: [...history, { role: 'user', content: userMessage }],
-          ...(mode.startsWith('lens:') ? {} : { tools: [WEB_SEARCH_TOOL] as unknown as never }),
+          ...(mode.startsWith('lens:')
+            ? {}
+            : mode === 'policy'
+              ? { tools: [WEB_SEARCH_TOOL_POLICY] as unknown as never }
+              : { tools: [WEB_SEARCH_TOOL] as unknown as never }),
         });
 
         // 스트리밍 + [N] → [위키] sid resolve
@@ -263,6 +295,7 @@ export async function POST(req: NextRequest) {
         //   출력은 불변(로깅만 추가) — 회귀 표면 0.
         let stopReason: string | null = null;
         const streamUsage: { input?: number; output?: number; cacheRead?: number; cacheWrite?: number; webSearches?: number } = {};
+        const webCitations: { url: string; title: string }[] = [];   // web_search 인용 메타 누적 → 본문 끝 출처 블록
 
         for await (const chunk of anthropicStream) {
           if (closed || req.signal?.aborted) break;  // 클라 연결 끊김 → LLM 스트림 소비 중단
@@ -289,6 +322,20 @@ export async function POST(req: NextRequest) {
               send({ type: 'chunk', content: resolved });
               buffer = buffer.slice(flushPoint);
             }
+          } else if (
+            chunk.type === 'content_block_delta' &&
+            (chunk.delta as { type?: string }).type === 'citations_delta'
+          ) {
+            // web_search 인용 메타(텍스트 옆 citation) 누적 — 본문 끝 출처 블록으로 렌더.
+            const cit = (chunk.delta as { citation?: { url?: string; title?: string } }).citation;
+            if (cit?.url) webCitations.push({ url: cit.url, title: cit.title ?? cit.url });
+          } else if (
+            chunk.type === 'content_block_start' &&
+            (chunk.content_block as { type?: string }).type === 'web_search_tool_result'
+          ) {
+            // web_search가 검색한 페이지 목록(URL 항상 존재) → 출처 블록용 누적 (모델 인라인 인용 없어도 출처 확보).
+            const wb = (chunk.content_block as { content?: Array<{ url?: string; title?: string }> }).content;
+            if (Array.isArray(wb)) for (const r of wb) if (r?.url) webCitations.push({ url: r.url, title: r.title ?? r.url });
           }
         }
         // 남은 버퍼 flush (마지막에 미완성 [ 가 있어도 그대로 전송)
@@ -379,6 +426,15 @@ export async function POST(req: NextRequest) {
             } catch (err) {
               console.error('[table-audit] fix failed:', err);
             }
+          }
+        }
+
+        // 공약설계: web_search 인용 메타를 본문 끝 "🌐 외부 출처"로 첨부 (모델 인라인 의존 X, 메타데이터 직접 렌더).
+        if (webCitations.length > 0) {
+          const block = renderWebSources(webCitations);
+          if (block) {
+            fullContentRaw += block;
+            send({ type: 'chunk', content: block });
           }
         }
 
