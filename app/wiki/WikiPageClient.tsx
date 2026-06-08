@@ -8,6 +8,7 @@ import WikiViewer from '@/components/wiki/WikiViewer';
 interface WikiMeta {
   id: string;
   name: string;
+  group?: string | null;
   counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number };
 }
 
@@ -41,7 +42,7 @@ export default function WikiPageClient() {
       <div className="w-80 border-r border-gray-200 flex flex-col bg-gray-50 shrink-0">
         <div className="px-5 py-4 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-bold text-gray-900 text-base">SNU 거버넌스 위키</span>
+            <span className="font-bold text-gray-900 text-base">SNU 통합 위키</span>
           </div>
           <button
             onClick={() => router.back()}

@@ -12,12 +12,15 @@ export class PathBasedAdapter extends BaseAdapter {
   parseBoardList(html: string, boardListUrl: string): BoardItem[] {
     const $ = cheerio.load(html);
     const items: BoardItem[] = [];
-    $('a[href*="/view/"], a[href*="/notice/"], a[href*="/board/"]').each((_, a) => {
+    const seen = new Set<string>();
+    // /view/ /notice/ /board/ 외 /news/{id}(music 소식지)도 포함
+    $('a[href*="/view/"], a[href*="/notice/"], a[href*="/board/"], a[href*="/news/"]').each((_, a) => {
       const href = $(a).attr('href') ?? '';
       const m = href.match(/\/(\d{2,})(?:\/|$|\?)/);
-      if (!m) return;
+      if (!m || seen.has(m[1])) return;
       const title = $(a).text().replace(/\s+/g, ' ').trim();
       if (!title) return;
+      seen.add(m[1]);
       let url = href;
       try { url = href.startsWith('http') ? href : new URL(href, boardListUrl).href; } catch { /* keep */ }
       items.push({ id: m[1], title, url });

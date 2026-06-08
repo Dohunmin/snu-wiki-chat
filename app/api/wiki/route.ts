@@ -23,6 +23,7 @@ export async function GET() {
       return {
         id: data.id,
         name: data.name,
+        group: (a as { group?: string }).group ?? null,
         counts: {
           sources: data.sources.length,
           topics: data.topics.length,

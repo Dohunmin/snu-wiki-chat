@@ -1,0 +1,89 @@
+{
+  "id": "business",
+  "name": "경영대학",
+  "sources": [],
+  "topics": [],
+  "entities": [
+    {
+      "id": "dept-business",
+      "name": "경영학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 경영학과\n경영대학의 인재들은 장기적으로 많은 사람들의 삶에 큰 영향을 미치는 사회의 시스템을 설계하게 됩니다. 경영대학은 졸업생들이 뛰어난 시스템 설계자가 되어 대한민국 나아가 세계인들의 삶이 더 좋아지는 데 기여할 수 있도록 교육하겠습니다.\n\n대학은 세상의 정보를 정리하고 전달하는 역할에 그치지 않고 미래를 위한 최첨단의 연구를 해야 합니다. 서울대학교 경영대학은 미래를 이야기하고 미래를 준비하는 top-notch research를 통해 사회에 가치를 제공할 수 있고, 이것은 한국에서 어느 대학보다 서울대학교 경영대학에서 가장 잘할 수 있고 꼭 해야 하는 일입니다. 경영대학은 top-notch research에 대한 지원을 지속적으로 강화하여 교육의 질과 사회적인 영향력, 국제적인 위상을 모두 높이겠습니다.\n\n서울대학교 경영대학은 제 인생에서 학교와 직장 이상의 큰 의미를 갖는 곳입니다. 앞으로 서울대학교 경영대학이 세계의 발전에 이바지할 수 있도록 최선을 다하겠습니다.\n\n서울대학교 경영대학 학장 양홍석\n## 출처\n- 외부: https://cba.snu.ac.kr/about/greetings\n- 원문(raw): raw/md/business/dept-business.md\n- 첨부(URL만): https://cba.snu.ac.kr/webdata/uploaded/images/da2z98bz6efzdc8z361z20dza83z75fz08bz60cz99.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "inst-entrepreneurship",
+      "name": "벤처경영기업가센터",
+      "entityType": "부속기관",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 벤처경영기업가센터\n서울대학교 벤처경영기업가센터(Seoul National University Entrepreneurship Center)는 2009년 2월 설립된 창업경영 연구센터를 모체로 하여, 미래 국부창출에 기여하는 기업가정신을 가진 실천적 창의인재 양성을 목표로 2014년 9월에 설립되었습니다.\n\n이러한 목표를 달성하기 위해 학내 창업친화적 교육시스템 및 창업 생태계를 구축하고, 벤처창업 및 기업가정신에 대한 선도적 학문 가치를 창출할 수 있도록 연구 활동을 지원하고 있습니다.\n\n벤처경영기업가센터 홈페이지 →\n\n#### 연합전공 벤처경영학 운용\n\n- -국내 최초의 창업 분야 학사 학위 프로그램인 벤처경영학 운용\n\n- -창업 및 기업가정신 교육 콘텐츠 개발\n\n- -창업 실습 공간 운용\n\n- -창업 동아리 지원\n\n#### 벤처육성 프로그램 운용\n\n- -창업자 발굴 및 자금지원(스타트업컨벤션 창업경진대회)\n\n- -멘토링 (커리어 네트워킹)\n\n- -단기 연수 (벤처경영 Global Camp, Impact Camp)\n\n- -창업 네트워킹\n\n#### SNUBIZ창업기금, \"내일을 오늘로 만드는 곳\"\n\n벤처경영기업가센터의 오늘은 하나의 회사가 아니라, 하나의 시장을 만들기 위한 부단한 노력의 시간입니다. 우리는 2013년 12월 국내 최초로 학부 과정 벤처경영학 연합전공을 신설하였고, 매해 40명의 벤처경영 연합전공 신입생을 선발하고, 지난간 누적 인원 2053명의 수강생을 받았습니다. 또한, 센터를 거쳐간 많은 서울대학교 학생 창업 기업의 누적 투자 유치 금액이 1500억원을 넘어섰습니다. “SNUBIZ창업기금” 은 이러한 학생 창업 기업의 힘이 되고자 합니다. 모금에 동참하여 서울대학교 경영대학과 경영전문대학원(MBA) 재학생 및 졸업생의 꿈과 비전을 응원하여주세요.\n\n기부하기\n\n#### Contact Information\n\n- -Address : (우)08826 서울시 관악구 관악로 1 서울대학교 벤처경영기업가센터 59-1동 502호\n\n- -Tel : +82-2-880-2636\n\n- -Fax : +82-2-876-0513\n\n- -웹페이지 : http://ect.snu.ac.kr/\n## 출처\n- 외부: https://cba.snu.ac.kr/research/institute/entrepreneurship-center\n- 원문(raw): raw/md/business/inst-entrepreneurship.md\n- 첨부(URL만): https://cba.snu.ac.kr/_skin/kor/images/site/img-lab-vt.jpg · https://cba.snu.ac.kr/webdata/uploaded/images/3b8ze83ze8dz867zf6az73bza1ez8eaz58azdebz9c.png · https://cba.snu.ac.kr/webdata/uploaded/images/768z205zd18z185z796z98bzb56z507z692zcb7ze4.png · https://cba.snu.ac.kr/webdata/uploaded/images/823z1b8zeccze45zb5cz586z817zd6fzb08zb27z8d.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "inst-imr",
+      "name": "경영연구소",
+      "entityType": "부속기관",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 경영연구소\n기업의 당면과제에 대한 모색은 이론적인 분석과 현실의 경영문제에 대한 정확한 이해 및 적극적인 참여 없이는 이루어지기 어렵습니다. 서울대학교 경영연구소는 산업계와 학계를 연결하는 매개자로서 심도깊은 경영학 연구를 위한 공동의 장을 제공하며, 최신 이론의 현실에의 적용을 통해 경영학 교육의 향상을 도모하고, 기업의 발전과 국가경제발전에 이바지하고자 합니다.\n\n서울대학교 경영대학 경영연구소는 기업이 현실에서 직면하는 경영상의 문제를 연구·분석하여 이를 보다 합리적으로 해결하는 방안을 찾고, 우리나라 현실에 적합한 기업경영형태 경영학의 발전에 기여함을 목적으로 하고 있습니다. 서울대학교 경영대학 경연구소는 1963년 4월 22일 서울대학교 상과대학 부설 한국경영연구소로 설립되었으며, 1975년 서울대학교 경영대학 경영연구소로 개칭되었으며, 2001년 서울대학교 경영연구소로 개칭되어 오늘에 이르고 있습니다.\n\n#### 연구조사사업\n\n- -경영 및 사업전반에 관한 기초자료의 조사, 분석 및 발표\n\n- -국내외 연구기관과의 자료교환 및 특수문제에 관한 공동연구를 통한 협력\n\n- -정부기관, 국영기업, 민간기업, 기타 단체로부터 위탁받은 문제에 관한 프로젝트 수행\n\n- -국제적인 공동관심사항에 관한 국제회의 개최\n\n- -조사연구사업 및 학술활동의 결과를 발표하기 위한 정기월례연구발표회의 개최\n\n#### 경영자문 및 지도사업\n\n- -기업의 업무능률향상과 경영효율성 제고를 위한 기업진단\n\n- -기업이 현실에서 직면하는 경영상의 문제를 해결하기 위한 경영상담\n\n- -실무에 종사하고 있는 경영자에 대한 재교육 및 위탁교육 수행\n\n- -산학협동을 위한 경영실무연구회의 운영\n\n#### 경영정보 서비스 사업\n\n- -본 연구소의 연구조사 결과 중 학술적 논문은 본 연구소 간행의 [경영논집]에, 새로운 경영실무기업과 경영학 교육의 진흥을 위한 사례는 [경영사례연구]에 발간하고 있습니다. 이 외 영문 저널인 Seoul Journal of Business도 매년 2회 발간하고 있습니다.\n\n#### 사회공헌\n\n포스트 코로나 시대를 준비하는 경영아카데미 (2020년 하반기) 서울대학교 경영대학 경영연구소는 생업 존폐의 위기에 내몰린 코로나 실직자, 구직자에게 적기에 공개강좌를 개설 무료로 제공함으로써 서울대와 지역사회에 사회공헌을 실천하였습니다. (수료인원: 총 10차수 53명.)\n\n이OO 수강생(41세) 코로나 사태가 전 세계적으로는 엄청난 비극이지만, 저처럼 중증의 뚜렛장애, 강박장애, 난청환자에게는 직접 강의실에서 교수님의 강의를 듣는 대면방식이 불가능하기 때문에 이런 과정처럼 Zoom시스템을 이용한 비대면 수업은 저에게는 모교 교수님의 명강의를 들을 수 있는 하늘이 주신 기회라는 생각도 들었습니다. 수업중에 꽥꽥거리는 제 증상 대문에 교수님을 비롯한 다른 수강생분들게 상당한 방해를 끼친 것은 너무 죄송하고 또 송구스럽지만, 그만큼 누구보다 열심히 이번 과정을 모두 이수하게 되어 기쁩니다.\n\n나OO 수강생 (29세) 코로나 사태로 인하여 저와 같은 청년 세대가 취업난으로 고통받는 것은 사실이지만, 위기는 곧 기회인 것처럼 이번 경영아카데미를 통해 곧 다가올 포스트 코로나 시대의 새로운 기회를 모색하기 위한 ‘기회의 발판＇으로 삼고 싶습니다. 특히 국내 최고의 경영 석학들이 제공하는 최신 ‘경영지식’과 더불어, 다양한 산업군의 전.현직 종사자 학우분들이 전하는 실제 경험에 기반을 둔 밀도 높은 ‘피드백(feedback)과정을 통해 학부 수준에서는 배울 수 없는 여러 ‘실무지식＇까지 함께 배울 수 있다는 점이 매우 만족스럽습니다. 덧붙여, 모두가 어려운 시기 속에서 이러한 귀중한 배움의 기회를 선뜻 제공해주신 서울대학교 관계자분들의 ‘노블레스 오블리주(noblesse oblige)실천에 깊은 감사를 표하고 싶습니다.\n## 출처\n- 외부: https://cba.snu.ac.kr/research/institute/imr\n- 원문(raw): raw/md/business/inst-imr.md\n- 첨부(URL만): https://cba.snu.ac.kr/_skin/kor/images/site/img-major-01.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-imr-01.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    }
+  ],
+  "syntheses": [],
+  "facts": [],
+  "stances": [],
+  "overviews": [
+    {
+      "id": "facts",
+      "title": "경영대학 현황",
+      "편": "소개",
+      "tags": "",
+      "content": "# 경영대학 현황\n* 2026년 3월 기준\n\n#### 경영대학(원)\n\n| 구분 | 학사 | 석사 | 박사 | Total |\n| --- | --- | --- | --- | --- |\n| 재적생 | 1,080 | 234 | 35 | 1,349 |\n| 졸업생 | 9,560 | 5,706 | 522 | 15,788 |\n\n- 재적생 : 재학+휴학, 외국인 포함 - 졸업생 : 경영대 주전공생만\n\n#### 경영전문대학원\n\n| 구분 | Full-time MBA | Executive MBA | Total |\n| --- | --- | --- | --- |\n| 재적생 | 106 | 246 | 352 |\n| 졸업생 | 1,412 | 1,147 | 2,559 |\n\n- 재학생 : 외국인 포함 - 졸업생 : ~2024년 2월 졸업생까지\n\n#### 외국인 학생수\n\n| 구분 | 경영대학(원) | 경영전문대학원 | Total |  |  |  |\n| --- | --- | --- | --- | --- | --- | --- |\n| 학사 | 석사 | 박사 | Full-time MBA | Executive MBA |  |  |\n| 재적생 | 28 | 22 | 2 | 20 | - | 72 |\n| 졸업생 | 112 | 326 | 27 | 248 | - | 713 |\n\n- 재학생: 휴학생 제외 - 졸업생: 경영대 주전공생만\n\n#### 교수\n\n| 교원 | 명예교수 |\n| --- | --- |\n| 59 | 30 |\n## 출처\n- 외부: https://cba.snu.ac.kr/about/facts\n- 원문(raw): raw/md/business/facts.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "greeting",
+      "title": "경영대학 인사말",
+      "편": "소개",
+      "tags": "",
+      "content": "# 경영대학 인사말\n경영대학의 인재들은 장기적으로 많은 사람들의 삶에 큰 영향을 미치는 사회의 시스템을 설계하게 됩니다. 경영대학은 졸업생들이 뛰어난 시스템 설계자가 되어 대한민국 나아가 세계인들의 삶이 더 좋아지는 데 기여할 수 있도록 교육하겠습니다.\n\n대학은 세상의 정보를 정리하고 전달하는 역할에 그치지 않고 미래를 위한 최첨단의 연구를 해야 합니다. 서울대학교 경영대학은 미래를 이야기하고 미래를 준비하는 top-notch research를 통해 사회에 가치를 제공할 수 있고, 이것은 한국에서 어느 대학보다 서울대학교 경영대학에서 가장 잘할 수 있고 꼭 해야 하는 일입니다. 경영대학은 top-notch research에 대한 지원을 지속적으로 강화하여 교육의 질과 사회적인 영향력, 국제적인 위상을 모두 높이겠습니다.\n\n서울대학교 경영대학은 제 인생에서 학교와 직장 이상의 큰 의미를 갖는 곳입니다. 앞으로 서울대학교 경영대학이 세계의 발전에 이바지할 수 있도록 최선을 다하겠습니다.\n\n서울대학교 경영대학 학장 양홍석\n## 출처\n- 외부: https://cba.snu.ac.kr/about/greetings\n- 원문(raw): raw/md/business/greeting.md\n- 첨부(URL만): https://cba.snu.ac.kr/webdata/uploaded/images/da2z98bz6efzdc8z361z20dza83z75fz08bz60cz99.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "history",
+      "title": "경영대학 연혁",
+      "편": "연혁",
+      "tags": "",
+      "content": "# 경영대학 연혁\n현재 - 2017년 2016년 - 2002년 2001년 - 1988년 1987년 - 1975년 1974년 - 1945년 1944년 - 1899년\n\n미래를 만드는 경영대학의 현재의 노력\n\n#### 2022년\n\n경영대학, 한국경영교육인증원 통합인증 획득\n\n#### 2021년\n\n58동 로비 리모델링\n\n경영대학, 서울대학교 최우수기관 선정\n\n전수진 경영대학 행정실장, 오세정 서울대학교 총장\n\n경영전문대학원 Global MBA, SNU MBA 통합 및 1년제로 학제 개편 시행\n\n#### 2020년\n\n포스트 코로나 시대를 준비하는 경영 아카데미 개설포스트 팬데믹시대 한국 산업경쟁력 포럼 시리즈 시작\n\n#### 2019년\n\n매니지먼트 네트워크 센터 준공\n\n#### 2018년\n\n학사과정 커리큘럼 개편\n\n#### 2017년 10월\n\n매니지먼트 네트워크 센터 착공\n## 출처\n- 외부: https://cba.snu.ac.kr/about/history/06\n- 원문(raw): raw/md/business/history.md\n- 첨부(URL만): https://cba.snu.ac.kr/webdata/uploaded/images/c85z946za57z678z595z138z0c4z1c5z731zbe5zd2.jpg · https://cba.snu.ac.kr/webdata/uploaded/images/7d6z238z25bz66dz790zf10z055zb2dz8f8z94azef.png · https://cba.snu.ac.kr/webdata/uploaded/images/57czc2bz9d7z2ecz4b7z8e9z952za84zcd4z64dz0b.jpg · https://cba.snu.ac.kr/webdata/uploaded/images/987zc23z676zd3fz4b5zf1fz078z6fez630z588z13.jpg · https://cba.snu.ac.kr/webdata/uploaded/images/4e6zd60zcfdzc96z554zcaczbe3zfaaz13az677zea.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "iab",
+      "title": "경영대학 국제자문위원회",
+      "편": "소개",
+      "tags": "",
+      "content": "# 경영대학 국제자문위원회\n#### 서울대 경영대는 SNU BS IAB(Industry Advisory Board)를 통해 산업계와 협력을 강화하고, 실무 중심 교육과 경력 개발 기회를 확대하고 있습니다. 글로벌 기준에 부합하는 교육 품질 향상을 위해 전문가 피드백도 지속 반영하고 있습니다.\n\n#### 자문위원\n\n#### 권영수\n\nLG에너지솔루션 고문\n\n#### 김덕상\n\n싸토리우스코리아바이오텍(유) 대표\n\n#### 나지홍\n\n조선일보논설위원\n\n#### 위견\n\n(주) 슈퍼트랙 대표\n\n#### 윤종규\n\nKB금융그룹 (경영) 고문\n\n#### 윤철주\n\n우리바이오(주) 회장\n\n#### 윤훈수\n\n삼일회계법인 대표\n\n#### 이준용\n\n미래에셋자산운용대표이사/부회장\n\n#### 장승희\n\n신한관세법인, 신한인비스타 대표관세사\n\n#### 정영채\n\n메리츠증권 고문\n\n#### 지성배\n\nMM인베스트먼트㈜ 대표이사/사장\n\n#### 최종윤\n\n현대그룹전무\n## 출처\n- 외부: https://cba.snu.ac.kr/about/IAB\n- 원문(raw): raw/md/business/iab.md\n- 첨부(URL만): https://cba.snu.ac.kr/_skin/kor/images/site/iab/kys.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/kds.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/rjh.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/wg.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/yjk.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/ycj.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/yhs.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/cyr.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/jsh.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/jyc.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/jsb.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/iab/cjy.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "past-dean",
+      "title": "경영대학 역대 학장",
+      "편": "소개",
+      "tags": "",
+      "content": "# 경영대학 역대 학장\n1976.03.01 - 1978.12.31\n\n### 오상락 초대학장\n\n1979.01.01 - 1983.01.22\n\n### 이용준 제2대학장\n\n1983.01.23 - 1987.01.22\n\n### 심병구 제3대학장\n\n1987.01.23 - 1989.01.22\n\n### 김정년 제4대학장\n\n1989.01.23 - 1993.01.22\n\n### 한희영 제5대학장\n\n1993.01.23 - 1995.01.22\n\n### 김식현 제6대학장\n\n1995.01.23 - 1997.01.22\n\n### 최종태 제7대학장\n\n1997.01.23 - 1999.01.22\n\n### 곽수일 제8대학장\n\n1999.01.23 - 2001.01.22\n\n### 윤계섭 제9대학장\n\n2001.01.23 - 2003.01.22\n\n### 조동성 제10대학장\n\n2003.01.23 - 2005.01.22\n\n### 박오수 제11대학장\n\n2005.01.23 - 2007.01.22\n\n### 안상형 제12대학장\n\n2007.01.23 - 2009.01.22\n\n### 곽수근 제13대학장\n\n2009.01.23 - 2011.01.22\n\n### 안태식 제14대학장\n\n2011.01.23 - 2013.01.22\n\n### 최 혁 제15대학장\n\n2013.01.23 - 2015.01.22\n\n### 김병도 제16대학장\n\n2015.01.23 - 2017.01.22\n\n### 남익현 제17대학장\n\n2017.01.23 - 2020.01.22\n\n### 박철순 제18-19대학장\n\n2020.1.23 - 2022.1.22\n\n### 이유재 제20대학장\n\n2022.1.23 - 2024.1.22\n\n### 김상훈 제21대학장\n\n2024.1.23 - 2026.1.22\n\n### 채 준 제22대학장\n## 출처\n- 외부: https://cba.snu.ac.kr/about/past-dean\n- 원문(raw): raw/md/business/past-dean.md\n- 첨부(URL만): https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-01.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-02.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-03.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-04.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-05.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-06.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-07.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-08.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-09.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-10.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-11.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-12.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-13.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-14.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-15.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-16.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-17.jpg · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-18.png · https://cba.snu.ac.kr/_skin/kor/images/site/img-pd-19-b.png · https://cba.snu.ac.kr/webdata/uploaded/images/61azb28z778zf6dzf0fz9ebze73ze51z810zf1cz7b.png · https://cba.snu.ac.kr/webdata/uploaded/images/67fzb3czf4az83ez3f2z84cz267zcc8zdf6zd1fzb0.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "vision",
+      "title": "경영대학 비전",
+      "편": "비전",
+      "tags": "",
+      "content": "# 경영대학 비전\n#### 창조적이고 도전적이며 사회적 책임을 수행할 수 있는 세계적 지도자를 양성하는 세계 초일류 경영대학\n\n연구\n\n- - 연구 역량 강화를 통한 연구의 수월성 확보\n\n- - 해외 파견 연구 지원 및 석/박사과정 재정 지원\n\n- - 해외 석학 교수 초청 강의 지원\n\n교육\n\n- - 글로벌 리더 양성을 위한 교육 프로그램의 획기적 개선\n\n- - 리더십과 사회 책임 교육 강화\n\n- - 창의성과 문제 해결 능력 강화를 위한 교육제도 도입\n\n사회공헌\n\n- - 사회 공헌, 봉사를 통한 지식 나눔의 실천\n\n- - 기업 경영 참여 및 기업 경영 발전에 기여\n\n- - 평생교육프로그램 지원\n\n국내외 우수 교수・학생 지원 유치\n\n학제간 연계(전공 교류 및 연합전공 운영)\n\n벤처 경영학 연합전공 신설 및 교과목 개발\n\n다양한 수업 외 활동 및 학생 봉사활동 지원\n\n석학교수 제도 운영\n\n학생 국제 교류 활성화\n\n글로벌 네트워크 구축\n\n행정의 효율화\n\n#Challenge #Create #Contribute\n## 출처\n- 외부: https://cba.snu.ac.kr/about/vision\n- 원문(raw): raw/md/business/vision.md\n- 첨부(URL만): https://cba.snu.ac.kr/_skin/kor/images/site/flogo.png · https://cba.snu.ac.kr/_skin/kor/images/site/img-tri.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    }
+  ],
+  "index": ""
+}

@@ -1,0 +1,27 @@
+# gnuboard 엔진 셀렉터/URL 맵 (데이터) — 대상: law
+# 그누보드 PHP. 정적 소개는 /page/*.php, 게시판 본문은 #bo_v_con.
+key: gnuboard
+extract:
+  main_selector:
+    - "#bo_v_con"        # 게시글 본문
+    - "#content"
+    - ".content"
+    - "#container .content"
+    - ".sub_content"
+    - "main"
+    - "#container"
+  strip_selectors:
+    - "#header"
+    - "#gnb"
+    - ".gnb"
+    - "#lnb"
+    - ".lnb"
+    - "#aside"
+    - "#footer"
+    - ".footer"
+    - "nav"
+    - ".sound_only"
+    - "#skip_to_container"
+  title_selector: "h1, .bo_v_tit, #bo_v_title, .page_title"
+board:
+  id_param: "wr_id"

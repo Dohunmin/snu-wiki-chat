@@ -1,0 +1,29 @@
+# wordpress-kboard 엔진 셀렉터/URL 맵 (데이터)
+# 대상: social·education·human-ecology·fine-arts·vet·pharmacy·gsph·liberal-college·cls·gsct
+# WordPress(hello-elementor 多) — 본문은 .entry-content/article. GNB는 site-header.
+key: wordpress-kboard
+extract:
+  main_selector:
+    - "article .entry-content"
+    - ".entry-content"
+    - ".page-content"          # social — hello-elementor 본문(실측 2026-06-03)
+    - "main .page-content"
+    - "#content .content"
+    - "main"
+    - "#primary"
+  strip_selectors:
+    - "#masthead"
+    - ".site-header"
+    - ".site-footer"
+    - "#colophon"
+    - "nav"
+    - ".elementor-nav-menu"
+    - ".elementor-location-header"
+    - ".elementor-location-footer"
+    - ".breadcrumb"
+    - ".kboard-search"
+  title_selector: "h1.entry-title, h1, .page-title, .elementor-heading-title"
+board:
+  list_item_selector: ".kboard-list tbody tr, ul.kboard-default-list > li, .board-list li, .board-list tr"
+  id_param: "uid"
+  id_attr: "data-uid"

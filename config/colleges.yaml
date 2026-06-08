@@ -1,0 +1,956 @@
+# =============================================================================
+# SNU 조직 레지스트리 (college-grad-wiki feature) — 영속 누적 단일 진실원
+# =============================================================================
+# 이 파일은 "휘발 방지" 장치다. 한 조직을 정찰(survey)하면 결과를 여기 기록하고,
+# 다시는 정찰하지 않는다. 세션이 끝나도 이 파일이 상태(state)이므로 작업은 누적된다.
+#
+# survey_status: pending | surveyed | adapter_built | ingested
+#   surveyed 행만 검증된 진실(domain/urls/board_pattern/render 라이브 확인).
+#
+# ── 정찰로 확인된 어댑터 계열 (2026-06-03, 28개 전수) ──
+# 단과대/대학원 사이트는 단일 CMS가 아니라 8개 엔진 계열로 분산됨:
+#   snu-cms          — SNU 표준 CMS. 영문 슬러그 + 게시판 ?md=v&bbsidx={id}
+#                      (변종: ?bm=v&bbsidx= — cals·nursing). static.
+#   wordpress-kboard — WordPress + KBoard 플러그인. 게시글 view 형태가 사이트마다 변종:
+#                      ?kboard_content_redirect= / ?mod=document&uid= / 숫자퍼머링크 /{id}/ /
+#                      한글퍼머링크. static(단 gsct는 글링크 JS).
+#   wordpress-custom — WordPress(비-kboard). 커스텀 taxonomy / 네이티브 퍼머링크. static.
+#   egovframe        — 전자정부 표준프레임워크. *.do?nttId= . static. (medicine)
+#   gnuboard         — 그누보드 PHP. /bbs/board.php?bo_table=&wr_id= . static. (law)
+#   dotnet-mvc       — .NET MVC, /kr 로케일 + /Board/Detail/{type}/{id}. ⚠ board=dynamic(JS). (gspa)
+#   asp-bidx         — ASP, /notice/Default.asp?bidx= . static. (gsiat)
+#   path-based       — 경로기반 숫자ID 라우팅 (/boards/.../{id}/, /notice/{id}). static. (gsep·music)
+#
+# 핵심: Tier1/2 정적 정보페이지(인사말·연혁·비전)는 거의 전부 static SSR → cheerio로 균일 처리 가능.
+#       복잡도는 Tier4 게시판 파싱에 집중됨(엔진별 상이). dynamic 렌더는 gspa·gsct 둘뿐.
+#       동형 사이트는 yaml URL만 채우면 됨(O(1)). 신규 엔진만 새 어댑터 .ts 필요.
+#
+# parent_wiki: 단과대 → SNU_단과대_LLM_Wiki (data id: colleges)
+#              대학원 → SNU_대학원_LLM_Wiki (data id: gradschools)
+# 전체 정찰 raw 결과: .../tasks/wgned184r.output (조직별 상세 notes 보존)
+# =============================================================================
+
+version: 1
+
+defaults:
+  status: active
+  ttl_days: 90
+  ttl_hours: 6
+  news_cutoff_days: 180
+  rate_ms: 1500
+  user_agent: "SNU-Gov-Wiki-Crawler/1.0 (+mailto:infinitylab1217@gmail.com; respects robots.txt)"
+
+progress:
+  total_orgs: 28
+  surveyed: 28
+  pending: 0
+  last_survey_at: 2026-06-03
+  adapter_families: [snu-cms, wordpress-kboard, wordpress-custom, egovframe, gnuboard, dotnet-mvc, asp-bidx, path-based]
+
+orgs:
+
+  # ════════════════════ 단과대 (parent_wiki: 단과대) ════════════════════
+
+  # ── Phase 1 (active) ──
+  - id: eng
+    display_name: 공과대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 1
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: eng.snu.ac.kr
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "?md=v&bbsidx={id}"
+    dept_count: 11
+    urls:
+      greeting: "/about/dean/greetings"
+      history: "/about/engineering/history"
+      vision: "/about/engineering/vision-and-ideal-talent"
+      departments: null   # /academics/undergraduate-programs 404. 학과 본문=외부 마이크로사이트(2b).
+      notice: "/communication/notice/notice"
+      news: "/communication/promotion/news"
+    about_pages:
+      - { slug: dean-profile, path: "/about/dean/profile" }
+      - { slug: core-agenda, path: "/about/engineering/core-agneda" }
+      - { slug: organization, path: "/about/organization/organizational-chart" }
+    # Phase 2b: 12개 학과 = 전부 외부 마이크로사이트(정찰 2026-06-03 실측 best-content URL). 절대URL→toAbsUrl 통과.
+    #   CMS 4계열(A:cse공용 /about/* · WP · PHP레거시 · JSP .do). cuee=JS프레임·architecture=환경차단(best-effort).
+    entity_pages:
+      - { entity: 학과, slug: dept-cse,         label: 컴퓨터공학부,    path: "https://cse.snu.ac.kr/about/overview" }
+      - { entity: 학과, slug: dept-me,          label: 기계공학부,      path: "https://me.snu.ac.kr/연구/연구비전/" }
+      - { entity: 학과, slug: dept-ece,         label: 전기·정보공학부, path: "https://ece.snu.ac.kr/about/greetings" }
+      - { entity: 학과, slug: dept-mse,         label: 재료공학부,      path: "https://mse.snu.ac.kr/snumse-main/dmse/about-mse/" }
+      - { entity: 학과, slug: dept-cbe,         label: 화학생물공학부,  path: "http://cbe.snu.ac.kr/cbe/main/contents.do?menuNo=300021" }
+      - { entity: 학과, slug: dept-ie,          label: 산업공학과,      path: "https://ie.snu.ac.kr/intro/" }
+      - { entity: 학과, slug: dept-ere,         label: 에너지자원공학과, path: "https://ere.snu.ac.kr/sub1_1.php" }
+      - { entity: 학과, slug: dept-nucleng,     label: 원자핵공학과,    path: "http://nucleng.snu.ac.kr/about/introduction" }
+      - { entity: 학과, slug: dept-naoe,        label: 조선해양공학과,  path: "https://naoe.snu.ac.kr/about/prospects" }
+      - { entity: 학과, slug: dept-aerospace,   label: 항공우주공학과,  path: "https://aerospace.snu.ac.kr/about/overview" }
+      # 2b 보완 대기(헤드리스/다른 출구IP 필요):
+      #   dept-cuee(건설환경) https://cuee.snu.ac.kr/ — javascript:GoPage() JS프레임(본문 추출 실패→게시판 nav만)
+      #   dept-architecture(건축) https://architecture.snu.ac.kr/academics/undergraduate-program/ — 이 환경 ECONNREFUSED
+    # Phase 2a+ 전략(공약·포지셔닝): core-agenda/vision은 이미 about/overview에 있음. 연구활동 추가.
+    strategy_pages:
+      - { slug: research-activities, label: 연구활동·성과, path: "/research/research-activities" }
+    faculty: { path: "/about/organization/professor?sc=y" }
+    notes: "표준 CMS(static SSR). 입학은 외부 admission.snu.ac.kr. 학과 본문=외부 마이크로사이트(2b). faculty=329명 디렉토리."
+
+  - id: humanities
+    display_name: 인문대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 1
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: humanities.snu.ac.kr
+    adapter_key: snu-cms
+    render: static   # 본문은 정적 HTML #zcmscontent에 존재(2026-06-03 실측). dynamic은 DOM변형으로 역효과.
+    board_pattern: "?md=v&bbsidx={id}"
+    dept_count: 16
+    urls:
+      greeting: "/about/deans/greetings"
+      history: "/about/history/opening"
+      vision: "/about/goal"
+      departments: "/academics/department"
+      notice: "/community/notice"
+      news: "/community/department"
+    about_pages:
+      # speech(/about/deans/speech)는 빈 게시판('해당 게시글이 없습니다') — 제거(dead page).
+      - { slug: history-records, path: "/about/history/records" }
+      - { slug: organization, path: "/about/organization" }
+    # Phase 2a: 16개 학과(역사학부 전공 분리 포함 17개 deptidx, raw/html dept.html에서 확정) + 부속기관 6개.
+    entity_pages:
+      - { entity: 학과, slug: dept-1,  label: 국어국문학과,            path: "/academics/department?deptidx=1" }
+      - { entity: 학과, slug: dept-2,  label: 중어중문학과,            path: "/academics/department?deptidx=2" }
+      - { entity: 학과, slug: dept-3,  label: 영어영문학과,            path: "/academics/department?deptidx=3" }
+      - { entity: 학과, slug: dept-4,  label: 불어불문학과,            path: "/academics/department?deptidx=4" }
+      - { entity: 학과, slug: dept-5,  label: 독어독문학과,            path: "/academics/department?deptidx=5" }
+      - { entity: 학과, slug: dept-6,  label: 노어노문학과,            path: "/academics/department?deptidx=6" }
+      - { entity: 학과, slug: dept-7,  label: 서어서문학과,            path: "/academics/department?deptidx=7" }
+      - { entity: 학과, slug: dept-8,  label: 언어학과,                path: "/academics/department?deptidx=8" }
+      - { entity: 학과, slug: dept-22, label: 역사학부,                path: "/academics/department?deptidx=22" }
+      - { entity: 학과, slug: dept-9,  label: "역사학부(한국사학전공)", path: "/academics/department?deptidx=9" }
+      - { entity: 학과, slug: dept-10, label: "역사학부(동양사학전공)", path: "/academics/department?deptidx=10" }
+      - { entity: 학과, slug: dept-11, label: "역사학부(서양사학전공)", path: "/academics/department?deptidx=11" }
+      - { entity: 학과, slug: dept-12, label: 고고미술사학과,          path: "/academics/department?deptidx=12" }
+      - { entity: 학과, slug: dept-13, label: 철학과,                  path: "/academics/department?deptidx=13" }
+      - { entity: 학과, slug: dept-14, label: 종교학과,                path: "/academics/department?deptidx=14" }
+      - { entity: 학과, slug: dept-15, label: 미학과,                  path: "/academics/department?deptidx=15" }
+      - { entity: 학과, slug: dept-16, label: 아시아언어문명학부,      path: "/academics/department?deptidx=16" }
+      - { entity: 부속기관, slug: inst-ih,    label: 인문학연구원,             path: "/research/Institute-of-Humanities" }
+      - { entity: 부속기관, slug: inst-ilas,  label: 라틴아메리카연구소,       path: "/research/Institute-of-Latin-American-Studies" }
+      - { entity: 부속기관, slug: inst-chio,  label: "국제화지원센터(CHIO)",   path: "/research/CHIO" }
+      - { entity: 부속기관, slug: inst-cheso, label: "교육지원센터(CHESO)",    path: "/research/CHESO" }
+      - { entity: 부속기관, slug: inst-cdcc,  label: "학생생활문화원(CDCC)",   path: "/research/CDCC" }
+      - { entity: 부속기관, slug: inst-afp,   label: "최고지도자인문학과정(AFP)", path: "/research/AFP" }
+    faculty: { path: "/academics/faculty" }
+    # Phase 2a+ 전략: 단과대 차원 AI 교육 정책(거버넌스 §T AI시대대학역할 연계).
+    strategy_pages:
+      - { slug: ai-policy, label: "AI 정책·가이드라인", path: "/ai/introduction" }
+    notes: "deans(복수형) 경로 주의. 비전 대신 /about/goal. 학과 deptidx 본문=본체 정적(2a). 일부 부속기관 slug 미확정→404시 스킵."
+
+  - id: science
+    display_name: 자연과학대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 1
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: science.snu.ac.kr
+    adapter_key: snu-cms
+    render: static   # 본문은 정적 HTML #content에 존재(2026-06-03 실측). dynamic은 DOM변형으로 역효과.
+    board_pattern: "?md=v&bbsidx={id}"
+    dept_count: 7
+    urls:
+      greeting: "/about/greeting"
+      history: "/about/information/history"
+      vision: "/about/information/vision"
+      departments: null
+      notice: "/news/announcement"
+      news: "/newsroom"
+    about_pages:
+      - { slug: dean-intro, path: "/about/dean/introduction" }
+      - { slug: facts, path: "/about/information/facts" }
+      - { slug: organization, path: "/about/organization/chart" }
+    # Phase 2a: 학과 깊이는 외부 마이크로사이트(biosci/chem/math...) → 2b. 본체 정적 일람 2개만 entity로.
+    entity_pages:
+      - { entity: 학과,     slug: dept-programs, label: "전공 안내(13개 학부·과정)", path: "/edu/programs" }
+      - { entity: 부속기관, slug: inst-list,     label: "부설 연구소(7개)",        path: "/research/institute" }
+      # Phase 2b: 7개 학과 외부 마이크로사이트(정찰 실측). math는 bare host self-signed→www 호스트 사용.
+      - { entity: 학과, slug: dept-math,    label: 수리과학부,           path: "https://www.math.snu.ac.kr/bbs/page.php?hid=vision" }
+      - { entity: 학과, slug: dept-stat,    label: 통계학과,             path: "https://stat.snu.ac.kr/학과안내/학과소개/전공소개/" }
+      - { entity: 학과, slug: dept-physics, label: "물리·천문학부(물리학전공)", path: "https://physics.snu.ac.kr/about/history" }
+      - { entity: 학과, slug: dept-astron,  label: "물리·천문학부(천문학전공)", path: "https://astron.snu.ac.kr/연구분야/" }
+      - { entity: 학과, slug: dept-chem,    label: 화학부,               path: "https://chem.snu.ac.kr/about/introduction" }
+      - { entity: 학과, slug: dept-biosci,  label: 생명과학부,           path: "https://biosci.snu.ac.kr/about/overview" }
+      - { entity: 학과, slug: dept-sees,    label: 지구환경과학부,       path: "https://sees.snu.ac.kr/about/introduction" }
+    # Phase 2a+ 전략: 발전계획·전략과제는 사이트에 부재(조사 확인). 교육 우수성(우수강의)만 전략으로.
+    strategy_pages:
+      - { slug: teaching-award, label: "우수강의(자연과학 최고의 강의)", path: "/about/awards" }
+    notes: "학과 상세는 외부 마이크로사이트(2b). 본체 /edu/programs·/research/institute 일람만 2a entity. 교원명부=학과사이트 분산→faculty 생략. 전략콘텐츠 빈약(발전계획·전략과제 부재 확인)."
+
+  - id: social
+    display_name: 사회과학대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 1
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: social.snu.ac.kr
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/?kboard_content_redirect={id}"
+    dept_count: 9
+    urls:
+      greeting: "/학장-인사말/"
+      history: "/연혁-2/"
+      vision: null
+      departments: null
+      notice: "/공지사항/"
+      news: null
+    about_pages:
+      - { slug: intro, path: "/소개/" }
+      - { slug: status, path: "/보직자-현황/" }
+    # Phase 2a: 9개 학과 + 협동/연합 = 11개 본문(본체 정적, 한글 퍼머링크). 부속연구소 9개는 외부도메인→2b.
+    entity_pages:
+      - { entity: 학과, slug: dept-pir,         label: 정치외교학부,        path: "/정치외교학부/" }
+      - { entity: 학과, slug: dept-econ,        label: 경제학부,            path: "/경제학부/" }
+      - { entity: 학과, slug: dept-socio,       label: 사회학과,            path: "/사회학과/" }
+      - { entity: 학과, slug: dept-anthro,      label: 인류학과,            path: "/인류학과/" }
+      - { entity: 학과, slug: dept-psych,       label: 심리학과,            path: "/심리학과/" }
+      - { entity: 학과, slug: dept-geo,         label: 지리학과,            path: "/지리학과/" }
+      - { entity: 학과, slug: dept-welfare,     label: 사회복지학과,        path: "/사회복지학과/" }
+      - { entity: 학과, slug: dept-comm,        label: 언론정보학과,        path: "/언론정보학과/" }
+      - { entity: 학과, slug: dept-women,       label: 여성학협동과정,      path: "/여성학협동과정/" }
+      - { entity: 학과, slug: dept-infoculture, label: 정보문화학연합전공,  path: "/정보문화학연합전공/" }
+      # 평화통일학협동과정: /평화통일학협동과정/ 404(슬러그 변종) — 메뉴 href 재확인 후 추가(2b 보완).
+    notes: "WordPress+kboard. 한글 퍼머링크. 학과 본문=본체 정적(2a). 협동/연합 3개 slug 미확정→404시 스킵. 연구소·교수진=외부 도메인(2b)."
+
+  # ── Phase 2 (정찰 완료, 활성화 대기) ──
+  - id: agriculture
+    display_name: 농업생명과학대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: cals.snu.ac.kr
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "/board/{category}?bm=v&bbsidx={id}"
+    dept_count: 8
+    urls:
+      greeting: "/about/dean/greetings"
+      history: "/about/introduction/history"
+      vision: "/about/introduction/vision"
+      departments: "/academics/undergraduate"
+      notice: "/board/notice"
+      news: "/board/news"
+    about_pages:
+      - { slug: deans-history, path: /about/dean/history-of-the-office }
+      - { slug: organization-chart, path: /about/organization/chart }
+      - { slug: admission-guide, path: /about/guide/admission }
+    entity_pages:
+      - { entity: 학과, slug: dept-plant-production, label: 식물생산과학부, path: "/academics/undergraduate?deptidx=26" }
+      - { entity: 학과, slug: dept-forest-sciences, label: 산림과학부, path: "/academics/undergraduate?deptidx=27" }
+      - { entity: 학과, slug: dept-food-animal-biotech, label: 식품·동물생명공학부, path: "/academics/undergraduate?deptidx=28" }
+      - { entity: 학과, slug: dept-applied-biology-chemistry, label: 응용생물화학부, path: "/academics/undergraduate?deptidx=29" }
+      - { entity: 학과, slug: dept-biosystems-materials, label: 바이오시스템·소재학부, path: "/academics/undergraduate?deptidx=30" }
+      - { entity: 학과, slug: dept-landscape-regional-systems, label: 조경·지역시스템공학부, path: "/academics/undergraduate?deptidx=31" }
+      - { entity: 학과, slug: dept-agricultural-economics, label: 농경제사회학부, path: "/academics/undergraduate?deptidx=32" }
+      - { entity: 학과, slug: dept-smart-systems-science, label: 스마트시스템과학과, path: "/academics/undergraduate?deptidx=55" }
+      - { entity: 부속기관, slug: inst-agricultural-science, label: 농업생명과학연구원, path: "/research/institute/institute?centidx=2" }
+      - { entity: 부속기관, slug: inst-research-list, label: 연구소(원) 목록, path: /research/institute/institute }
+    strategy_pages:
+      # strategy-vision 제거: urls.vision(/about/introduction/vision)과 동일 URL 중복(2026-06-03 정리).
+      - { slug: strategy-dean-pledge, label: 학장 비전(CALS for CALS), path: /about/dean/greetings }
+    faculty: { path: /about/organization/search/faculty }
+    notes: "⚠ board가 ?bm=v= 변종(표준 md=v 아님). 어댑터가 bm/md 둘 다 처리."
+
+  - id: education
+    display_name: 사범대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: edu.snu.ac.kr
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/category/board_17_*/ 목록 + 게시글 숫자퍼머링크 /{id}/"
+    dept_count: 15
+    urls:
+      greeting: "/대학소개/학장실/학장인사말/"
+      history: "/대학소개/연혁/"
+      vision: "/대학소개/비전-및-목표/"
+      departments: "/학부-대학원/학과소개/"
+      notice: "/category/board_17_gn_ldca7if5_20201130072915/"
+      news: "/category/board_17_sc_a3tegajx_20201130073134/"
+    about_pages:
+      - { slug: org-chart, path: /대학소개/조직도/ }
+      - { slug: former-deans, path: /대학소개/학장실/역대학장/ }
+    entity_pages:
+      - { entity: 학과, slug: dept-education, label: 교육학과, path: /학부-대학원/학과소개/교육학과/ }
+      - { entity: 학과, slug: dept-korean, label: 국어교육과, path: /학부-대학원/학과소개/국어교육과/ }
+      - { entity: 학과, slug: dept-english, label: 영어교육과, path: /학부-대학원/학과소개/영어교육과/ }
+      - { entity: 학과, slug: dept-german, label: 독어교육과, path: /학부-대학원/학과소개/독어교육과/ }
+      - { entity: 학과, slug: dept-french, label: 불어교육과, path: /학부-대학원/학과소개/불어교육과/ }
+      - { entity: 학과, slug: dept-social, label: 사회교육과, path: /학부-대학원/학과소개/사회교육과/ }
+      - { entity: 학과, slug: dept-history, label: 역사교육과, path: /학부-대학원/학과소개/역사교육과/ }
+      - { entity: 학과, slug: dept-geography, label: 지리교육과, path: /학부-대학원/학과소개/지리교육과/ }
+      - { entity: 학과, slug: dept-ethics, label: 윤리교육과, path: /학부-대학원/학과소개/윤리교육과/ }
+      - { entity: 학과, slug: dept-math, label: 수학교육과, path: /학부-대학원/학과소개/수학교육과/ }
+      - { entity: 학과, slug: dept-physics, label: 물리교육과, path: /학부-대학원/학과소개/물리교육과/ }
+      - { entity: 학과, slug: dept-chemistry, label: 화학교육과, path: /학부-대학원/학과소개/화학교육과/ }
+      - { entity: 학과, slug: dept-biology, label: 생물교육과, path: /학부-대학원/학과소개/생물교육과/ }
+      - { entity: 학과, slug: dept-earthsci, label: 지구과학교육과, path: /학부-대학원/학과소개/지구과학교육과/ }
+      - { entity: 학과, slug: dept-pe, label: 체육교육과, path: /학부-대학원/학과소개/체육교육과/ }
+      - { entity: 학과, slug: dept-learnsci, label: 융합학습과학전공, path: /학부-대학원/학과소개/융합학습과학전공/ }
+      - { entity: 학과, slug: dept-aied, label: AI융합교육학과(계약학과), path: "https://aied.snu.ac.kr/" }
+      - { entity: 부속기관, slug: inst-edu-research, label: 교육연구소, path: /연구-부설기관/교육연구소/ }
+      # inst-korean-edu-research 제거: 라벨(국어교육연구소)↔경로(교육종합연구원) 불일치 + 본문 nav스텁(2026-06-03 정리).
+      - { entity: 부속기관, slug: inst-sports-science, label: 스포츠과학연구소, path: /연구-부설기관/스포츠과학연구소/ }
+      - { entity: 부속기관, slug: inst-edu-admin-training, label: 교육행정연수원, path: /연구-부설기관/교육행정연수원/ }
+      - { entity: 부속기관, slug: inst-edu-training, label: 교육연수원, path: /연구-부설기관/교육연수원/ }
+      - { entity: 부속기관, slug: inst-teacher-innovation, label: 교원양성혁신센터, path: /연구-부설기관/교원양성혁신센터/ }
+      - { entity: 부속기관, slug: inst-learning-science, label: 학습과학연구소, path: /연구-부설기관/학습과학연구소/ }
+    notes: "WP kboard. 게시글은 숫자 WP 퍼머링크. 뉴스레터 외부 snuedunow.ac.kr."
+
+  - id: business
+    display_name: 경영대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: cba.snu.ac.kr
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "?md=v&bbsidx={id}"
+    dept_count: 1
+    urls:
+      greeting: "/about/greetings"
+      history: "/about/history/06"
+      vision: "/about/vision"
+      departments: null
+      notice: "/newsroom/notice?sc=y"
+      news: "/newsroom/news?sc=y"
+    about_pages:
+      - { slug: facts, path: /about/facts }
+      - { slug: past-dean, path: /about/past-dean }
+      - { slug: iab, path: /about/IAB }
+    entity_pages:
+      - { entity: 학과, slug: dept-business, label: 경영학과, path: /about/greetings }
+      - { entity: 부속기관, slug: inst-imr, label: 경영연구소, path: /research/institute/imr }
+      - { entity: 부속기관, slug: inst-entrepreneurship, label: 벤처경영기업가센터, path: /research/institute/entrepreneurship-center }
+    strategy_pages:
+      - { slug: vision, label: 비전, path: /about/vision }
+    faculty: { path: /research/faculty/professor }
+    notes: "단일 학과(경영학과). departments 없음."
+
+  - id: human-ecology
+    display_name: 생활과학대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: che.snu.ac.kr      # 추정 he.snu.ac.kr 틀림(ECONNREFUSED) → 실제 che
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "게시글 숫자퍼머링크 /{id}/ (kboard, 목록 href는 JS)"
+    dept_count: 3
+    urls:
+      greeting: "/인사말/"
+      history: "/연혁/"
+      vision: "/대학현황-2/"
+      departments: null
+      notice: "/category/board-35-GN-EKIrl47t-20210226142951/"
+      news: "/category/board-35-GN-JtEo0I8k-20230913094644/"
+    about_pages:
+      - { slug: edu-goals, path: /교육목표/ }
+      - { slug: admin-office, path: /행정실/ }
+    entity_pages:
+      - { entity: 학과, slug: dept-consumer, label: 소비자학과, path: "https://consumer.snu.ac.kr/학과소개-2/" }
+      - { entity: 학과, slug: dept-childfamily, label: 아동가족학과, path: "https://childfamily.snu.ac.kr/intro/" }
+      - { entity: 학과, slug: dept-foodnutrition, label: 식품영양학과, path: "https://foodnutrition.snu.ac.kr/학과장-인사말/" }
+      - { entity: 학과, slug: dept-clothing, label: 의류학과, path: "https://clothing.snu.ac.kr/" }
+      - { entity: 부속기관, slug: inst-human-ecology, label: 생활과학연구소, path: /생활과학연구소/ }
+    faculty: { path: /명예교수/ }
+    notes: "WP multisite(#35)+kboard. 4개 학과 외부 서브도메인(consumer/childfamily/foodnutrition/clothing)."
+
+  - id: nursing
+    display_name: 간호대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: nursing.snu.ac.kr
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "?bm=v&bbsidx={id}"
+    dept_count: 1
+    urls:
+      greeting: "/about/greetings"
+      history: "/about/introduction/history"
+      vision: "/about/introduction/goal"
+      departments: null
+      notice: "/board/notice"
+      news: "/board/news"
+    about_pages:
+      - { slug: organization, path: /about/introduction/organization }
+      - { slug: nursing-100-overview, path: /about/introduction/100 }
+      - { slug: facilities, path: /about/facilities }
+    entity_pages:
+      - { entity: 학과, slug: dept-nursing, label: 간호학과, path: /about/introduction/goal }
+      - { entity: 학과, slug: dept-clinical-nursing, label: 임상간호학과, path: "https://apn.snu.ac.kr/about/goal" }
+    faculty: { path: /faculty/professor }
+    notes: "⚠ bm=v 변종. 단일 학과."
+
+  - id: fine-arts
+    display_name: 미술대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: false   # ⚠ art.snu.ac.kr robots.txt가 전 경로 disallow → 크롤 불가(정책 존중). 보류.
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: art.snu.ac.kr
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/notice/{korean-permalink-slug}/"
+    dept_count: 4
+    urls:
+      greeting: "/대학소개/학장인사말/"
+      history: "/대학소개/연혁/"
+      vision: "/대학소개/교육이념/"
+      departments: "/학과-학부/"
+      notice: "/notice/?catemenu=Notice&type=Events"
+      news: "/category/college-of-fine-arts/?catemenu=News&type=Events"
+    about_pages:
+      - { slug: overview, path: /대학소개/대학소개/ }
+      - { slug: org-chart, path: /대학소개/조직도/ }
+      - { slug: contact-map, path: /대학소개/연락처-및-약도/ }
+    entity_pages:
+      - { entity: 학과, slug: dept-oriental-painting, label: 동양화과, path: /category/oriental-painting/ }
+      - { entity: 학과, slug: dept-painting, label: 서양화과, path: /category/painting/ }
+      - { entity: 학과, slug: dept-sculpture, label: 조소과, path: /category/sculpture/ }
+      - { entity: 학과, slug: dept-craft, label: 공예과, path: /category/craft/ }
+      - { entity: 학과, slug: dept-design, label: 디자인과, path: /category/design/ }
+      - { entity: 부속기관, slug: inst-johyung, label: 조형연구소, path: /부속기관/조형연구소/ }
+    notes: "WP+kboard, 게시글 한글퍼머링크. 영문미러 /en/."
+
+  - id: music
+    display_name: 음악대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: medium
+    needs_recheck: true        # ⚠ 사이트 정상(사용자 확인). 내 fetch 도구의 TLS 중간인증서 한계로 직접 로드 불가
+    tool_blocked: tls
+    domain: music.snu.ac.kr
+    adapter_key: path-based
+    render: static             # 검색인덱스·사용자 제보상 SSR (도구로 직접확인 못함)
+    board_pattern: "/board/general/view/{id} (목록 /board/general); 콘텐츠 /content/{slug}"
+    dept_count: 4
+    urls:
+      greeting: null           # /content/{slug} 패턴이나 정확 slug 미확인 (도구 TLS 차단)
+      history: null
+      vision: null
+      departments: null
+      departments_grad: "/content/department_gs"   # 대학원 음악과 (사용자 제보 확인)
+      notice: "/board/general"
+      news: "/news"
+    about_pages:
+      - { slug: dean, path: /content/dean }
+      - { slug: organization, path: /content/organization }
+      - { slug: academic-info, path: /content/info }
+    entity_pages:
+      - { entity: 학과, slug: dept-vocal, label: 성악과, path: /content/department_vm }
+      - { entity: 학과, slug: dept-piano, label: 피아노과, path: /content/department_p }
+      - { entity: 학과, slug: dept-orchestra, label: 관현악과, path: /content/department_oi }
+      - { entity: 학과, slug: dept-composition, label: 작곡과, path: /content/department_c }
+      - { entity: 학과, slug: dept-musicology, label: 음악학과, path: /content/department_m }
+      - { entity: 학과, slug: dept-korean-music, label: 국악과, path: /content/department_kt }
+      - { entity: 부속기관, slug: inst-oriental-music, label: 동양음악연구소, path: /content/oriental_music }
+      - { entity: 부속기관, slug: inst-opera-center, label: 오페라센터, path: /content/opera_center }
+    faculty: { path: /faculty }
+    notes: "사이트 정상 작동(사용자 확인 music.snu.ac.kr). 내 WebFetch가 TLS 중간인증서 미완성으로 로드 실패 → 실제 크롤러(체인완성/검증완화) 또는 브라우저로 소개페이지 slug 확정 필요. 콘텐츠 패턴 /content/{slug} 확인(예: department_gs=대학원)."
+
+  - id: medicine
+    display_name: 의과대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: medicine.snu.ac.kr
+    adapter_key: egovframe
+    render: static
+    board_pattern: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId={id}"
+    dept_count: 1
+    urls:
+      greeting: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=80"
+      history: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=70"
+      vision: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=24009"
+      departments: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=24369"
+      notice: "/fnt/nac/selectNoticeList.do?bbsId=BBSMSTR_000000000001"
+      news: "/fnt/bbm/sbbs/selectBbsSmpleList.do?bbsId=BBSMSTR_000000000020"
+    about_pages:
+      - { slug: past-deans, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=79" }
+      - { slug: org-chart, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=521" }
+      - { slug: education-goals, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=139" }
+    entity_pages:
+      - { entity: 학과, slug: dept-medicine, label: 의학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=512" }
+      - { entity: 학과, slug: dept-medical-science, label: 의과학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=513" }
+      - { entity: 학과, slug: dept-clinical-medical-science, label: 임상의과학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=514" }
+      - { entity: 학과, slug: dept-human-systems-medicine, label: 휴먼시스템의학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=20680" }
+      - { entity: 학과, slug: dept-medical-device-industry, label: 의료기기산업학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=20679" }
+    strategy_pages:
+      # vision-overview 제거: egov nttId=24512 본문 추출 실패(nav 부스러기만), 실 비전은 urls.vision에 있음(2026-06-03 정리).
+      - { slug: kpi, label: 핵심성과지표, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=27628" }
+    notes: "전자정부프레임워크 .do 라우팅. 인사말/연혁/비전이 단일 article 뷰."
+
+  - id: vet
+    display_name: 수의과대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: vet.snu.ac.kr
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/{korean-slug}/?mod=document&uid={id}"
+    dept_count: 1
+    urls:
+      greeting: "/deans-message/"
+      history: "/history/"
+      vision: "/vision/"
+      departments: null
+      notice: "/category/board-3-BL-8Piv9u51-20211029154329/"
+      news: "/category/board-230-GN-KVZe3R9F-20231110160714/"
+    about_pages:
+      - { slug: former-dean, path: /former-dean/ }
+      - { slug: organization, path: /organization/ }
+      - { slug: staff, path: /staff/ }
+    entity_pages:
+      - { entity: 학과, slug: dept-veterinary, label: 수의학과, path: /admissions1/ }
+    faculty: { path: /faculty/ }
+    notes: "WP+kboard(mod=document&uid 변종). 단일 학과(수의학과)."
+
+  - id: pharmacy
+    display_name: 약학대학
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: snupharm.snu.ac.kr  # 추정 pharm/pharmacy 둘 다 틀림 → 실제 snupharm
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/공지사항/?mod=document&uid={id}"
+    dept_count: 2
+    urls:
+      greeting: "/인사말/"
+      history: "/역사/"
+      vision: "/미션과-비전/"
+      departments: "/학과별-교육목표/"
+      notice: "/공지사항/"
+      news: "/category/board-229-GR-vzzHWTNX-20231115114423/"
+    about_pages:
+      - { slug: previous-deans, path: "/%ec%97%ad%eb%8c%80%ed%95%99%ec%9e%a5/" }
+      - { slug: organization, path: "/%ec%a1%b0%ec%a7%81%eb%8f%84-%eb%b0%8f-%eb%b3%b4%ec%a7%81%ec%9e%90/" }
+    entity_pages:
+      - { entity: 학과, slug: dept-pharmacy, label: 약학과, path: "/%ed%95%99%ea%b3%bc%eb%b3%84-%ea%b5%90%ec%9c%a1%eb%aa%a9%ed%91%9c/" }
+      - { entity: 학과, slug: dept-manufacturing-pharmacy, label: 제약학과, path: "/%ed%95%99%ea%b3%bc%eb%b3%84-%ea%b5%90%ec%9c%a1%eb%aa%a9%ed%91%9c/" }
+      - { entity: 부속기관, slug: inst-comprehensive-pharm-research, label: 종합약학연구소, path: "/%ec%a2%85%ed%95%a9%ec%95%bd%ed%95%99%ec%97%b0%ea%b5%ac%ec%86%8c-%ec%86%8c%ea%b0%9c/" }
+      - { entity: 부속기관, slug: inst-pharm-education, label: 약학교육연수원, path: "/%ec%95%bd%ed%95%99%ea%b5%90%ec%9c%a1%ec%97%b0%ec%88%98%ec%9b%90/" }
+    faculty: { path: "/%ea%b5%90%ec%88%98%ec%a7%84/" }
+    notes: "WP multisite(#229)+kboard(mod=document&uid). 한글 퍼머링크."
+
+  - id: cls
+    display_name: 첨단융합학부
+    org_type: undergraduate
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: snuti.snu.ac.kr      # 신설학부 — 전용도메인 snuti 확정
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "게시글 숫자 WP퍼머링크 /{id}/ (목록 ?var_page=N)"
+    dept_count: 5
+    urls:
+      greeting: "/greetings/"
+      history: "/about-history/"
+      vision: "/organization/"
+      departments: "/organization/"
+      notice: "/category/board-215-GN-IWAuloKV-20230830171309/"
+      news: "/category/board-215-GN-LFA7ob0C-20240522155911/"
+    about_pages:
+      - { slug: curriculum-system, path: /curriculum/ }
+      - { slug: major-design, path: /major/ }
+    entity_pages:
+      - { entity: 학과, slug: dept-digital-healthcare, label: 디지털헬스케어전공, path: /digital-healthcare/ }
+      - { entity: 학과, slug: dept-convergence-data-science, label: 융합데이터과학전공, path: /convergence-data-science/ }
+      - { entity: 학과, slug: dept-sustainable-technology, label: 지속가능기술전공, path: /sustainable-technology/ }
+      - { entity: 학과, slug: dept-next-gen-semiconductor, label: 차세대지능형반도체전공, path: /next-generation-intelligent-semiconductor/ }
+      - { entity: 학과, slug: dept-innovative-new-drug, label: 혁신신약전공, path: /innovative-new-drug/ }
+    strategy_pages:
+      - { slug: certification-tracks, label: 교과인증과정, path: "/%ea%b5%90%ea%b3%bc%ec%9d%b8%ec%a6%9d%ea%b3%bc%ec%a0%95/" }
+    faculty: { path: /professor/ }
+    notes: "2024-03 신설, 5개 전공(218정원). WP, 게시글 숫자퍼머링크."
+
+  - id: liberal-college
+    display_name: 학부대학(자유전공학부 포함)
+    org_type: university_college
+    parent_wiki: 단과대
+    phase: 2
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: snuc.snu.ac.kr       # 2025 신설 학부대학 umbrella(자유전공 구사이트 cls.snu.ac.kr 별도)
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/공지사항/?mod=document&uid={id}"
+    dept_count: 0
+    urls:
+      greeting: "/en/greetings/"
+      history: "/en/history/"
+      vision: "/en/mission/"
+      departments: "/en/college-of-liberal-studies/"
+      notice: "/공지사항/"
+      news: "/category/board-305-BL-qyVQ8VF9-20250307172846/"
+    about_pages:
+      - { slug: talent, path: /인재상/ }
+      - { slug: orgchart, path: /조직도/ }
+      - { slug: leadership, path: /교수진/보직교수/ }
+      - { slug: directions, path: /찾아오시는길/ }
+    entity_pages:
+      - { entity: 학과, slug: dept-liberal-studies, label: 자유전공학부, path: /자유전공학부/ }
+      - { entity: 학과, slug: dept-broad, label: 광역, path: /광역/ }
+      - { entity: 부속기관, slug: inst-edu-ops-dev, label: 교육운영개발센터, path: /산하기구/교육운영개발센터/ }
+      - { entity: 부속기관, slug: inst-writing-support, label: 글쓰기지원센터, path: /산하기구/글쓰기지원센터/ }
+      - { entity: 부속기관, slug: inst-teaching-learning, label: 교수학습개발센터, path: /산하기구/교수학습개발센터/ }
+      - { entity: 부속기관, slug: inst-digital-edu, label: 디지털교육혁신센터, path: /산하기구/디지털교육혁신센터/ }
+      - { entity: 부속기관, slug: inst-major-design, label: 전공설계지원센터, path: /산하기구/전공설계지원센터/ }
+    faculty: { path: /교수진/전임교수/ }
+    notes: "WP multisite(#305)+kboard(mod=document&uid). 자유전공학부는 산하 academics."
+
+  # ════════════════════ 대학원 (parent_wiki: 대학원) ════════════════════
+
+  - id: grad-general
+    display_name: 일반대학원
+    org_type: graduate_general
+    parent_wiki: 대학원
+    phase: 3
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: medium         # ⚠ 전용 단독사이트 없음 — admission.snu.ac.kr + snu.ac.kr 분산
+    domain: admission.snu.ac.kr
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "?md=v&bbsidx={id}"
+    dept_count: 0
+    depts_shared_with: 단과대   # 75학과+32협동과정은 단과대 학과 재사용(중복크롤 금지)
+    scope: admin_only
+    graduate_section_per_college: true  # ⭐ 각 단과대 사이트의 '대학원' 섹션도 소스 — 단과대 크롤 시 함께 수집(사용자 제보)
+    urls:
+      greeting: null
+      history: null
+      vision: null          # 대학원 전공 나열 nav = 단과대 중복 → 크롤 안 함 (QA bad, 2026-06-04)
+      departments: null     # 〃 depts_shared_with: 단과대
+      notice: "/graduate/general/notice"
+      news: null
+    notes: "⚠ 전용사이트 없음. 3개 소스: ①admission.snu.ac.kr/graduate/general(공지) ②snu.ac.kr/academics/graduate/graduate_schools(과정리스트) ③각 단과대 사이트의 '대학원' 섹션(학과별 대학원 정보 — 사용자 제보). 단과대 크롤 시 대학원 섹션 URL도 함께 수집."
+
+  # ── 전문대학원 11개 ──
+  - id: gsph
+    display_name: 보건대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: health.snu.ac.kr
+    adapter_key: wordpress-kboard
+    render: static
+    board_pattern: "/{korean-permalink}/?mod=document&uid={id}"
+    urls:
+      greeting: "/원장-인사말/"
+      history: "/연혁-2/"
+      vision: "/gsph-소개/"
+      departments: "/보건학전공/"
+      notice: "/일반공지/"
+      news: "/gsph-뉴스/"
+    notes: "WP multisite(#136)+kboard(mod=document&uid). 1959 설립."
+
+  - id: gspa
+    display_name: 행정대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gspa.snu.ac.kr
+    adapter_key: dotnet-mvc
+    render: dynamic           # ⚠ board 목록이 클라이언트 템플릿({{item.Title}}) — JS 필요
+    board_pattern: "/kr/Board/Detail/{type}/{id}"
+    urls:
+      greeting: "/kr/gspa/intro/intro"
+      history: "/kr/gspa/intro/history"
+      vision: "/kr/gspa/intro/vision"
+      departments: "/kr/curriculum/school/info"
+      notice: "/kr/Board/List/Notice"
+      news: "/kr/Board/List/GspaNews"
+    notes: "⚠ /kr 로케일 필수, 루트는 404. 게시판 dynamic → Tier4는 headless 필요."
+
+  - id: gses
+    display_name: 환경대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gses.snu.ac.kr     # 추정 gse 틀림 → 실제 gses
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "?md=v&bbsidx={id}"
+    urls:
+      greeting: "/about/greetings"
+      history: "/about/history"
+      vision: "/about/goal"
+      departments: "/information/academics/overview"
+      notice: "/news/notice/notice?sc=y"
+      news: "/news/notice/news?sc=y"
+    notes: "표준 CMS. notice/news 동일 게시판 탭."
+
+  - id: gsis
+    display_name: 국제대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gsis.snu.ac.kr
+    adapter_key: wordpress-kboard   # 글링크가 go_board_view('N') onclick = kboard Skin B (실측 2026-06-03)
+    render: static
+    board_pattern: "/category/board-286-.../?var_page={n} (글링크 JS)"
+    urls:
+      greeting: "/deans-message/"
+      history: null
+      vision: "/why-gsis/"
+      departments: "/masters-program/"
+      notice: "/category/board-286-gn-ote7xxxo-20240612113904/"
+      news: "/upcoming-events/"
+    notes: "WP(#286) 커스텀 taxonomy(비-kboard). 글 href JS. PUBLICATIONS 외부 iia.snu.ac.kr."
+
+  - id: dent
+    display_name: 치의학대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high            # 게시판은 dentistry.snu.ac.kr에서 확정 (2026-06-03 사용자 제보)
+    domain: dentistry.snu.ac.kr   # 게시판(라이브 글) 있는 eGovFrame 사이트
+    alt_domain: dentemp.snu.ac.kr # 정적 소개(인사말/연혁/비전)는 이쪽이 깔끔
+    adapter_key: egovframe        # medicine과 동일 엔진
+    render: static
+    board_pattern: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId={id} (목록 글링크 fnDetail('{id}') JS)"
+    urls:
+      greeting: "dentemp:/intro/greet/"
+      history: "dentemp:/intro/about/history/"
+      vision: "dentemp:/intro/about/vision/"
+      departments: "dentemp:/research/department/"
+      notice: "/fnt/nac/selectNoticeList.do?bbsId=BBS_0000000000001"
+      news: "/fnt/bbm/sbbs/selectBbsSmpleList.do?bbsId=BBS_0000000000002"
+    notes: "이중 사이트: 정적 소개=dentemp(영문슬러그), 게시판=dentistry(eGovFrame .do, 라이브 글 확인). notice/news는 dentistry 도메인. urls의 dentemp: 접두어는 alt_domain 기준."
+
+  - id: mba
+    display_name: 경영전문대학원(MBA)
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gsb.snu.ac.kr      # 추정 snumba 틀림 → 실제 gsb
+    adapter_key: snu-cms
+    render: static
+    board_pattern: "?md=v&bbsidx={id}"
+    urls:
+      greeting: null
+      history: null
+      vision: "/snu-gsb/overview"
+      departments: null
+      notice: "/admission/notice?sc=y"
+      news: "/snu-gsb/mba-news?sc=y"
+    notes: "표준 CMS. 인사말/연혁은 mba-news 게시글·overview에 인라인. cba와 별개 사이트."
+
+  - id: law
+    display_name: 법학전문대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: law.snu.ac.kr
+    adapter_key: gnuboard
+    render: static
+    board_pattern: "/bbs/board.php?bo_table={board}&wr_id={id}"
+    urls:
+      greeting: "/page/greeting.php"
+      history: "/page/history.php"
+      vision: "/page/situation.php"
+      departments: "/page/master_curriculum.php"
+      notice: "/bbs/board.php?bo_table=normal_board"
+      news: null
+    notes: "그누보드 PHP. 영문 .php 슬러그. 교수59/원생502(2026-03)."
+
+  - id: gsct
+    display_name: 융합과학기술대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: medium
+    domain: convergence.snu.ac.kr  # 추정 gsct 틀림 → 실제 convergence (gscst=강의실예약 별도)
+    adapter_key: wordpress-kboard
+    render: dynamic           # 게시판 글링크 #none JS
+    board_pattern: "/?kboard_content_redirect={id} (글링크 JS 주입)"
+    urls:
+      greeting: "/greeting/"
+      history: "/history/"
+      vision: "/about/"
+      departments: "/appl_bio_intro/"
+      notice: "/category/notice/"
+      news: "/category/newsletter/"
+    notes: "WP multisite(#214)+kboard. 콘텐츠는 static, 게시판 글링크는 JS. 5개 학과."
+
+  - id: gsiat
+    display_name: 국제농업기술대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gsiat.snu.ac.kr
+    adapter_key: asp-bidx
+    render: static
+    board_pattern: "/notice/Default.asp?bidx={id}"
+    urls:
+      greeting: "/include/?pidx=1&htop=MN0001&ctop=MN0008&ptop=MN0001"
+      history: "/information/history.asp"
+      vision: "/include/?pidx=2&htop=MN0001&ctop=MN0011&ptop=MN0001"
+      departments: null   # 이 URL은 단일전공(경제동물과학) 강의덤프 → 제외 (QA bad, 2026-06-04)
+      notice: "/notice/?gbn=1&htop=MN0007&ctop=MN0037&ptop=MN0007"
+      news: "/notice/?gbn=6&htop=MN0007&ctop=MN0095&ptop=MN0007"
+    notes: "ASP CMS, pidx/htop/ctop 파라미터 라우팅. 평창캠퍼스. 게시판 bidx(≠bbsidx)."
+
+  - id: gsep
+    display_name: 공학전문대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gsep.snu.ac.kr
+    adapter_key: path-based
+    render: static
+    board_pattern: "/boards/notice/{id}/detail/{category}/{subcategory}/"
+    urls:
+      greeting: "/staticdata/static/introduction/dean_message/"
+      history: null
+      vision: "/staticdata/static/introduction/identity/"
+      departments: null
+      notice: "/boards/notice/news/notice/"
+      news: "/boards/notice/introduction/news/"
+    notes: "경로기반(Django 추정). /staticdata/ 정적 + /boards/ 게시판. 목록 ?paginate_by=10&page=N."
+
+  - id: gsds
+    display_name: 데이터사이언스대학원
+    org_type: graduate_professional
+    parent_wiki: 대학원
+    phase: 4
+    active: true
+    survey_status: surveyed
+    surveyed_at: 2026-06-03
+    confidence: high
+    domain: gsds.snu.ac.kr
+    adapter_key: wordpress-custom
+    render: static
+    board_pattern: "/{url-encoded-korean-slug}/ (WP 네이티브 퍼머링크, 비-kboard)"
+    urls:
+      greeting: "/about/greetings/"
+      history: "/about/history/"
+      vision: "/about/introduction/"
+      departments: "/integrated/department/"
+      notice: "/news/announcement/"
+      news: "/news/news-school/"
+    notes: "WP 커스텀테마(gsds), kboard 없음. 영문 슬러그 메뉴 + 한글 퍼머링크 게시글."
+
+# =============================================================================
+# 정찰 완료: 28/28 (2026-06-03). 도메인 정정 8건: he→che, pharm→snupharm,
+#   cls(첨단융합)→snuti, 학부대학→snuc, gse→gses, dent→dentemp, snumba→gsb, gsct→convergence.
+# 정정(2026-06-03 사용자 제보):
+#   dent → 게시판은 dentistry.snu.ac.kr(eGovFrame) 확정. 정적소개 dentemp + 게시판 dentistry 이중소스.
+#   grad-general → 각 단과대 사이트의 '대학원' 섹션도 소스(graduate_section_per_college).
+#   music → 사이트 정상. 내 fetch 도구 TLS 한계로 보류(tool_blocked: tls). /content/{slug} 패턴 확인.
+# 재정찰/보완 필요: music(실제 크롤러 또는 브라우저로 소개 slug 확정).
+# 다음 작업: pending 없음. Design 단계에서 어댑터 8계열 → SiteAdapter 구현 매핑.
+# =============================================================================

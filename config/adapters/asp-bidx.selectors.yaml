@@ -1,0 +1,27 @@
+# asp-bidx 엔진 셀렉터/URL 맵 (데이터) — 대상: gsiat
+# ASP CMS, pidx/htop/ctop 메뉴 라우팅 + 게시판 bidx. 평창캠퍼스.
+key: asp-bidx
+extract:
+  main_selector:
+    - "#contents"
+    - ".contents"
+    - "#content"
+    - ".content"
+    - ".sub_content"
+    - ".sub_contents"
+    - "#container"
+    - "main"
+  strip_selectors:
+    - "#header"
+    - ".header"
+    - "#gnb"
+    - ".gnb"
+    - ".lnb"
+    - ".snb"
+    - ".location"
+    - "#footer"
+    - ".footer"
+    - "nav"
+  title_selector: "h1, .sub_title, .tit, .page_title"
+board:
+  id_param: "bidx"

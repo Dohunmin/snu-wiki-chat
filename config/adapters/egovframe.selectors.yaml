@@ -1,0 +1,33 @@
+# egovframe 엔진 셀렉터 (medicine·dent). 전자정부 표준프레임워크 .do?nttId= 뷰.
+# medicine 실측: 본문은 .sub_conbox(*_conbox 변형). 게시판 뷰는 .bbs_view/.nttView 류.
+key: egovframe
+extract:
+  main_selector:
+    - ".sub_conbox"        # medicine 정보페이지 본문(greeting_conbox 등 변형 포함, 부분일치 아님→상위 클래스)
+    - ".bbsView"
+    - ".bbs_view"
+    - ".board_view"
+    - ".view_cont"
+    - ".view_con"
+    - ".nttView"
+    - ".cont_area"
+    - "#contents"
+    - "#content"
+    - ".contents"
+    - "main"
+  strip_selectors:
+    - ".sub_gnb"
+    - ".gl_lang_contaienr"
+    - ".modal__container"
+    - ".footer_contents"
+    - "header"
+    - "nav"
+    - "footer"
+    - "script"
+    - "style"
+    - ".skip"
+    - ".search"
+  title_selector: "h1, h2, .view_tit, .bbs_tit"
+board:
+  list_item_selector: "table tbody tr"
+  id_param: "nttId"

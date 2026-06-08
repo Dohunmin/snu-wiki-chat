@@ -1,0 +1,21 @@
+{
+  "id": "mba",
+  "name": "경영전문대학원(MBA)",
+  "sources": [],
+  "topics": [],
+  "entities": [],
+  "syntheses": [],
+  "facts": [],
+  "stances": [],
+  "overviews": [
+    {
+      "id": "vision",
+      "title": "경영전문대학원(MBA) 비전",
+      "편": "비전",
+      "tags": "",
+      "content": "# 경영전문대학원(MBA) 비전\n연혁\n\n~2021\n\n2020\n\nFull-time MBA 학제개편 및 전공통합 (1.5년제에서 1년제로 변경)\n\n2016\n\n경영전문대학원 개원 10주년\n\n2014\n\nFull-time MBA 총동문회 발족\n\n2013\n\n일본 히토츠바시대학교 복수학위 협정 체결 미국 예일대 복수학위 협정 체결\n\n2012\n\nGNAM(Global Network for Advanced Management) 가입 / Executive MBA 총동문회 발족 Full-time MBA 학제개편 (1년제에서 1.5년제로 변경)\n\n2011\n\n교육부 캠퍼스아시아 사업단 선정 BEST(Beijing-Seoul-Tokyo) Business School Alliance 협정체결\n\n2009\n\nExecutive MBA 신설\n\n2008\n\n서울대-대한상공회의소 계약학과(Executive MBA) 설치운영 협약 체결 중국 북경대학교 복수학위 협정 체결 프랑스 에섹대학교 복수학위 협정 체결\n\n2007\n\n미국 듀크대학교 복수학위 협정체결 SNU MBA 신설\n\n2006\n\nGlobal MBA 신설 경영전문대학원 설립인가 (교육부)\n\n학장단\n\n양홍석\n\n경영대학 학장 경영전문대학원 원장\n\n김준범\n\n교무부학장\n\n유병준\n\nMBA부학장\n\n졸업생 배출 현황\n\n| 연도 | Full-time MBA | Executive MBA | Total |\n| --- | --- | --- | --- |\n| 2025 | 102 | 112 | 214 |\n| 2024 | 84 | 109 | 193 |\n| 2023 | 80 | 104 | 184 |\n| 2022 | 61 | 86 | 147 |\n| 2021 | 55 | 98 | 153 |\n| 2020 | 65 | 87 | 154 |\n| 2019 | 72 | 57 | 129 |\n| 2018 | 95 | 74 | 169 |\n| 2017 | 100 | 78 | 178 |\n| 2016 | 97 | 93 | 190 |\n| 2015 | 80 | 81 | 161 |\n| 2014 | 90 | 84 | 174 |\n| 2013 | 103 | 92 | 195 |\n| 2012 | 110 | 55 | 165 |\n| 2011 | 98 | 34 | 132 |\n## 출처\n- 외부: https://gsb.snu.ac.kr/snu-gsb/overview\n- 원문(raw): raw/md/mba/vision.md\n- 첨부(URL만): https://gsb.snu.ac.kr/_skin/kor/images/history/histopry-main.jpg · https://gsb.snu.ac.kr/webdata/uploaded/images/613z3b5z804zf43z91dz423zb57zed6z6abzd1fz9b.jpg · https://gsb.snu.ac.kr/webdata/uploaded/images/2a6za0az79bz075zeb2z2a6zb76zcc9z835z433z7f.jpg · https://gsb.snu.ac.kr/webdata/uploaded/images/d2cz70bz17ez4daz963z656z14cz7bcz139z2fdz80.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 4, Tier 1)",
+      "sensitive": false
+    }
+  ],
+  "index": ""
+}

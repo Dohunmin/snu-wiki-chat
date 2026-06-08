@@ -1,0 +1,25 @@
+# wordpress-custom 엔진 셀렉터/URL 맵 (데이터) — 대상: gsds
+# WP 커스텀 테마(비-kboard). 영문 슬러그 메뉴 + 한글 퍼머링크 게시글.
+key: wordpress-custom
+extract:
+  main_selector:
+    - "article .entry-content"
+    - ".entry-content"
+    - ".page-content"
+    - "main .content"
+    - "#content"
+    - "main"
+    - "#primary"
+  strip_selectors:
+    - ".site-header"
+    - "#masthead"
+    - ".site-footer"
+    - "#colophon"
+    - "nav"
+    - ".elementor-location-header"
+    - ".elementor-location-footer"
+    - ".breadcrumb"
+    - ".widget-area"
+  title_selector: "h1.entry-title, h1, .page-title, .elementor-heading-title"
+board:
+  id_param: ""

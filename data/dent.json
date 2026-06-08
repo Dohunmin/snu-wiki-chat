@@ -1,0 +1,45 @@
+{
+  "id": "dent",
+  "name": "치의학대학원",
+  "sources": [],
+  "topics": [],
+  "entities": [],
+  "syntheses": [],
+  "facts": [],
+  "stances": [],
+  "overviews": [
+    {
+      "id": "dept",
+      "title": "치의학대학원 학과 안내",
+      "편": "학과소개",
+      "tags": "",
+      "content": "# 치의학대학원 학과 안내\n교실소개\n\n- 기초치의학교실\n\n- 임상치의학교실\n\n구강해부학 교실Oral Anatomy\n\n해부학은 사람 몸의 세포, 조직 및 기관의 구조적 특징을 연구하는 학문으로서 인접 기초과목을 습득하는데 기초가 되며 나아가 임상과목을 이해하는데 응용되는 기초 과목이다.\n\n연구분야\n\n- 이 승 표 : 치아 및 치열궁에 관한 3차원적 연구\n\n본 연구실은 최근 활발히 연구 응용 되어지고 있는 삼차원 scanner를 이용하여 이미 존재하고 있는 치아의 외형이나 교합 상태를 컴퓨터상에서 재구현하여 왔고 이러한 기술은 이제 일반화되고 있다. 그러나 상실된 치아를 주변 치아나 대합치의 정보를 이용하여 다시 만들어내는 기술은 아직 구현되지 못하고 있다. 교합은 치아만으로 이루어지는 것이 아니라 위아래턱뼈와 이들이 형성하는 관절인 턱 관절 및 이들을 조절하는 근신경계 등 세 가지로 구성되어 있기 때문에 이러한 요소들을 모두 고려하여야 하며 매우 복잡한 변수들을 가지고 있다. 따라서 우선적으로 한국인 고유의 data base를 수집하여 기초 자료를 형성하고 protocol type software를 만들어야 하며 앞으로 지속적으로 얻어지는 data를 software에 추가 접목할 계획이다. 이러한 시스템이 완성되면 기존의 상실치 대체 치아 제작법에 큰 변화를 주어 보다 빠르고 정확하며 경제적인 제작이 가능할 것이다. 또한 치과 임플란트 상부구조 제작에 응용이 가능하고 앞으로 줄기세포를 이용한 치아 복제가 이루어지면 치아 외형의 틀 제작에도 쓰일 것이다. 그리고 연구 과정에서 나오는 결과물을 이용하여 한국인 표준 치아 제작, 교육자료 개발과 같은 부수적인 효과도 얻을 수 있을 것이다.\n\n- 장 미 숙 : 줄기세포에서 신경세포로의 분화기전 연구\n\n최근 줄기세포를 이용한 세포치료법이 난치병 치료에 대한 새로운 미래의학으로 대두되고 있다. 그러나 성공적인 세포치료법 개발에 필수적인 줄기세포에서 특정세포로의 분화에 대한 연구는 아직 미흡한 실정이다.\n\nRELATED SITE\n\nContact Us\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원\n\nSchool of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원 School of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\nSchool of Dentistry Seoul National University.,101 Yeongeon-dong, Jongno-gu, Seoul, Korea Tel: +82-02-740-8607 Fax: +82-02-740-0000\n\n© Seoul National University School of Dentistry\n## 출처\n- 외부: https://dentemp.snu.ac.kr/research/department/\n- 원문(raw): raw/md/dent/dept.md\n- 첨부(URL만): https://dentemp.snu.ac.kr/site/dentistry/res/img/logo00_ko.png · https://dentemp.snu.ac.kr/site/dentistry/res/img/dentistry_img1_6.png · https://dentemp.snu.ac.kr/site/dentistry/res/img/print.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 4, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "greeting",
+      "title": "치의학대학원 인사말",
+      "편": "소개",
+      "tags": "",
+      "content": "# 치의학대학원 인사말\n원장인사말\n\nWe Guarantee Excellence in Dentistry\n\n서울대학교 치의학대학원 32대 대학원장 한중석입니다. 1922년 경성치과의학교로 시작한 저희 서울대학교 치의학대학원은 정유년인 2017년 지금, 100년이란 대한민국 치의학교육의 이정표에 정확히 5년을 남겨두고 있습니다. 그동안 우리나라 최고의 치의학 교육기관이라는 자부심과 함께 존경 받는 리더를 양성하고자 꾸준히 노력해 왔으며 현재 새로운 100년을 준비하며 세계적인 대학으로 거듭나기 위한 출발선에 있습니다. 세계를 선도하는 대학으로 도약하기 위해서 내부적으로 교육제도 혁신, 연구시설 첨단화 및 역량 있는 교수 확보를 위해 지속적으로 노력하고 있으며, 2015년 완공된 관악캠퍼스의 첨단교육연구복합단지를 기반으로 융·복합 학문발전에 기여하고 있습니다. 또한 저희 학생과 동문, 교직원은 ‘Educational Leadership’ 으로 나눔을 실천하고 사회에 공헌하는 학교로 거듭나도록 노력하고 있습니다. 모든 구성원이 열린 지성과 참 인술로 인류의 건강과 행복에 기여하는 전문가를 양성하는 서울대학교 치의학대학원의 미션을 가슴에 새기면서, 격동하는 이 시기에 사회적 책무를 다하여, 자신만이 아닌 가족, 사회와 국가의 긍정적인 변화와 발전을 이끌 수 있는 선한 인재를 양성하도록 혼신의 노력을 다하겠습니다. 감사합니다.\n\n서울대학교 치의학대학원 홈페이지를 방문해 주셔서 감사합니다.\n\n서울대학교 치의학대학원장 한중석\n\nRELATED SITE\n\nContact Us\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원\n\nSchool of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원 School of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\nSchool of Dentistry Seoul National University.,101 Yeongeon-dong, Jongno-gu, Seoul, Korea Tel: +82-02-740-8607 Fax: +82-02-740-0000\n\n© Seoul National University School of Dentistry\n## 출처\n- 외부: https://dentemp.snu.ac.kr/intro/greet/\n- 원문(raw): raw/md/dent/greeting.md\n- 첨부(URL만): https://dentemp.snu.ac.kr/site/dentistry/res/img/logo00_ko.png · https://dentemp.snu.ac.kr/site/dentistry/res/img/greetings_img01.jpg · https://dentemp.snu.ac.kr/site/dentistry/res/img/print.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 4, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "history",
+      "title": "치의학대학원 연혁",
+      "편": "연혁",
+      "tags": "",
+      "content": "# 치의학대학원 연혁\n대학원소개\n\n주요연혁\n\n1922년 경성치과의학교의 설립으로 근대식 치과교육이 시작된 지 90여년, 대한민국 최초 치의학 교육기관으로 국내 치의학 발전의 중추적인 역할과 사명을 다해 온 서울대학교 치의학대학원은 세계가 원하는 치과의사와 치의학자의 양성에 도전하며 치의학의 새로운 역사를 만들어가고 있다.\n\n- 2017.02 (재)한국치의학교육평가원 치의학교육인증평가 '인증' 획득\n\n- 2016.12 제32대 학장 겸 제7대 원장에 한중석 교수 취임\n\n- 2015.04 치의학대학원 관악캠퍼스 준공식 및 관악서울대학교치과병원 개원식\n\n- 2014.12 제31대 학장 겸 제6대 원장에 이재일 교수 취임\n\n- 2014.03 제1회 학사ㆍ전문석사통합과정 입학\n\n- 2012.12 제30대 학장 겸 제5대 원장에 이재일 교수 취임\n\n관악캠퍼스 치의학대학원 첨단교육연구복합단지 신축공사 기공식\n\n- 2012.10 서울대학교 치과대학 개교 90주년 기념행사\n\n- 2010.12 제29대 학장 겸 제4대 원장에 최순철 교수 취임\n\n- 2008.12 제28대 학장 겸 제3대 원장에 정필훈 교수 취임\n\n- 2008.02 교육동 개관\n\n- 2006.12 제27대 학장 겸 제2대 원장에 김종철 교수 취임\n\n- 2005.03 제1대 원장에 정필훈 교수 취임\n\n치의학대학원 개원\n\n- 2003.06 치과생체재료연구동 개관\n\n- 2000.05 치과병원 임상교육연구동 준공\n\n- 1997.02 치학연구소 법정화\n\n- 1995.05 치의학도서관이 서울대학교 중앙도서관의 분관으로 개관\n\n- 1994.08 치의학박물관 개설\n\n- 1993.05 서울대학교병원 치과병원 신축\n\n- 1980.04 치학연구소 설치\n\n- 1978.07 서울대학병원 치과진료부 개설\n\n- 1969.12 소공동 교사에서 연건동 신축교사로 이전\n\n- 1960.04 대학원 치의학과 박사과정 신설\n\n- 1959.01 치의예과 신설\n\n- 1952.04 대학원 치의학과 석사과정 신설\n\n- 1946.08 국립 서울대학교 치과대학 및 부속병원\n\n- 1929.01 경성치과의학전문학교(4년제)\n\n- 1922.04 경성치과의학교(2년제)\n\n- 1885.05 제중원 근대치과치료 시작\n\nRELATED SITE\n\nContact Us\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원\n\nSchool of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원 School of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\nSchool of Dentistry Seoul National University.,101 Yeongeon-dong, Jongno-gu, Seoul, Korea Tel: +82-02-740-8607 Fax: +82-02-740-0000\n\n© Seoul National University School of Dentistry\n## 출처\n- 외부: https://dentemp.snu.ac.kr/intro/about/history/\n- 원문(raw): raw/md/dent/history.md\n- 첨부(URL만): https://dentemp.snu.ac.kr/site/dentistry/res/img/logo00_ko.png · https://dentemp.snu.ac.kr/site/dentistry/res/img/print.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 4, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "vision",
+      "title": "치의학대학원 비전",
+      "편": "비전",
+      "tags": "",
+      "content": "# 치의학대학원 비전\n대학원소개\n\nVISION\n\nMISSION\n\n“열린 지성과 참 인술로 인류의 행복에 기여한다”\n\nTo contribute to human happiness through open-minded intelligence and true dentistry\n\nCORE VALUE\n\nRELATED SITE\n\nContact Us\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원\n\nSchool of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\n03080 서울시 종로구 대학로 101(연건동) 서울대학교 치의학대학원 School of Dentistry Seoul National Univ.,Yeongeon-dong, Jongno-gu, Seoul, Korea\n\nSchool of Dentistry Seoul National University.,101 Yeongeon-dong, Jongno-gu, Seoul, Korea Tel: +82-02-740-8607 Fax: +82-02-740-0000\n\n© Seoul National University School of Dentistry\n## 출처\n- 외부: https://dentemp.snu.ac.kr/intro/about/vision/\n- 원문(raw): raw/md/dent/vision.md\n- 첨부(URL만): https://dentemp.snu.ac.kr/site/dentistry/res/img/logo00_ko.png · https://dentemp.snu.ac.kr/site/dentistry/res/img/vision_img1.png · https://dentemp.snu.ac.kr/dcp/editor/images/01%EB%8C%80%ED%95%99%EC%9B%90%EC%86%8C%EA%B0%9C_02%EB%8C%80%ED%95%99%EC%9B%90%EC%86%8C%EA%B0%9C_01%EB%B9%84%EC%A0%84_%EC%88%98%EC%A0%95_03.png · https://dentemp.snu.ac.kr/site/dentistry/res/img/print.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 4, Tier 1)",
+      "sensitive": false
+    }
+  ],
+  "index": ""
+}

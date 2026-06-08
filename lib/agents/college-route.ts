@@ -37,3 +37,25 @@ export function isCollegeReferenced(query: string, config: AgentConfig): boolean
   ];
   return tokens.some(t => t && q.includes(t.toLowerCase()));
 }
+
+// ── 그룹 breadth 신호 ─────────────────────────────────────────────────────
+// 특정 단과대명이 아니라 '단과대/대학원 그룹 전체'를 가리키는 일반 표현.
+//   "각 단과대 현안" · "전공 추천" · "대학원별 차이" 처럼 단과대명을 콕 집지 않지만
+//   단과대/대학원 정보가 *필요한* 횡단·집계 질문을 잡는다.
+// 이 신호가 있으면 해당 그룹 위키를 라우팅 *후보 풀에 admit*만 한다(강제 선택 아님).
+//   실제 라우팅되려면 이후 prefilter 점수 / semantic hint / MAX_WIKIS 게이트를 통과해야 함.
+//   → 무관한 단과대가 무더기로 들어오지 않고, "AI 전공 어디" 류는 임베딩이 관련 단과대를 골라냄.
+//   집계 수치("학과 몇 개")는 alwaysContext인 대학현황(status) fact가 이미 커버.
+const GROUP_BREADTH_SIGNALS: Record<'단과대' | '대학원', string[]> = {
+  '단과대': ['단과대', '단과대학', '각 학과', '학과별', '단과대별', '단과대학별', '계열별', '각 대학', '전공'],
+  '대학원': ['대학원', '전문대학원', '대학원별'],
+};
+
+/** 질문이 단과대/대학원 '그룹 전체'를 가리키는 breadth 신호를 포함하나. */
+export function detectGroupBreadth(query: string): Record<'단과대' | '대학원', boolean> {
+  const q = query.toLowerCase();
+  return {
+    '단과대': GROUP_BREADTH_SIGNALS['단과대'].some(s => q.includes(s.toLowerCase())),
+    '대학원': GROUP_BREADTH_SIGNALS['대학원'].some(s => q.includes(s.toLowerCase())),
+  };
+}

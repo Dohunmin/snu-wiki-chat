@@ -1,0 +1,31 @@
+# dotnet-mvc 엔진 셀렉터/URL 맵 (데이터) — 대상: gspa
+# AngularJS SPA(EUC-KR). 정적 소개는 ng-view에 렌더 → dynamic 필수. 본문 컨테이너 후보 다수.
+key: dotnet-mvc
+extract:
+  main_selector:
+    - "[ng-view] .contents"
+    - "[ng-view]"
+    - ".sub_container .contents"
+    - ".contents"
+    - "#contents"
+    - ".board-view"
+    - ".view-content"
+    - "#content"
+    - ".sub_content"
+    - "main"
+  strip_selectors:
+    - "#header"
+    - ".header"
+    - "#gnb"
+    - ".gnb"
+    - ".lnb"
+    - ".snb"
+    - ".location"
+    - ".navi"
+    - "#footer"
+    - ".footer"
+    - "nav"
+    - ".sns"
+    - ".quick"
+board:
+  id_param: "Idx"

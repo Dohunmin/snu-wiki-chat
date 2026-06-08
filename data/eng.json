@@ -1,0 +1,160 @@
+{
+  "id": "eng",
+  "name": "공과대학",
+  "sources": [],
+  "topics": [],
+  "entities": [
+    {
+      "id": "dept-aerospace",
+      "name": "항공우주공학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 항공우주공학과\n\"하늘을 향한 꿈\"\n\n항공우주공학(Aerospace Engineering)은 지구 전체를 국경 없는 세계국가로 만든 현대항공기술, 우주를 개척하는 우주발사체 및 인공위성 등, 첨단운송체 개발 및 우주기술의 근간을 이루는 미래산업에 중추적인 첨단 연구개발분야이다. 또한 일상생활에 필요불가결한 미래자동차 기술, 전 국토를 하루 생활권으로 현실화하는 초고속열차기술, 더 나아가 우리 생활을 안락하고 편안하게 해주는 에너지기술 등은 우주항공공학의 다양한 응용성을 보여준다.\n\n아직 우리나라의 우주항공기술 및 산업은 개발 초기단계라고 할 수 있으나 첫 우주발사체인 나로호 발사, 한국형헬기사업과 스마트무인기사업 등, 짧은 역사에 비해 큰 성장을 이루고 있다. 또한 중형항공기 사업, 다목적 실용위성개발, 달탐사 프로젝트 등과 같은 대규모의 개발계획을 진행함으로써 일류 우주항공산업국으로의 성장을 준비하고 있다.\n\n서울대학교 항공우주공학과는 기초학문분야(공기역학, 구조역학, 추진, 제어) 또는 설계지향분야(항공분야, 우주분야, 추진기관, 미래항공우주), 그리고 다른 분야와의 융합(항공기술, 위성체기술, 발사체기술, 항공우주로봇, ST-NT-BT-ICT 융합기술, 지구 관측, 우주탐사 등)으로 나누어지며 국가의 핵심산업체와 전문연구소 등이 요구하는 창의적 연구인력과 대학의 관련 학문분야 교수요원 육성을 교육목표로 지향하고 있다.\n\n항공우주공학과에서는 현재 세계최고 수준의 교육 및 연구역량을 갖춘 15명의 전임교수들이 200여명의 석사, 박사과정의 대학원생을 지도하고 있다.\n\n본 전공의 교수와 대학원생들은 항공우주신기술연구소, 차세대우주추진센터 등을 통하여 산학협동 연구 및 국제교류 등을 활성화시키고 있으며, 또한 수많은 창의적 연구사업과 국가지정연구실사업 등을 지정받아 국제적 수준의 연구 및 대학원생 교육에 임하고 있다.\n## 출처\n- 외부: https://aerospace.snu.ac.kr/about/overview\n- 원문(raw): raw/md/eng/dept-aerospace.md\n- 첨부(URL만): https://aerospace.snu.ac.kr/_skin/kor/images/site/img-overview-01.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-cbe",
+      "name": "화학생물공학부",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 화학생물공학부\n| 분야 | 소개 |\n| --- | --- |\n| 차세대 전기 / 전자 / 에너지 | 전기·전자·에너지 분야는 무기 소재, 전자재료, 에너지 변환 시스템을 포괄하는 응용 중심의 고기능성 소재 연구에 중점을 둔다. 특히 계면 전기장, 양자 구조, 스핀 물성 등 정밀한 전자구조 제어를 기반으로 한 차세대 전자소자, 고효율 촉매, 고에너지 밀도 저장 장치 개발이 주요 연구 축을 이룬다. 이 분야는 전기화학, 고체물리, 재료과학이 융합되는 복합학문적 성격을 가지며, 차세대 이차전지, 연료전지, 고체산화물 시스템 등 지속가능한 에너지 전환기술 개발의 중심에 있다. 관련교수진 |\n| 지속가능 유기 / 고분자 | 유기·고분자 분야는 지속가능성과 기능성을 동시에 고려하는 분자 설계 기반의 소재 과학을 다룬다. 전통적인 고분자 합성에서 나아가, 자가치유, 응답형, 생분해성 기능을 갖춘 고분자와 유기 전자소재가 주된 연구 대상이다. 유기 반도체, 광전변환소자, 바이오호환 고분자 등은 대표적인 응용 사례이며, 분자 수준의 구조–물성 관계 해석과 기계적, 전기적, 광학적 성능의 정량 제어가 핵심 기술로 요구된다. 소재 설계의 측면에서는 AI 기반 구조 예측 및 고속 합성-평가 기술과의 연계 가능성도 커지고 있다. 관련교수진 |\n| 융합형 생물 / 환경 | 생물·환경 분야는 생명과학, 환경공학, 화학생물공학이 교차하는 융합 영역으로, 생물학적 시스템의 활용과 공정화 및 환경 인터페이스 제어에 중점을 둔다. 대사공학·단백질공학·합성생물학, 생체재료공학, 환경·전기화학공학 등의 기초 기술을 바탕으로 생화학적 물질 생산, 기능성 생체소재 개발, 난분해성 오염물질 처리 등이 이뤄진다. 특히, 미생물 기반 생물공정 개발 최적화, 바이오 의약 및 치료기술 혁신, 환경정화 기술 구축 및 탄소중립 실현 등이 주요한 연구 과제이며, 생물 기반 기술의 산업적 적용 및 환경적 지속가능성 확보에 기여하는 분야이다. 관련교수진 |\n| 최첨단 공정시스템 / AI | 공정시스템·AI 분야는 화학공정의 설계, 해석, 제어를 기반으로, 실험 및 생산의 전주기를 자율화하는 방향으로 진화하고 있다. 전통적인 반응공학, 열역학, 유체역학을 넘어, 디지털 트윈, 인공지능 기반 실험 최적화, 데이터 기반 공정 설계 등이 핵심 연구 테마로 부상하고 있다. AI를 활용한 실험계획, 자율 제어 알고리즘, 고속 시뮬레이션 기반의 공정 예측 및 오류 보정 기술은 이 분야의 핵심 도구이며, 실험실 스케일을 넘어 파일럿 및 산업 스케일로 확장 가능한 고신뢰 공정 제어 체계를 구축하는 데 집중하고 있다. 관련교수진 |\n## 출처\n- 외부: http://cbe.snu.ac.kr/cbe/main/contents.do?menuNo=300021\n- 원문(raw): raw/md/eng/dept-cbe.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-cse",
+      "name": "컴퓨터공학부",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 컴퓨터공학부\n- 소개\n\n- 학부 소개\n\n컴퓨터공학은 정보화 사회로의 이행에 있어 필수적이고 핵심적인 학문으로서, 성능이 우수한 컴퓨터를 설계 제작하고 운영 및 응용에 필요한 소프트웨어를 개발하여, 산업 전반에서 이를 활용할 수 있게 하는 학문이다. 컴퓨터공학은 이론적인 측면에서의 기반 기술 연구와 이를 실생활에 직접 응용할 수 있는 응용 연구를 추구하고 있다. 현대의 모든 산업들은 점차 그 복잡도가 증가함에 따라 컴퓨터를 통한 문제 해결을 시도하고 있다. 컴퓨터공학은 이러한 융합적, 통섭적 사고와 연구를 주도하고 있으며, 이를 통해 산업 전반에 걸쳐 영향력을 확대하고 있다.\n\n컴퓨터 분야의 교육 및 연구 내용은 공학 및 과학의 기초 지식을 바탕으로 한 논리적 추리 및 독창적 사고력을 요한다. 컴퓨터 소프트웨어 및 하드웨어는 매우 긴밀한 유기적 연관을 갖기 때문에 하드웨어와 소프트웨어에 관한 전문 지식을 함께 공부하며 이를 바탕으로 컴퓨터 구조, 운영체제, 데이타베이스, 프로그래밍언어, 컴퓨터 통신, 컴퓨터이용설계, 인공지능, 알고리즘, 자연언어처리, 멀티미디어시스템, 객체지향시스템, 분산시스템, 실시간시스템 등에 관한 전문 지식을 습득하고 새로운 이론 정립 및 실험 연구를 수행한다.\n\n컴퓨터 산업은 대표적인 기술 및 두뇌 집약형 산업으로서 국책 산업의 하나로 지정되어 국가적인 차원에서 지원, 육성되고 있다. 미래를 선도할 AI 기술 개발, 고성능 컴퓨터 개발, 차세대 인터넷 및 통신 기술 개발, 인간 친화적 지능형 소프트웨어 기술 등 새로운 컴퓨터 기술이 산업 전반에 걸쳐 역할을 증대하고 있다. 이에 따라, 컴퓨터 고급전문인력에 대한 산업계의 수요는 급격히 증가하고 있으며, 서울대학교 컴퓨터공학부는 첨단 컴퓨터 기술 연구와 이를 통한 인력 양성의 구심체가 되고자 노력하고 있다.\n\n## 학부 소개 책자\n\nCSE_Brochure.pdf(28.15MiB)\n## 출처\n- 외부: https://cse.snu.ac.kr/about/overview\n- 원문(raw): raw/md/eng/dept-cse.md\n- 첨부(URL만): https://cse.snu.ac.kr/img?url=https%3A%2F%2Fcse.snu.ac.kr%2Fapi%2Fv1%2Ffile%2F1710347604182_%ED%95%99%EB%B6%80%EC%86%8C%EA%B0%9C.jpg&q=50&w=320 · https://cse.snu.ac.kr/assets/brochure1-C-TDFX43.avif · https://cse.snu.ac.kr/assets/brochure2-DisPpFLW.avif · https://cse.snu.ac.kr/api/v1/file/1712387520810_CSE_Brochure.pdf\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-ece",
+      "name": "전기·정보공학부",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 전기·정보공학부\n안녕하세요. 세계적인 연구중심 학부!!전기·정보공학부에 오신 것을 환영합니다.\n\n세계적인 연구중심학부를 지향하며 전기공학과(1946년 설립), 전자공학과(1947년 설립), 제어계측공학과 (1978년 설립)를 통합하여 1992년에 출발한 전기·정보공학부는 전자, 전기 및 컴퓨터 분야에서 국제적인 경쟁력을 갖춘 창의적인 인재를 양성하기 위하여 노력하고 있습니다.\n\n전기·정보공학부에는 67명의 교수가 교육과 연구에 전념하고 있으며, 910명의 대학원생, 976명의 학사 과정 학생들이 전력/전기에너지시스템, 통신/신호처리/전파공학, 로봇/자동화/제어시스템, 디스플레이/레이저/전자물리/광공학, 반도체/회로, 컴퓨터하드웨어/소프트웨어, 임베디드시스템, 바이오 응용 등의 폭넓은 분야에서 공부하고 있습니다.\n\n대한민국 정부는 12대 국가전략기술을 바탕으로 2027년에 G5 과학기술 강국으로 들어 가겠다는 청사진을 밝혔습니다. 12대 국가전략기술은 크게, 반도체/디스플레이, 이차전지, 첨단 모빌리티, 차세대 원자력 등 민간주도 초격차 기술개발을 목표로 하는 혁신선도 분야, 첨단 바이오, 우주항공/해양, 수소, 사이버 보안 등 민관협업 대체불가 원천기술 확보를 목표로 하는 미래도전 분야, 인공지능, 차세대 통신, 첨단로봇/제조, 양자 등 공공주도 핵심원천기술 고도화를 목표로 하는 필수기반 분야로 이루어져 있습니다.\n\n중요 핵심 분야에서 뉴미디어통신공동연구소, 반도체공동연구소, 자동화시스템공동연구소, AI연구원, 전력연구소와 연계하여 국제적인 연구시설과 첨단장비를 활용한 세계적 수준의 연구를 수행하고 있는 전기·정보공학부는 이러한 12대 국가전략기술을 이끌어 가는 핵심 전공 학부입니다. 또한 학부 소속 교수님들 다수가 IEEE와 ACM 등 주요 국제학회의 Fellow, 한국공학한림원과 한국과학기술한림원의 정회원, 주요 국제학술지의 Editor 및 국제학술대회의 Chair로 활동하는 등 최고 수준의 국내외 학술활동을 수행하고 있습니다.\n\n전기·정보공학부의 대부분의 학부생들과 대학원생들은 각종 장학금 혜택을 받고 있으며, 대학원생들은 BK21 FOUR 프로그램 등을 통해 다양한 국제학술회의에서 연구결과를 발표하고 있고 국제인턴 경험도 쌓고 있습니다. 우리 학부는 심리상담 선생님이 상주하는 학생센터를 운영하고 학생과 교수 간 대화의 기회를 넓히는 등 학생들의 마음 건강과 복지를 위해서도 노력을 아끼지 않고 있습니다.\n\n전기·정보공학부는 연합전공 인공지능반도체공학, 연합전공 지능형통신, 연합전공 인공지능, 반도체 특성화대학 사업단, 차세대 반도체 혁신융합대학사업단, 인공지능 반도체 대학원, 미래 자동차 모빌리티학전공, 디스플레이트랙 프로그램 등을 운영하는 핵심 학부로서 유관 학부들과 함께 반도체/회로, 디스플레이, 통신, 자동차, 인공지능 분야 전문가 양성에도 매진하고 있습니다.\n\n이렇듯 저희 학부는 국가전략기술의 핵심 분야에서 국가의 반석이 되는 인재를 배출하고 세계적인 연구를 지속적으로 주도해 나가도록 지금처럼 항상 노력할 것입니다.\n\n서울대학교 전기·정보공학부 학부장 홍 용 택\n## 출처\n- 외부: https://ece.snu.ac.kr/about/greetings\n- 원문(raw): raw/md/eng/dept-ece.md\n- 첨부(URL만): https://ece.snu.ac.kr/webdata/uploaded/images/a57z036z6a3z9ccz02bza43z8abzef3ze2ezafdz7e.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-ere",
+      "name": "에너지자원공학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 에너지자원공학과\n- 학과소개\n\n- 에너지자원공학이란?\n\n에너지자원공학은 지속가능한 사회 발전을 위해 에너지원이 다변화되고 있으며, 4차 산업혁명에 대응하여 요구되는 핵심자원 역시 끊임없이 변화하고 있습니다. 에너지·자원 확보의 관건이 지정학적 위치에서 기반기술 선점도로 변화함에 따라, 각 국가에서는 기후변화를 포함한 환경문제를 고려한 에너지·자원의 개발, 생산, 저장, 변환 기술의 개발, 그리고 이들과 관련된 정책 수립이 필수적입니다. 우리 사회의 안전하고 효율적인 에너지·자원의 공급을 통해 에너지·자원 안보와 환경, 사회, 지배구조 (ESG) 가치를 달성하여 지속가능한 사회를 구현하기 위해서 설립된 서울대학교 에너지자원공학과는 4가지 분야에서 교육과 연구를 수행하고 있습니다.\n\n## 연구분야\n\n에너지자원공학에서 대상으로 하는 에너지 자원은 석유, 가스 등 전통에너지원은 물론 태양광, 지열, 풍력, 수소 등 신·재생에너지원을 포함하며, 광물 자원은 철, 구리, 우라늄, 금, 은, 다이아몬드, 석재, 골재 등의 전통 산업광물과 니켈, 리튬, 코발트, 희토류 등 전략광물을 모두 포함합니다.\n\n- 국문소개책자\n\n2022 서울대 에너지자원공학과 브로셔 최종_홈페이지.pdf\n\n- 에너지자원공학과 홍보콘텐츠:\n\nhttps://prezi.com/p/dm5jyzaks2ya/presentation\n## 출처\n- 외부: https://ere.snu.ac.kr/sub1_1.php\n- 원문(raw): raw/md/eng/dept-ere.md\n- 첨부(URL만): https://ere.snu.ac.kr/images/sub/sVisual1.jpg · https://ere.snu.ac.kr/images/sub/dia.png · https://ere.snu.ac.kr/images/down/2022_ere_sub1_1.pdf\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-ie",
+      "name": "산업공학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 산업공학과\n### 산업공학과란?\n\n### 공학의 오케스트라를 지휘하는…\n\n산업공학은 산업시스템을 구성하는 모든 분야를 조화롭게 조정하는 방법에 대한 학문입니다. 다른 공학 분야가 특정산업의 전문적 기술이나 원리를 연구 개발하고 제공한다면, 산업공학은 과학적 원리와 경영전략을 접목하여 기업업무과정을 혁신하고 체계화하며 합리적인 방법을 도출하고 종합적 경영전략을 운영하는 과학적 이론과 실무적 기법을 다루는 학문입니다.\n\n### 다양한 산업 분야를 선도하는…\n\n산업공학 전공자들은 제조분야와 관련된 전통적인 영역 외에, 교통, 통신, 물류, 병원경영, 서비스업에 이르는 다양한 영역에서 선도적 역할을 수행하고 있으며, 최근에는 금융, 마케팅, 인사 행정 등을 포함한 산업시스템과 교통, 국방, 공공 행정 등의 광범위한 사회시스템으로 산업공학 적용 범위를 확장시켜 나가고 있습니다.\n\n### 나무와 숲을 동시에 보는…\n\n산업공학은 급변하는 기술 환경 하에서 복잡한 시스템의 개별 구성 요소에 대한 지식은 물론 각 구성 요소를 효율적으로 통합하여, 시스템 전체에 대한 각종 의사 결정을 지원하고 필요한 시점에 효과적인 서비스를 제공할 수 있도록 나무와 숲을 모두 볼 수 있는 안목을 갖춘 공학도를 양성하여 시스템의 설계, 설치 및 개선을 다루는 학문입니다.\n## 출처\n- 외부: https://ie.snu.ac.kr/intro/\n- 원문(raw): raw/md/eng/dept-ie.md\n- 첨부(URL만): https://ie.snu.ac.kr/wp-content/uploads/sites/307/2024/11/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C1.jpg · https://ie.snu.ac.kr/wp-content/uploads/sites/307/2024/11/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.jpg · https://ie.snu.ac.kr/wp-content/uploads/sites/307/2024/11/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.jpg · https://ie.snu.ac.kr/wp-content/uploads/sites/307/2024/11/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.jpg · https://ie.snu.ac.kr/wp-content/uploads/sites/307/2024/11/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-me",
+      "name": "기계공학부",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 기계공학부\n## 연구비전\n\n### 기계공학의 새로운 패러다임을 열어갑니다.\n\n우리 학부는, 대한민국이 제조업에서 세계 최고의 경쟁력을 가지도록 산업 발전을 선도한 자랑스러운 역사를 가지고 있습니다. 이러한 바탕 위에서, 지구의 당면 문제를 해결하고 인류의 삶을 풍요롭게 하는 최첨단 기계 기술을 연구하고 있습니다. 미래형 자동차와 로봇 등의 새로운 기계를 개발하고, 에너지 변환 및 저장 기술 혁신으로 기후 위기에 대처하며, 바이오기계시스템으로 인류의 질병을 치료하고,데이터과학과 AI를 기반으로 물질 세계와 디지털 세계를 연결하는 등 기계공학의 새로운 패러다임을 열어가고 있습니다.\n\n## Mechanics\n\n## 역학\n\n자동차, 전기전자, 중공업, 철강, 에너지, 수송과 같은 다양한 구조물의 동적/정적 거동을 역학적 관점에서 해석하고 해석결과를 통해 시스템 설계·생산·운용을 최적화함을 목적으로 한다.\n\n## Thermal Engineering\n\n## 열공학\n\n차세대 에너지 변환 및 이용에 관한 광범위한 연구를 수행한다.\n\n고효율/저공해 내연기관, 가스터빈 및 하이브리드 시스템 개발, 연소 및 대체연료에 관한 실험과 시뮬레이션 연구, 천연냉매를 이용한 친환경 냉난방 열펌프 시스템 개발, 에너지 사용 및 온실가스 발생의 생애주기 분석 등을 수행하고 있다.\n\n## Dynamics/Control\n\n## 동역학/제어\n\n자동차, 로봇과 같은 기계 시스템을 개발하고 이에 대한 동역학적 분석과 시스템에 적합한 제어 알고리즘을 개발하여 창의적이고 탁월한 성능을 가진 새로운 기계 시스템을 만들어 나가는 연구를 수행한다.\n\n## Fluid Engineering\n\n## 유체공학\n\n에너지, 환경, 운송수단, 의료기기, 스포츠 장비 등 다양한 분야의 성능 및 안정성을 이론, 실험, 수치해석을 통하여 예측/분석하고, 이를 향상시키는 연구를 수행하고 있다. 또한 주변 생명체들의 생존 메커니즘의 근간이 되는 유체의 운동과 관련된 응용 연구도 수행하고 있다.\n\n## Design/Manufacturing\n\n## 설계/생산\n\n기계 시스템의 설계 및 생산을 위한 제반 분야의 연구를 수행한다.\n\n설계에 있어서는 고전적인 최적/견실 기계설계 이론 뿐만 아니라 CAD/CAM 활용, 생체역학과 HCI 그리고 최근 들어서는 인터넷 기반, 탠저블 사용자 인터페이스 및 뉴미디어 기술을 접목한 미래형 기계시스템을 연구하고 이를 초정밀 가공기계부터 미래형 서비스 로봇까지 광범위한 설계에 응용한다.\n\n## Nano/Bio\n\n## 나노/바이오\n\n마이크론 혹은 나노미터 스케일의 시스템을 다루는 학문으로서, 시스템의 크기가 매우 작아졌을 때 나타나는 새로운 현상들을 이용하고, 작은 크기의 물리량을 제어하는 분야이다. 생체분자에서 세포 및 조직에 이르는 생체시스템에 대한 정밀 계측 및 조작, 제어 기술 연구 및 마이크로/나노 구조물 제작에 기반한 에너지, 센서, 디스플레이 소자 연구를 수행한다.\n## 출처\n- 외부: https://me.snu.ac.kr/연구/연구비전/\n- 원문(raw): raw/md/eng/dept-me.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-mse",
+      "name": "재료공학부",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 재료공학부\nSeoul National Univ. DMSE\n\n## DMSE\n\n## About MSE\n\nDocument\n\nMission Global Leadership in MSE Strategy Approaches Detailed approaches for education, research And Academy-Industry Cooperation Goals Objectives Creative Global leaders Global research hub Strong Academy Industry Cooperation\n\nMission GlobalLeadership in MSE Strategy Approaches Detailed approaches for education, research And Academy-Industry Cooperation Goal Objectives Creative Global leaders Global researchhub Strong Academy Industry Cooperation\n\n## About DMSE, College of Engineering atSeoul National University\n\nModern society is changing rapidly with the development of high-tech industries such as precision machinery, electronics, aerospace, energy engineering, and environmental engineering. Given the remarkable pace of development over the past decades, the 21st century will be a world where the tales and imagination of science fiction writers come true. The field that is the basis of these high-tech developments is material engineering.\n\nTake an example, mankind has long dreamed of development in space. One of the prerequisites for space development was a space shuttle that carries people and goods. Now that the space shuttle is successfully performing its mission, we take it for granted, but one of the main reasons it was created only recently was that the insulation material protecting its hull on entry to the Earth’s atmosphere had not been developed. In addition, looking back in history, we classify ancient human civilizations as Stone Age, Bronze Age, and Iron Age: in other words, stages of civilization were measured by the materials used in their tools. Some say that the present is the New Iron Age; others call it the Neo- Stone Age, Silicon Age, Plastic Age, etc., depending on their different perspectives. Materials engineering is an engineering field that is the basis for a country’s industrial development, and is indeed a measure of national competitiveness. Behind the development of the automobile, shipbuilding, and other heavy industries, which have contributed greatly to Korea’s development as an industrially advanced country, solid steel materials are located, and other inorganic materials are located behind the development of cities, construction, and civil engineering. Behind the development of the semiconductor industry necessary for today’s information and communication have been many materials engineering efforts in process development, and the development of plastic materials, a new concept, is necessary for a new world to be opened through well-being, biological, and ubiquitous industries. As such, materials engineering has always played a central role in solving problems.\n\nThe materials treated in material engineering can be largely divided into polymers, metals, inorganic materials, biomaterials, and electronic materials. Maximizing the performance of these materials requires a macroscopic and microscopic understanding. Performance can be judged only through a macroscopic understanding of the material, and obtaining the desired performance is possible only through a microscopic understanding of the material on the diagram of structure-process-properties. In materials engineering, processing and microstructure are controlled to obtain the desired properties. These three are called microscopic understanding of materials, and the deep relationship between structure-process-property. Performance, which is a macroscopic issue, depends on all the microscopic factors. In other words, when each microscopic factor is maximized, the material exhibits maximum performance.\n\nIn addition, materials engineering is a comprehensive discipline that encompasses many disciplines. For example, for sheet metal used in automobiles, there are various necessary properties such as strength, toughness, and workability, and in order to understand why these properties are necessary, student of materials engineering must at least know what a car is. It’s reasonable. If students semiconductor materials and processes do not know what a semiconductor is and how it works, but insist only on the material dimensions, then they cannot communicate with other students of semiconductors and, furthermore, cannot expect to make progress in the field. In addition, it is impossible to improve microscopic understanding of materials without understanding basic disciplines such as physics, chemistry, mathematics, thermodynamics, kinetics, crystallography, including quantum theory and statistical mechanics. Therefore, material engineering has an inseparable relationship both with its application areas and with basic physical sciences.\n\nThroughout history, humanity has evolved with changes in materials, and we continue to perform research for future developments and applications yet undreamed of. In particular, with the rise of nanotechnology, new properties not present in existing materials are being discovered, and new materials and the advent of nanoindustries are confidently expected. This combination of nanotechnology and materials engineering promises the development and prosperity of mankind and will become a driving force for future society.\n## 출처\n- 외부: https://mse.snu.ac.kr/snumse-main/dmse/about-mse/\n- 원문(raw): raw/md/eng/dept-mse.md\n- 첨부(URL만): data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20800%20400'%3E%3C/svg%3E\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-naoe",
+      "name": "조선해양공학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 조선해양공학과\n## 조선해양공학은?\n\n#### 조선 공학(Naval Architecture)\n\n+ 컨테이너선, 여객선, LNG선, 잠수함, ROV 등 해양 운송체 중심\n\n#### 해양 공학(Ocean Engineering)\n\n+ 해양 구조물, 해상 풍력, 인공섬 등 해양 에너지 및 해양 공간 개발 중심\n\n## 조선해양산업은 ?\n\n상선/해운산업, 해양개발과 자원생산, 수산업, 군수산업 등 다양한 분야에서 필요로 하는 각종 선박 및 해양구조물의 최적화된 설계, 건조는 물론 관련 부품소재의 연구개발을 위한 지식기반형 복합엔지니어링 산업\n\n## 한국 조선해양산업의 위상\n\n- -건조 규모 & 첨단 설비 세계 1위 조선산업\n\n- -세계 1~2위의 선박 (상선) 수주, 건조량\n\n- -첨단 선박의 꽃! LNG선 80% 석권\n\n- -건조 선박의 95% 이상 수출\n\n- -심해저, 극한환경, 대형 해양플랜트 건조\n\n- -세계 7대 잠수함/함정 설계 기술국\n\n| 순위 | 1961 | 1970 | 1980 | 1990 | 2000 | 2005 | 2009 | 2010 | 2015 | 2017 |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| 1 | 철광석 | 섬유류 | 의류 | 의류 | 반도체 | 반도체 | 선박 | 선박 | 반도체 | 반도체 |\n| 2 | 중석 | 가발 | 신발 | 반도체 | 컴퓨터 | 자동차 | 휴대폰 | 휴대폰 | 자동차 | 선박 |\n| 3 | 생사 | 합판 | 철강판 | 신발 | 자동차 | 휴대폰 | 반도체 | 반도체 | 선박 | 자동차 |\n| 4 | 무연탄 | 철광석 | 선박 | 영상기기 | 석유제품 | 선박 | 자동차 | 자동차 | 휴대폰 | 석유제품 |\n| 5 | 오징어 | 전자제품 | 음향기기 | 선박 | 선박 | 석유제품 | 디스플레이 | 컴퓨터 | 석유제품 | 디스플레이 |\n\n## 4차 산업 혁명과 조선해양공학\n\n## 조선해양공학의 최근동향\n\n#### 4차 산업혁명과 제조업의 스마트화, 무인화 및 자율주행의 발달과 확대, 에너지 패러다임 변화와 친환경 요구\n\n#### 무인화 및 자율주행의 발달과 확대\n\n자율주행이나 무인 운항을 통한 물류·운송의 획기적 변화\n\n#### 에너지 패러다임 변화와 친환경 요구\n\n기후 문제 해결을 위한 글로벌 환경 규제와 친환경 노력\n\n#### 4차 산업혁명과 제조업의 스마트화\n\n2016년 다보스 포럼에서 인류의 삶을 뒤바꿀 키워드로 전 세계적 관심\n## 출처\n- 외부: https://naoe.snu.ac.kr/about/prospects\n- 원문(raw): raw/md/eng/dept-naoe.md\n- 첨부(URL만): https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-01.jpg · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-02.png · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-0301.jpg · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-0302.jpg · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-0303.jpg · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-04.png · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-0501.jpg · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-0502.jpg · https://naoe.snu.ac.kr/_skin/kor/images/site/img-intro-0503.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    },
+    {
+      "id": "dept-nucleng",
+      "name": "원자핵공학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 원자핵공학과\n원자핵공학 소개\n\n원자핵공학 분야의 교육과 연구를 선도하는 세계 최고수준의 교육 및 연구 기관\n\n원자핵공학은 핵분열반응으로 방출되는 막대한 에너지를 실용화하여 전력을 생산하는 원자력 발전과 에너지 고갈 문제를 근본적으로 해결할 수 있는 핵융합 발전과 같은 첨단 에너지 기반의 과학과 산업을 주축으로 하고, 최신 과학기술로 플라즈마, 방사선, 가속기, 레이저 등과 같 은 에너지를 이용하여 현재와 미래의 산업을 창출하고 이끌어갈 새로운 기술과 시스템을 연구 개발하는 응용 학문입니다. 원자력 에너지는 화석에너지 고갈과 지구 환경문제에 대처하는 가장 현실적인 대안으로 이의 역할 증대가 필연적이며, 특히 에너지를 전량 수입하는 우리나라의 현실에서 국가 에너지 확보와 미래 에너지원 개발을 목표로 한 원자력 의존도는 더욱 증가하고 있습니다.\n\n원자력 발전분야와 함께 플라즈마, 중성자, 방사선, 레이저 빔 등의 첨단과학 기술은, 국가 과학기술력의 상징이 되는 원전, 가속기, 핵융합 장치와 같은 대형 복합 시스템 확보를 가능케 하며, 아울러 21세기에 부각될 정보, 생명, 미세 기술 (IT, BT, NT) 관련 미래 산업과 환경산업의 기반이 되는 핵심 기술을 제공합니다.\n\n이와 함께 미개척의 핵융합 연구는 궁극적인 미래 에너지원 해결과 직결되어 있고, 플라즈마 응용 기술은 신소재와 환경 산업에서의 한계 기술을 극복 시켜주는 핵심 요소입니다. 또한 방사선 응용 역시 폐기물 처리, 신소재 개발, 정밀 계측기술, 농/공/의학의생명과학에 광범위하게 쓰여 환경 친화적이며 삶의 질을 향상시키는데 기여할 수 있는 핵심 연구분야 중 하나입니다.\n\n우리나라는 원전 설계, 건설, 운영에 관한 세계 최고 수준의 기술을 바탕으로 UAE 원전 사업을 수주함으로써 세계 6번째의 원전 수출국이 되었으며, 2015년 완공을 목표로 요르단 연구용 원자로 건설 사업을 성공적으로 수행하고 있습니다. 장기적인 국가 에너지원의 지속적 제공과 원자력 수출산업국으로의 위치를 공고히 하기 위해서는 체계적인 핵심 기술 및 연구 능력의 배양과 고급 전문 인력양성이 우선되어야 합니다.\n\n원자력 연구의 복합화된 대형 종합 과학기술의 특수성을 감안하여, 우리 학과는 핵심 요소기술 연구능력의 강화와 미개척 과학기술 영역에 도전하면서 창조적 연구개발에 중점을 두어서, 세계 수준의 연구개발을 통해여 국제 경쟁력을 갖춤과 동시에 국내 학계를 선도하는 역할을 하도록 노력하고 있습니다.\n## 출처\n- 외부: http://nucleng.snu.ac.kr/about/introduction\n- 원문(raw): raw/md/eng/dept-nucleng.md\n- 첨부(URL만): http://nucleng.snu.ac.kr/_skin/kor/images/site/img-intro01.jpg · http://nucleng.snu.ac.kr/_skin/kor/images/site/img-intro02.jpg · http://nucleng.snu.ac.kr/_skin/kor/images/site/img-intro03.jpg\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)"
+    }
+  ],
+  "syntheses": [],
+  "facts": [],
+  "stances": [],
+  "overviews": [
+    {
+      "id": "core-agenda",
+      "title": "공과대학 핵심 아젠다",
+      "편": "소개",
+      "tags": "",
+      "content": "# 공과대학 핵심 아젠다\n### 핵심 아젠다\n\n- 핵심\n\n- 아젠다\n\n서울공대만의 인재상 정립\n\n- 1.1 관악 50주년 인재상 선포\n\n- 1.2 인재상 실현을 위한 공학인재역량센터 설립\n\n- 1.3 서울공대 역사 정립\n\n데이터 기반의 맞춤형 교육\n\n- 2.1 Adaptive Leaning System 활용 강의 지원\n\n- 2.2 Big Data 기반 맞춤형 학생 성공 체계 구축\n\n- 2.3 Knowledge Mapping 활용 산학협력 강화\n\n지경을 넓혀가는 학문공동체\n\n- 3.1 창조적 융합 기술생태계의 확장\n\n- 3.2 국가 공학기술 정책의 진단\n\n- 3.3 관산학 및 글로벌 Alliance 체계 확산\n\n아름답고 지속가능한 개방형 캠퍼스\n\n- 4.1 창의와 교류가 넘치는 (편리한 개방형) 캠퍼스로의 전환\n\n- 4.2 탄소중립 실증 (친환경) 캠퍼스 선도\n\n- 4.3 명소가 있는 (아름다운) 캠퍼스로의 진화\n## 출처\n- 외부: https://eng.snu.ac.kr/about/engineering/core-agneda\n- 원문(raw): raw/md/eng/core-agenda.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "dean-profile",
+      "title": "공과대학 학장 소개",
+      "편": "소개",
+      "tags": "",
+      "content": "# 공과대학 학장 소개\n### 현 학장 소개\n\nDEAN, COLLEGE OF ENGINEERING SEOUL NATIONAL UNIVERSITY KIM, Young-Oh Professor, Department of Civil and Environmental Eng.\n\n학력\n\n1989.02.\n\n서울대학교 공과대학 토목공학과 공학사\n\n1991.06.\n\n미국 University of Cincinnati 공학석사\n\n1996.08.\n\n미국 University of Washington 공학박사\n\n주요 경력\n\n2024.06. ~ 현재\n\n서울대학교 공과대학 학장\n\n2021.08. ~ 2023.02.\n\n서울대학교 본부 학생처장\n\n2020.02. ~ 2021.08.\n\n서울대학교 건설환경도시공학부 학부장\n\n2012.07.～2014.07.\n\n서울대학교 본부 학생부처장\n\n서울대학교 생활협동조합 집행이사\n\n2012.03.～2012.06.\n\n서울대학교 공과대학 대외부학장\n\n2011.04.～2012.09.\n\n서울대학교 법인설립추진단 부단장\n\n1999.03. ~ 현재\n\n서울대학교 공과대학 건설환경도시공학부 교수\n\n1997.07.～1999.02.\n\n미국 NASA Global Hydrology & Climate Center, Research Associate\n\n주요 활동\n\n2020.01. ~ 2021.12.\n\n바른 과학기술사회 실현을 위한 국민연합(과실연) 상임대표\n\n2022.01. ~ 2024.12.\n\n한국공학한림원 일반회원\n\n2022.01. ~ 2022.12.\n\n대한토목학회 부회장\n\n2021.01. ~ 2022.12.\n\n한국수자원학회 부회장\n\n2017.01. ~ 2018.12.\n\n한국기후변화학회 부회장 겸 학술위원장\n\n2009.12. ~ 2012.12.\n\n국토해양부 기후변화에 의한 수문 영향분석과 전망 연구단 단장\n\n2020.07. ~ 2024.06.\n\nPresident, Hydrological Sciences Section, Asia Oceania Geosciences Society (AOGS)\n\n2015.05. ~ 2019.09.\n\nChair, Water Resources Management Committee, International Association for Hydro-Environment Engineering and Research\n\n수상 경력\n\n2021.09.\n\n한국과학기술단체총연합회: 제31회 과학기술우수논문상\n\n2018.03.\n\n세계 물의 날 국무총리 표창\n\n2018.01.\n\n한국수자원학회 학술상\n\n2017.12.\n\n대한토목학회장 학술상\n\n2017.01.\n\n대한토목학회장 표창: 학회 발전 공로\n\n2012.12.\n\n서울대학교 신양공학학술상\n\n2005.12.\n\n한국수자원학회 공로표창: 국제수리학회 개최 공로\n\n2005.03.\n\n대한토목학회장 표창: 전국 학생지회 창설 공로\n## 출처\n- 외부: https://eng.snu.ac.kr/about/dean/profile\n- 원문(raw): raw/md/eng/dean-profile.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "greeting",
+      "title": "공과대학 인사말",
+      "편": "소개",
+      "tags": "",
+      "content": "# 공과대학 인사말\n### 인사말\n\n수월·융합·창의의 글로벌 공동체2025-2026년 서울공대 변화의 시작\n\n1965년 이정문 화백이 그린 서기 「2000년대 생활의 이모저모」라는 만화 한 컷을 보신 적이 있으신지요?\n\n그 만화에는 ‘소형 TV 전화기’, ‘전기 자동차’, ‘전파신문’, ‘태양열을 이용한 집’, ‘움직이는 도로’, ‘달나라 수학여행’ 등이 등장합니다. 60년이 지난 현재 우리는 이들의 거의 대부분을 누리고 있습니다. 이렇듯 공학은 우리의 상상을 가능케 하기에 ‘엔에이블러(Enabler) 학문’이라 불립니다. 인류의 꿈과 희망은 공학인의 열정과 도전을 이끌었고 세상을 바꾸는 원동력이었습니다.\n\n현재의 선진 대한민국 또한 ‘공업입국’으로 가능했습니다.\n\n같은 기간 대한민국 최초의 국립대학교인 서울대학교는 ‘교육입국’을 담당하였습니다. 공업입국과 교육입국이라는 두 기둥의 교차점에 ‘서울공대’가 자리잡고 있었습니다. 서울공대를 졸업한 동문들은 대기업의 CEO로, 벤처기업 창업자로, 국가 정책 입안자로, 세계적인 공학자로 사회 각계 각층의 지도적 위치에서 국가 발전을 견인해 왔습니다. 지금도 서울공대의 실험실에는 불이 꺼지지 않고 있으며, 7만 여 서울공대 동문들은 국경 없는 무한경쟁 시대에 다방면에서 주도적인 역할을 수행하고 있습니다.\n\n2025년은 서울대학교 관악캠퍼스 종합화 50주년, 그리고 2026년은 서울대학교 80주년을 맞는 뜻깊은 해입니다.\n\n이를 맞이하여 서울대학교 공과대학도 서울공대만의 새로운 인재상을 향한 ‘변화를 시작’합니다. 서울대학교는 지난 80년간 이어온 수월성의 전통과 더불어 관악 50년의 역사로 자연스레 쌓인 융합의 밑거름이 자산입니다. 수월과 융합이라는 서울공대만의 유산을 통해 차원이 다른 창의적 인재를 배출하고, 공학기술의 지경을 넓혀 세상을 바꾸는 기술생태계를 창출하겠습니다. 수월·융합·창의의 글로벌 공동체를 향한 서울공대 변화의 시작에 관심과 조언 그리고 격려를 부탁드립니다. 세상을 바꾸고 싶은 인재들의 도전을 기다리겠습니다.\n\n서울공대 32대 학장 김영오\n## 출처\n- 외부: https://eng.snu.ac.kr/about/dean/greetings\n- 원문(raw): raw/md/eng/greeting.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "history",
+      "title": "공과대학 연혁",
+      "편": "연혁",
+      "tags": "",
+      "content": "# 공과대학 연혁\n### 연혁\n\n서울공대의 걸어온 역사를 알아볼까요? 서울공대가 진정한 세계 초일류 공과대학으로 도약할 그날까지 끊임없는 관심과 성원 부탁드립니다.\n\n2024. 03. 01\n\n계약학과 미래자동차모빌리티학과 신설\n\n2023. 09. 01\n\n대학원 협동과정 우주시스템전공을 협동과정 지능형우주항공시스템전공으로 명칭 변경\n\n2020. 09. 01\n\n대학원 협동과정 인공지능전공 신설\n\n2020. 06. 11\n\n기계항공공학부(기계공학전공)와 기계항공공학부(우주항공공학전공)을 기계공학부와 항공우주공학과로 개편\n\n2019. 12. 26\n\n대학원 기계항공공학부(기계공학전공)와 기계항공공학부(우주항공공학전공)을 기계공학부와 항공우주공학과로 개편\n\n2019. 09. 01\n\n대학원 협동과정 해양플랜트엔지니어링전공 폐지\n\n2013. 06. 12\n\n기계항공공학부를 기계항공공학부(기계공학전공)와 기계항공공학부(우주항공공학전공)으로 개편\n\n2013. 04. 24\n\n대학원 협동과정 해양플랜트엔지니어링전공 신설\n\n2012. 03. 01\n\n전기공학부를 전기·정보공학부로 명칭 변경\n\n2006. 09. 01\n\n응용화학부를 화학생물공학부로 명칭 변경\n\n2003. 09. 01\n\n컴퓨터공학부와 전기공학부를 통합하여 전기 · 컴퓨터공학부로 개편\n\n2000. 03. 01\n\n컴퓨터공학과와 자연과학대학 전산학과를 통합하여 컴퓨터공학부로 개편\n\n2000. 01. 01\n\n섬유고분자공학과를 재료공학부로 개편\n\n1998\n\n공업화학과,섬유고분자화학공학과군을 응용화학부와 섬유고분자공학과로 개편 기계, 기계설계, 항공우주공학과군을 기계항공공학부로 개편\n\n1997\n\n도시 · 자원 · 토목공학과군을 지구환경시스템공학부로 개편\n\n1996\n\n자원공학과와 토목공학과(토목공학전공, 도시공학전공)를 도시자원토목 공학과군으로 개편\n\n1995.10.10\n\n금속 · 무기재료공학군이 재료공학부로 개편\n\n1995\n\n전기 · 전자 · 제어계측공학과군을 전기공학부로 개편 공업화학과, 섬유고분자공학과, 화학공학과 3개학과를 공업화학과 · 섬유고분자 · 화학공학과군으로 개편 기계공학과, 기계설계학과, 항공우주공학과 3개학과를 기계 · 기계설계 · 항공우주공학과군으로 개편 금속공학과, 무기재료공학과 2개학과를 금속 · 무기재료공학과군으로 개편\n\n1993.03.01\n\n섬유공학과를 섬유고분자공학과로 개편\n\n1992.03.01\n\n전기공학과, 전자공학과, 제어계측공학과 3개학과를 전기 전자 제어계측공학과군으로 개편, 조선공학과를 조선해양공학과로 개편\n\n1991.03.01\n\n항공공학과를 항공우주공학과로 개편\n\n1989.10\n\n규칙 제 755호에 의거 생산기술연구소가 폐지되고 서울대학교 직할공학 연구소로 승격\n\n1989.03.01\n\n전자계산기공학과를 컴퓨터공학과로 개편\n\n1982.03.00\n\n계측제어공학과를 제어계측공학과로 개편. 요업공학과를 무기재료공학과로 개편\n\n1980\n\n공릉동 교사로부터 관악 종합 캠퍼스로 이전\n\n1978.12\n\n계측제어공학과와 전자계산학과를 신설. 토목공학과를 토목공학전공과 도시공학전공으로 분리\n\n1978\n\n공업교육과를 폐지\n\n1976.05.22\n\n응용과학연구소를 발전적으로 해산시키고 공과대학 부설의 생산기술 연구소를 설립\n\n1975.02\n\n응용물리학과, 응용수학과, 응용화학과를 폐지. 공업화학과를 신설. 건축 공학과를 건축학과로 개편. 원자력공학과를 원자핵공학과로 개편. 재료 공학과를 요업공학과로 개편\n\n1973.03.01\n\n기계설계학과를 신설\n\n1970.12\n\n생산기계공학과를 산업공학과로 개편\n\n1970.05.27\n\n전자계산소를 설립\n\n1969.12.24\n\n광산학과를 자원공학과로 개편\n\n1968.11.21\n\n생산기계공학과와 재료공학과를 신설\n\n1967.12.24\n\n조선항공공학과를 조선공학과와 항공공학과로 분리\n\n1967\n\n과학관과 공학도서관을 신축\n\n1965.07.01\n\n전력연구소를 응용과학연구소로 개편\n\n1963.12.16\n\n응용물리학과, 응용수학과, 화학응용학과를 신설\n\n1963.07.01\n\n전력연구소를 설립\n\n1962.12.31\n\n공업교육학과를 신설\n\n1962.03.01\n\n600명 수용 능력의 기숙사(청암사)건립\n\n1959.04\n\n통신공학과를 전자공학과로 개편\n\n1959.04.01\n\n원자력공학과를 신설\n\n1955\n\n채광학과를 광산학과로 개편\n\n1954.08.06\n\n서울 공릉동 교사에 복귀\n\n1952.05.31\n\n전시 연합대학으로부터 벗어나 공과대학 독자적인 교육을 부산시 서대신동의 가교사에서 실시\n\n1949\n\n발족 당시의 교사였던 구 경성공업전문학교 교사로부터 구 경성대학 이공학부 및 구 경성광산전문학교 교사(공릉동 교사)로 이전\n\n1948\n\n야금학과를 금속공학과로 개편, 전기통신공학과는 통신공학과로 개편\n\n1947.07\n\n전기공학과의 전기통신분야가 전기통신공학과로 분리\n\n1946. 08. 22\n\n국립 서울대학교 설치령 공포에 의거하여 경성대학 이공학부의 공학계, 경성 공업 전문학교 및 경성 광산 전문 학교를 통폐합하여 서울대학교 공과대학으로 발족. 건축공학과, 채광학과, 야금학과, 기계공학과, 섬유공학과, 전기공학과, 항공조선학과, 토목공학과 및 화학공학과 등 9개 학과로 시작\n## 출처\n- 외부: https://eng.snu.ac.kr/about/engineering/history\n- 원문(raw): raw/md/eng/history.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "organization",
+      "title": "공과대학 조직",
+      "편": "소개",
+      "tags": "",
+      "content": "# 공과대학 조직\n### 조직도\n\n팝업 닫기\n\n서울대학교 공과대학 학사위원회\n\n성함/소속\n\n| 성명 | 소속 |\n| --- | --- |\n| 김영오 | 학장 |\n| 심병효 | 교무부학장 |\n| 이창하 | 학생부학장 |\n| 이복직 | 연구부학장 |\n| 정훈영 | 기획부학장 |\n| 차석원 | 공학연구원 원장 |\n| 김성재 | 대외협력위원장/정보화위원장 |\n| 황원태 | 국제교류위원장 |\n| 박경수 | 교육위원장 |\n| 심형진 | 공학전문대학원 부원장 |\n| 황진환 | 건설환경도시공학부장 |\n| Choon Woong Choi | 건축학과장 |\n| 조규진 | 기계공학부장 |\n| 장우진 | 산업공학과장 |\n| 정은혜 | 에너지자원공학과장 |\n| 나용수 | 원자핵공학과장 |\n| 이명규 | 재료공학부장 |\n| 홍용택 | 전기·정보공학부장 |\n| 이신형 | 조선해양공학과장 |\n| 이제희 | 컴퓨터공학부장 |\n| 김규홍 | 항공우주공학과장 |\n| 김도희 | 화학생물공학부장 |\n| 구윤모 | 공학전문대학원 응용공학과 |\n\n서울대학교 공과대학 인사위원회\n\n| 성명 | 소속 |\n| --- | --- |\n| 김영오 | 건설환경도시공학부 |\n| 심병효 | 전기·정보공학부 |\n| 이창하 | 화학생물공학부 |\n| 이복직 | 항공우주공학과 |\n| 전봉희 | 건축학과 |\n| 박종우 | 기계공학부 |\n| 황용석 | 원자핵공학과 |\n| 박찬국 | 항공우주공학과 |\n| 남경필 | 건설환경도시공학부 |\n| 홍유석 | 산업공학과 |\n| 민동주 | 에너지자원공학과 |\n| 주영창 | 재료공학부 |\n| 성영은 | 화학생물공학부 |\n\n서울대학교 공과대학 기획위원회\n\n| 성명 | 소속 |\n| --- | --- |\n| 김영오 | 건설환경도시공학부 |\n| 정훈영 | 에너지자원공학과 |\n| 심병효 | 전기·정보공학부 |\n| 이창하 | 화학생물공학부 |\n| 이복직 | 항공우주공학과 |\n| 문주혁 | 건설환경도시공학부 |\n| Hong John Sangki | 건축학과 |\n| 송한호 | 기계공학부 |\n| 이경식 | 산업공학과 |\n| 송재준 | 에너지자원공학과 |\n| 김기현 | 원자핵공학과 |\n| 손준우 | 재료공학부 |\n| 최완 | 전기·정보공학부 |\n| 임영섭 | 조선해양공학과 |\n| 엄현상 | 컴퓨터공학부 |\n| 김윤호 | 항공우주공학과 |\n| 이규태 | 화학생물공학부 |\n| 강진아 | 협동과정 기술경영경제정책전공 |\n\n교무/서무/학생행정실/시설지원실\n\n부서명/상세보기\n\n| 부서명 | 상세보기 |\n| --- | --- |\n| 교무 | 바로가기 |\n| 서무 | 바로가기 |\n| 학생행정실 | 바로가기 |\n| 시설지원실 | 바로가기 |\n\n기획협력실/교육연구재단\n\n| 부서명 | 상세보기 |\n| --- | --- |\n| 기획협력실 | 바로가기 |\n| 교육연구재단 | 바로가기 |\n\n글로벌공학교육센터/공학교육혁신센터\n\n| 부서명 | 상세보기 |\n| --- | --- |\n| 글로벌공학교육센터 | 바로가기 |\n| 공학교육혁신센터 | 바로가기 |\n\n연구행정실/공학연구원\n\n| 부서명 | 상세보기 |\n| --- | --- |\n| 연구행정실 | 바로가기 |\n| 공학연구원 | 바로가기 |\n## 출처\n- 외부: https://eng.snu.ac.kr/about/organization/organizational-chart\n- 원문(raw): raw/md/eng/organization.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "research-activities",
+      "title": "연구활동·성과",
+      "편": "전략",
+      "tags": "",
+      "content": "# 연구활동·성과\n### 연구활동\n\n서울대학교 공과대학은 “글로벌 산업과 사회의 지도자 육성”을 목표로 끊임없이 달려왔습니다. 산학협력 기술경쟁력 향상을 위한 공과대학의 허브 역할 수행\n\n#### 공과대학 연구비현황\n\n대학알리미 기준(단위:백만원)\n\n| 구분 | 2022년 | 2023년 | 2024년 |\n| --- | --- | --- | --- |\n| 공과대학 | 249,924 | 293,810 | 265,499 |\n| 서울대 | 678,497 | 734,096 | 703,403 |\n| 서울대 차지비율 | 36.8% | 40% | 37.70% |\n\n#### 서울대학교 교육연구성과 공시정보 바로가기 ▶\n## 출처\n- 외부: https://eng.snu.ac.kr/research/research-activities\n- 원문(raw): raw/md/eng/research-activities.md\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "vision",
+      "title": "공과대학 비전",
+      "편": "비전",
+      "tags": "",
+      "content": "# 공과대학 비전\n모바일 메뉴 닫기\n\n- Login\n\n#### loaction\n\n- url 복사\n\n### 비전과 인재상\n\n#### 비전\n\n수월, 융합, 창의의 학문공동체\n\n#### 인재상\n\n수월, 융합, 창의(秀, 融, 創)의 글로벌리더\n\n- (기술 그 이상을 향한 수월)\n\n- (자기주도형 융합)\n\n- (한계를 넘는 창의)\n\n담당부서기획협력실\n\n전화번호880-8328\n\n이메일plan.eng@snu.ac.kr\n## 출처\n- 외부: https://eng.snu.ac.kr/about/engineering/vision-and-ideal-talent\n- 원문(raw): raw/md/eng/vision.md\n- 첨부(URL만): https://eng.snu.ac.kr/resources/snu/img/common/btn_topgo.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 1, Tier 1)",
+      "sensitive": false
+    }
+  ],
+  "index": ""
+}

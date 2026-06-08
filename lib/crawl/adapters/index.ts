@@ -11,6 +11,10 @@ import { createSnuCms } from './snu-cms';
 import { createWordpressKboard } from './wordpress-kboard';
 import { createEgovframe } from './egovframe';
 import { createPathBased } from './path-based';
+import { createGnuboard } from './gnuboard';
+import { createAspBidx } from './asp-bidx';
+import { createWordpressCustom } from './wordpress-custom';
+import { createDotnetMvc } from './dotnet-mvc';
 
 const SELECTORS_DIR = join(process.cwd(), 'config', 'adapters');
 const selectorCache = new Map<AdapterKey, SelectorConfig>();
@@ -27,12 +31,16 @@ function loadSelectors(key: AdapterKey): SelectorConfig {
   return cfg;
 }
 
-// Phase별 점진 구축: 구현된 엔진만 등록. (남은: gnuboard·dotnet-mvc·asp-bidx·wordpress-custom)
+// 8개 엔진 전부 구현(2026-06-04). gspa(dotnet-mvc)=AngularJS 렌더 HTML의 JSON 추출.
 const FACTORIES: Partial<Record<AdapterKey, (s: SelectorConfig) => SiteAdapter>> = {
   'snu-cms': createSnuCms,
   'wordpress-kboard': createWordpressKboard,
   'egovframe': createEgovframe, // medicine·dent
   'path-based': createPathBased, // music·gsep
+  'gnuboard': createGnuboard, // law
+  'asp-bidx': createAspBidx, // gsiat
+  'wordpress-custom': createWordpressCustom, // gsds (gsis는 kboard)
+  'dotnet-mvc': createDotnetMvc, // gspa
 };
 
 export function getAdapter(key: AdapterKey): SiteAdapter {

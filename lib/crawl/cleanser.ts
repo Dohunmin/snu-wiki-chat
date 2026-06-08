@@ -10,6 +10,15 @@ import type { MainContent, SelectorConfig } from './types';
 const MIN_MAIN_CHARS = 120; // 이 미만이면 selector 미스로 보고 폴백
 const DEFAULT_STRIP = ['nav', 'header', 'footer', 'script', 'style', 'noscript', '.gnb', '.lnb', '.breadcrumb', '.sns', '.btn_top', '#gnb', '#footer', '#header'];
 
+// nav/UI 부스러기 라인(단독 등장하는 짧은 메뉴 텍스트) — toMarkdown에서 제거. 산문 보존 위해 anchored·짧은 것만.
+const CRUFT_EXACT_RE = /^(TOP|HOME|QUICK\s*MENU|전체\s*검색|내부\s*검색|통합\s*검색|검색어|검색|닫기|열기|메뉴|이전|다음|목록|처음|끝|인쇄|프린트|공유|공유하기|글자\s*크기|확대|축소|로그인|로그아웃|회원가입|사이트맵|페이지\s*처음으로|맨\s*위로|SNS\s*공유|상단메뉴 바로가기 본문 바로가기|본문 바로가기|상단메뉴 바로가기|Language|KOR|ENG|검색창 열기|검색창 닫기)$/i;
+const CRUFT_SUFFIX_RE = /(바로가기|사이트로 이동|페이지로 이동|새 ?창으로 이동)\s*$/; // "X 바로가기/사이트로 이동" (짧을 때만)
+function isCruftLine(t: string): boolean {
+  if (CRUFT_EXACT_RE.test(t)) return true;
+  if (t.length <= 30 && CRUFT_SUFFIX_RE.test(t)) return true; // 짧은 nav 링크만(긴 산문 보존)
+  return false;
+}
+
 /**
  * HTML → cleaned MainContent.
  * @param repeatedBlocks (선택) 같은 host 다수 페이지에 공통 등장하는 텍스트 블록 — GNB/footer로 간주해 제거.
@@ -176,7 +185,45 @@ function collectAssets($: cheerio.CheerioAPI, $main: cheerio.Cheerio<AnyNode>, b
 const BLOCK_SEL = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, td, div, section, article';
 const NESTED_BLOCK = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,td,div,section,article,ul,ol,table';
 
+/**
+ * HTML <table> → 마크다운 표(헤더+행 정렬 보존). 플랫 텍스트 추출이 행/열 구조를 뭉개는 문제 해결.
+ * 1열 표는 줄 목록으로, 빈 표는 ''. 셀 내 파이프는 이스케이프.
+ */
+function tableToMarkdown($: cheerio.CheerioAPI, table: AnyNode): string {
+  const rows: string[][] = [];
+  $(table).find('tr').each((_, tr) => {
+    // 중첩 표의 tr은 바깥 변환에서 제외(자기 table 안의 tr만)
+    if ($(tr).closest('table').get(0) !== table) return;
+    const cells: string[] = [];
+    $(tr).find('th, td').each((_, c) => {
+      if ($(c).closest('table').get(0) !== table) return;
+      cells.push($(c).text().replace(/\s+/g, ' ').trim());
+    });
+    if (cells.some((c) => c.length > 0)) rows.push(cells);
+  });
+  if (rows.length === 0) return '';
+  const cols = Math.max(...rows.map((r) => r.length));
+  if (cols < 2) return rows.map((r) => r.join(' ').trim()).filter(Boolean).join('\n');
+  const pad = (r: string[]) => {
+    const c = r.map((x) => x.replace(/\|/g, '\\|'));
+    while (c.length < cols) c.push('');
+    return c;
+  };
+  const fmt = (r: string[]) => `| ${pad(r).join(' | ')} |`;
+  const sep = `| ${Array(cols).fill('---').join(' | ')} |`;
+  return [fmt(rows[0]), sep, ...rows.slice(1).map(fmt)].join('\n');
+}
+
 function toMarkdown($: cheerio.CheerioAPI, $main: cheerio.Cheerio<AnyNode>): string {
+  // 표 먼저 마크다운 표로 변환 후 자리표시자로 치환 — 플랫 추출이 행/열을 뭉개지 않게.
+  const tables: string[] = [];
+  $main.find('table').each((_, table) => {
+    if ($(table).parents('table').length > 0) return; // 중첩 표는 바깥 표가 흡수
+    const md = tableToMarkdown($, table);
+    $(table).replaceWith(`<p>@@TABLE${tables.length}@@</p>`);
+    tables.push(md);
+  });
+
   const lines: string[] = [];
   const seen = new Set<string>();
   $main.find(BLOCK_SEL).each((_, el) => {
@@ -185,8 +232,8 @@ function toMarkdown($: cheerio.CheerioAPI, $main: cheerio.Cheerio<AnyNode>): str
     const clone = $(el).clone();
     clone.find(NESTED_BLOCK).remove();
     const text = clone.text().replace(/\s+/g, ' ').trim();
-    if (text.length < 2 || seen.has(text)) return;
-    seen.add(text);
+    if (text.length < 2 || seen.has(text) || isCruftLine(text)) return;
+    if (!/^@@TABLE\d+@@$/.test(text)) seen.add(text); // 표 자리표시자는 dedup 제외
     if (tag === 'h1') lines.push(`# ${text}`);
     else if (tag === 'h2') lines.push(`## ${text}`);
     else if (tag === 'h3') lines.push(`### ${text}`);
@@ -194,7 +241,10 @@ function toMarkdown($: cheerio.CheerioAPI, $main: cheerio.Cheerio<AnyNode>): str
     else if (tag === 'li') lines.push(`- ${text}`);
     else lines.push(text);
   });
-  return mergeMarkers(lines).join('\n\n');
+  return mergeMarkers(lines)
+    .map((l) => { const m = l.match(/^@@TABLE(\d+)@@$/); return m ? tables[Number(m[1])] : l; })
+    .filter((l) => l && l.trim())
+    .join('\n\n');
 }
 
 /**

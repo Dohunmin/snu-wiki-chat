@@ -1,0 +1,48 @@
+# snu-cms 엔진 셀렉터/URL 맵 (데이터 — 코드 무수정으로 사이트 추가)
+# 대상: eng·humanities·science·business·nursing·agriculture·gses·mba·grad-general
+# 사이트마다 main 컨테이너가 달라 후보 배열 — 첫 충분한(≥120자) 노드 선택.
+# 실측(2026-06-03): eng=#printArea, humanities=#zcmscontent/#content, science=#content/.content-wrap.
+key: snu-cms
+extract:
+  main_selector:
+    - "#printArea"        # eng — SNU 인쇄영역(본문만, nav 0)
+    - "#zcmscontent"      # humanities — zeroboard CMS 본문
+    - ".cont-lnb"         # science — 본문 블록(#content보다 먼저, 사이트맵 회피)
+    - ".pagest-18"        # science 대안
+    - "#content"          # humanities·science — <section id=content> (prose 위주)
+    - ".content-wrap"     # humanities·science — content 래퍼
+    - "#cont"             # eng 대안 — <section id=cont class=sub-cont>
+    - ".cont_w"           # eng 대안 — content wrapper
+    - "#contents"
+    - ".contents"
+    - ".sub_content"
+    - ".sub_contents"
+    - "main"
+  strip_selectors:
+    - "#gnb"
+    - ".gnb"
+    - ".lnb"
+    - ".snb"
+    - ".breadcrumb"
+    - ".location"
+    - "#header"
+    - ".header"
+    - "header"
+    - "#footer"
+    - ".footer"
+    - "footer"
+    - ".sns"
+    - ".btn_top"
+    - ".quick"
+    - ".navbar"
+    - ".nav"
+    - "#menu"
+    - ".menu"
+    - ".depth1"
+    - ".gnb_wrap"
+    - ".side-panel"
+    - ".top-bar"
+  title_selector: "h1, .page_title, .sub_title, .tit"
+board:
+  list_item_selector: "table tbody tr"
+  id_param: "bbsidx"

@@ -1,0 +1,110 @@
+{
+  "id": "music",
+  "name": "음악대학",
+  "sources": [],
+  "topics": [],
+  "entities": [
+    {
+      "id": "dept-composition",
+      "name": "작곡과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 작곡과\n학과소개\n\nDepartment of Composition\n\n작곡과는 작곡전공과 지휘전공으로 구성되어 있으며 심도 있는 교육과 연구를 통해 유능한 작곡가 및 지휘자를 양성하는 것을 그 목적으로 한다. 이를 위하여 우수한 교수진에 의한 실기지도, 체계적인 교과과정 운영과 더불어 창작 및 연주 활동을 위한 다양한 지원을 제공하고 있으며 이를 토대로 국내외 음악계를 선도해 나가는 전문 인력 및 교육 인력을 배출해 오고 있다. 작곡 전공은 설립 이후 교수들과 학생들의 지속적이고 열성적인 활동으로 우리나라 작곡계를 주도하는 역할을 담당해왔으며, 국내뿐만 아니라 세계 무대에서도 활발히 활동하는 작곡가를 배출해왔다. 지휘 전공은 체계적인 교육을 통해 전문적인 지휘자 양성에 이바지하고 있다. 이를 위해 지휘 전공은 시창청음, 화성법, 대위법, 음악분석 등 의 수업을 통해 음악에 대한 이론적 지식을 풍성히 쌓고, 총보 독법과 지휘 실기 등의 수업에서 밀도 높은 실기교육을 받으며 음악적 능력을 훈련받는다.\n\n| 학과장 | 임종우 | 전화번호 | 02-880-7944 |\n| --- | --- | --- | --- |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 425호 |  |  |\n\n| 학과장 | 임종우 |\n| --- | --- |\n| 전화번호 | 02-880-7944 |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 425호 |\n\n작곡과 교수진 소개\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/department_c\n- 원문(raw): raw/md/music/dept-composition.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/department_c01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_c02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_c03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_c04.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_c05.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "dept-korean-music",
+      "name": "국악과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 국악과\n학과소개\n\nDepartment of Korean Music\n\n서울대학교 음악대학 국악과는 한국음악의 학문성과 예술성을 높이고 국악계를 이끌어 나갈 인재들을 육성하는 데 그 목적을 두고 1959년에 창설되었다. 창설 이후 1963년에는 대학원에 이론전공 국악과정이 신설되었으며 1983년에 국악기악 및 국악성악, 국악작곡 전공자들을 위한 과정이 신설되어 보다 폭넓은 대학원 교육이 이루어지게 되었다. 또한 1989년에 이론전공을 위한 박사과정이 신설되었고, 2004년에는 실기전공을 위한 박사과정이 신설되어 보다 전문적인 교육이 이루어지게 되었다. 국악과의 학부전공은 현재 가야금, 거문고, 해금, 대금, 피리, 아쟁, 타악, 국악작곡, 국악이론, 국악성악, 국악지휘로 세분되어 교육되고 있다. 학부과정에서는 매년 개최하는 정기연주회를 비롯하여 춘계정기연주회, 성악발표회, 창작음악발표회, 신입생연주회, 졸업연주회, 이론 세미나, 음악캠프 등을 비롯하여 각 악기별 · 과목별 크고 작은 연주회와 행사가 지속적으로 열리고 있으며 대학원 과정에서는 더욱 심화된 연구 작업들이 진행되고 있다. 국악과 재학생들은 전국 유수의 콩쿠르에서 두각을 나타내며 연주력을 인정받고 있으며, 또한 학교와 교수진의 지원 아래 외국에서의 연주 및 워크샵을 통하여 다양한 경험을 쌓아가며 한국음악을 이끌 인재로서의 역량을 쌓아가고 있다. 서울대학교 음악대학 국악과는 창설 이후 현재까지 한국 전통음악의 기반을 다지고 이를 바탕으로 새로운 한국음악의 방향을 이끌어가는 선도적 인재를 육성시킨다는 교육방침 아래 최고의 연주가, 작곡가, 음악학자, 교육자들을 배출해왔다. 국악과의 졸업생들은 전통음악의 올곧은 계승은 물론 새로운 한국음악의 방향을 이끌고 또 한국음악의 세계화를 주도하는 인재로서 다양한 분야의 최첨단에서 사명감을 가지고 활동하고 있다.\n\n| 학과장 | 김경아 | 전화번호 | 02-880-7981~2 |\n| --- | --- | --- | --- |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 416호 |  |  |\n\n| 학과장 | 김경아 |\n| --- | --- |\n| 전화번호 | 02-880-7981~2 |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 416호 |\n\n국악과 교수진 소개\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/department_kt\n- 원문(raw): raw/md/music/dept-korean-music.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/department_kt01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_kt02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_kt03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_kt04.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "dept-musicology",
+      "name": "음악학과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 음악학과\n학과소개\n\nDepartment of Musicology\n\n음악학과(구 작곡과 이론전공)는 음악적 지식과 실제에 대한 통합적 교육에 기반하여 음악학자와 음악이론가, 비평가들을 양성한다. 매 학기 1-2회 학술행사를 개최하며, 한국서양음악학회, 한국서양음악이론학회, 음악사연구회, 음악미학연구회 등 다양한 학회와의 연계 활동을 꾸준히 전개하고 있다. 아울러 KCI 등재학술지 『음악이론연구』 발행 등 전문학술출판을 통해 적극적인 학술 활동에 기여하고 있다. 1981년 작곡과에 이론전공이 신설된 이후 1984년에 석사과정, 1989년에 박사과정(인문대학과의 협동과정), 이어 2012년 음악대학 내 서양음악학 박사과정이 개설되었으며, 2023년 음악학과로 독립·신설되면서 더욱 깊이 있는 연구의 장을 마련하였다. 음악학은 음악을 주제로 다양한 연구를 수행하는 학제적 분야로, 학생들은 음악미학, 음악사회학, 음악이론·분석, 음향학 등의 영역을 탐색하며, 창의적이고 논리적인 글쓰기 및 효과적인 의사소통 능력, 그리고 연구주제 선정과 연구방법론 등 논문완성에 이르는 전반적 과정을 종합적으로 학습한다. 또한 21세기 새로운 음악문화에 발맞춰 음악 내적 연구뿐 아니라 미학적 판단, 음악사적 의의, 사회와의 연관성, 나아가 뉴미디어 또 는 과학기술과 연결된 다양한 분야를 다룸으로써 음악에 관련된 폭넓은 학문적 영역들을 탐구한다. 음악학과의 심도 있는 교육은 학술적인 음악 연구와 실제 응용 분야에서 성공적인 경력을 쌓는 데 중요한 기반을 제공한다. 졸업생들은 음악학, 음악비평, 문화산업, 공연기획, 음악교육, 미디어 콘텐츠 제작 등 다양한 분야에서 활동하고 있다.\n\n| 학과장 | 서정은 | 전화번호 | 02-880-7945 |\n| --- | --- | --- | --- |\n| 위치 | 서울특별시 관악구 관악로 1 서울대학교. 220동 425호 |  |  |\n\n| 학과장 | 서정은 |\n| --- | --- |\n| 전화번호 | 02-880-7945 |\n| 위치 | 서울특별시 관악구 관악로 1 서울대학교. 220동 425호 |\n\n음악학과 교수진 소개\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/department_m\n- 원문(raw): raw/md/music/dept-musicology.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/department_m_01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_m_02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_m_03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_m_04.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_m_05.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_m_06.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "dept-orchestra",
+      "name": "관현악과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 관현악과\n학과소개\n\nDepartment of Orchestral Instruments\n\n관현악과 현악전공은 바이올린, 비올라, 첼로, 더블베이스, 기타, 하프전공으로 구성되어 있다. 현악전공에서는 학생들이 졸업 후에 한국 음악계뿐 아니라 세계 음악계의 중심에서 연주자뿐 아니라 지도자로 활동할 수 있도록 다양한 교과과정을 제공한다. 현악전공은 학생들이 이수해야 할 실기 과제곡을 바로크에서 현대에 이르기까지 폭넓게 지정함으로써 학생들이 다양한 시대의 곡들을 연주하도록 한다. 또한 현악합주, 관현악, 실내악 등의 과목을 이수함으로써 졸업 후 오케스트라 연주자 또는 실내악 연주자로 활동할 수 있는 토대를 마련하고 있다. 관현악과 관악전공은 목관, 금관, 타악으로 구성된다. 관악전공은 각 악기별 전공학생들에게 교수진과 더불어 국내에서 활발한 연주활동을 벌이고 있는 연주자들을 초빙하여 다각도의 교육을 제공한다. 전공실기 수업을 통해서는 연주자세, 호흡, 발성, 연주테크닉을 훈련하며, 오케스트라와 연주 수업을 통해서는 전문연주자로서의 미래를 준비할 수 있도록 한다. 관악전공은 더욱 훌륭한 연주자를 양성하기 위하여 다양한 앙상블과 독주회, 그리고 마스터클래스를 통하여 예술적으로 완벽한 감각을 훈련하도록 하고 있다.\n\n| 학과장 | 성재창 | 전화번호 | 02-880-7961 / 7921 |\n| --- | --- | --- | --- |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 408호 |  |  |\n\n| 학과장 | 성재창 |\n| --- | --- |\n| 전화번호 | 02-880-7961 |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 408호 |\n\n관현악과 교수진 소개\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/department_oi\n- 원문(raw): raw/md/music/dept-orchestra.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/department_oi01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_oi02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_oi03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_oi04.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "dept-piano",
+      "name": "피아노과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 피아노과\n학과소개\n\nDepartment of Piano\n\n피아노과는 세계적인 수준의 전문 연주자를 양성하기 위해 최상의 교육 환경을 제공하고 있다. 본 학과에서는 저명한 교수진의 지도하에, 피아노의 역사적 전통과 연주 양식을 폭넓게 탐구한다. 또한, 시대악기 전통을 포함한 다양한 연주 양식과 이론을 깊이있게 배우며, 전공 실기, 실내악, 반주, 연주, 세미나 등 다양한 실기 과목을 통해 음악적 역량을 계발한다. 국제 저명 아티스트를 초청하여 진행하는 마스터 클래스, 워크샵 및 특강을 통해 학생들은 세계적 수준의 연주력을 습득하고, 음악에 대한 심도있는 사고력을 향상시킨다. 신입생 연주회, 학사(석사, 박사)과정 연주회, 정기 연주회, 졸업 연주회 및 교내 다양한 융복합 공연을 통해 학생들은 실전 무대에서 창의적인 경험을 쌓는다. 2005년부터 박사과정을 신설하여 폭넓은 전문성과 창의력을 겸비한 리더를 양성하는 데 기여한다. 시대의 변화에 부응한 다양한 커리어를 독창적으로 계발할 수 있는 능력을 배양하여 졸업 후 전문연주가뿐 아니라 교육자, 문화예술계의 전문가로서 국내외 예술계에서 중추적인 역할을 한다.\n\n| 학과장 | 김규연 | 전화번호 | 02-880-7960 |\n| --- | --- | --- | --- |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 410-1호 |  |  |\n\n| 학과장 | 김규연 |\n| --- | --- |\n| 전화번호 | 02-880-7960 |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 410-1호 |\n\n피아노과 교수진 소개\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/department_p\n- 원문(raw): raw/md/music/dept-piano.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/department_p01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_p02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_p03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_p04.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "dept-vocal",
+      "name": "성악과",
+      "entityType": "학과",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 성악과\n학과소개\n\nDepartment of Vocal Music\n\n성악과는 1946년에 서울대학교의 설립과 함께 그 역사를 시작했으며, 정치·경제적 격변기 속에서도 지속적인 학문 연구와 예술성의 향상을 통해 예술계의 굳건한 초석을 마련하였다. 이후 성악과는 현재까지 계속하여 한국 최고의 우수한 전문연주 인력과 교육인력들을 배출하고 있다. 이러한 성과는 최고의 교수진이 체계적인 교과과정으로 재능있는 학생들을 교육하고 함께 연구하는 데 힘쓰고 있기에 가능한 일이라 할 수 있다. 성악과의 대표적인 행사는 2년에 한번씩 공연되는 정기 오페라이다. 오페라는 명실공히 종합예술의 최고봉으로 그 규모가 장대하며, 성악과뿐 아니라 음악대학 전체가 참여할 수 있다는 점에서 매우 뜻깊은 행사이다. 특별히 서울대학교 음악대학의 오페라 공연은 그 첫 공연에서부터 지금까지 최고 수준의 공연을 선보임으로써 국내 음악계에서 큰 주목을 받아왔다. 또한 성악과는 오페라 워크샵을 통해 오페라에 대한 연구를 지속하고 있다. 오페라 워크샵은 오페라 정기공연의 준비과정의 일환으로 성악가로서의 자질을 연마하는 데 중요한 몫을 담당하고 있다. 1985년 4월 문화관의 개관과 함께 상설 공연장 마련에 이어 2000년 예술관 콘서트 홀의 건립에 따라 성악과는 더욱 다양하고 풍성한 연주회를 개최하고 있다. 1985년 4월 8일 문화관 개관기념 연주회를 시작으로 하여 매학기 개강·종강음악회, 강의 종강 음악회와 매년 영미·프랑스·독일가곡 등 예술가곡 연주회 및 아리아 연주회를 통해서 심도있는 연구발표가 활발하게 이루어지고 있다.\n\n| 학과장 | 서혜연 | 전화번호 | 02-880-7930~1 |\n| --- | --- | --- | --- |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 402호 |  |  |\n\n| 학과장 | 서혜연 |\n| --- | --- |\n| 전화번호 | 02-880-7930~1 |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 402호 |\n\n성악과 교수진 소개\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/department_vm\n- 원문(raw): raw/md/music/dept-vocal.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/department_vm01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_vm02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_vm03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_vm04.jpg · https://music.snu.ac.kr/theme/basic/image/sub/department_vm05.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "inst-opera-center",
+      "name": "오페라센터",
+      "entityType": "부속기관",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 오페라센터\n부속·연구시설\n\nSNU Opera Center\n\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교문화관 73동 B112호,B115호,206호(문화관 증개축기간 :220동 108호) | 기관장 | 서혜연 |\n| --- | --- | --- | --- |\n| 연락처 | 02-880-7943/7938 |  |  |\n\n| 기관장 | 서혜연 |\n| --- | --- |\n| 연락처 | 02-880-7943/7938 |\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교문화관 73동 B112호,B115호,206호(문화관 증개축기간 :220동 108호) |\n\n서울대학교 오페라센터는 한국최초의 오페라 전문 연구기관으로써 1993년 12월에 설립되어 2022년 7월까지 활동하였던 오페라연구소를 전신으로 그의 명맥을 이어받아 2023년 11월 15일에 오페라센터로 명명(영문명: SNU Opera Center)하고 새로이 설립되었습니다. 음악, 미술, 연극, 무용 등이 하나로 어우러지는 종합예술인 오페라를 체계적·전문적으로 훈련하여 학생들에게 다양한 실전 무대 경험을 제공하고, 우리 대학 정기 오페라공연을 전담하여 주관하고 있으며, 국내·외 기관, 대학·문화예술단체와의 교류 협력을 통한 기획공연을 하고, 세계 오페라 실태를 분석하며, 해외 저명 예술가 초청을 통해 마스터클래스를 진행함으로써, 세계적 수준의 역량을 갖춘 오페라 인재를 양성하고 오페라의 발전에 기여함을 목적으로 하고 있습니다 1959년에 초연하여 2023년 제33회 공연까지 60여년의 전통을 가진 서울대학교 음악대학 정기 오페라공연은 매 2년마다 개최하며 음악대학 구성원 250여명 이상의 인원이 준비, 참여하는 대규모 종합예술공연으로 서울대학교의 위상을 높이며, 대한민국 음악 발전에 기여하고 있습니다. 한편 서울대학교 발전재단 기부자 및 학내구성원, 지역사회에 공연을 제공하고 지역사회 문화 균형 발전 등에 기여함으로써 사회공헌을 하고 있습니다. 주한 해외공관 및 국내·외 대학, 주요 극장· 문화예술단체와의 교류를 통해 오페라 후속세대의 국내 무대뿐만 아니라 세계 무대 진출을 도모하고 있습니다.\n\n| 1993.12.22 | 오페라연구소 설립 |\n| --- | --- |\n| 2011.10.21.~11.26 | 쥬세페 베르디 헌정 로마 오페라극장의 무대·인물스케치와 의상 전시회 및 베르디 오페라 갈라 콘서트(주한 이탈리아 대사관·문화원·MoA 공동주최) |\n| 2012.10.17.~18 | Brian Zeger(줄리어드대 교수,줄리어드 오페라센터디렉터) 마스터클래스 |\n| 2018.2.22 | 서울대오페라연구소 초청 '2018 New Year's Concert' |\n| 2018.2.24 | 2018 제1회 서울대학교 오페라연구소 정기 학술 대회 |\n| 2018.5.5 | 서울역사박물관 서울대오페라연구소 초청 오페라 ‘마술피리’공연 |\n| 2018.8.25 | 2018 제2회 서울대학교 오페라연구소 정기 학술 대회 |\n| 2018.09.11~14 | 주한 이탈리아 문화원과 서울대학교 오페라연구소가 주최하는 조어키노 롯시니 서거 150주년 Anna Bonitatibus 초청 마스터클래스,리사이틀 |\n| 2018.9.13 | G.Rossini 서거 150주년 성악과 연주회 |\n| 2019.3.23 | 2019 제3회 서울대학교 오페라연구소 정기 학술대회 |\n| 2019.10.10 | 2019 제4회 서울대학교 오페라연구소 정기 학술대회 |\n| 2019.11.12~13 | Maestro Maurizio Colacicchi 초청 마스터클래스 |\n| 2021.2.17 | Soprano Mariella Devia 초청 마스터클래스 |\n| 2021.02.19 | 전 국립발레단 최태지 단장 마스터클래스 ‘무대동작 및 표현’ |\n| 2021.2.18 | 2021 제5회 서울대학교 오페라 연구소 정기 학술대회 |\n| 2021.10.8 | 2021 제6회 서울대학교 오페라 연구소 정기 학술대회 |\n| 2022.1.27 | 서울대학교 오페라연구소 창작오페라 작품공모, 당선작 쇼케이스 |\n| 2023.11.15 | 오페라센터 설립 |\n| 2024.9~10월 중 | 2024 대한민국,이탈리아 수교 140주년 기념 · 푸치니 서거 100주년 기념 푸치니 오페라 페스티벌 (주한 이탈리아 대사관·문화원 후원) |\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/opera_center\n- 원문(raw): raw/md/music/inst-opera-center.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/opera01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/opera02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/opera03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/opera04.jpg · https://music.snu.ac.kr/theme/basic/image/sub/opera_history.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    },
+    {
+      "id": "inst-oriental-music",
+      "name": "동양음악연구소",
+      "entityType": "부속기관",
+      "aliases": [],
+      "tags": "",
+      "sources": "",
+      "content": "# 동양음악연구소\n부속·연구시설\n\nAsian Music Research Institute\n\n| 위치 | 서울특별시 관악구 관악로 1. 서울대학교 220동 401호 | 기관장 | 성기련 |\n| --- | --- | --- | --- |\n| 연락처 | 02-880-7907 | 홈페이지 | https://asianmusic.or.kr |\n\n서울대학교 음악대학 부설 동양음악연구소는 한국음악과 아시아 각국의 민족음악을 연구하고 자료를 수집하기 위한 목적으로 1976년 설립되었습니다. 동양음악연구소는 학계에서 쟁점이 되고 있는 주제를 중심으로 매년 국내외 학술대회를 개최하고 있으며, 학술대회에서 발표된 연구 논문들은 연 2회 발간하는 『동양음악』 학술지에 수록함으로써 한국음악학계의 연구 성과를 적층해 나가고 있습니다. 동양음악연구소 주최 국내 학술대회에서는 한국음악의 이론적 측면과 음악 실제의 측면을 모두 다루며 한국음악을 공시적, 통시적으로 두루 고찰하고자 노력하고 있습니다. 또한 동양음악연구소에서는 국제 학술대회를 개최하여 국내뿐 아니라 세계 여러 나라에서 활약하고 있는 연구자가 한데 모여서 다양한 문화권의 음악과 음악문화에 대해서 논의하는 학술 교류의 장을 마련하고자 노력하고 있습니다. 동양음악연구소에서는 국문학, 역사학, 민속학, 인류학 등 인접 학문 분야의 다양한 관점을 수용하여 한국음악 연구 범위를 확대하고 연구 방법론의 다양화를 꾀하는 것을 지향하고 있습니다. 한국음악의 자료 수집과 학술적 연구를 위해 동양음악연구소에서는 토대연구사업 등 여러 프로젝트를 수행해 왔으며, 앞으로도 다양한 연구 사업을 진행할 예정입니다.\n\n| 1976.05.22 | 서울대학교 음악대학 부설 동양음악연구소 설립 |\n| --- | --- |\n| 1977. ~ 1997. | 서울대학교 음악대학 부설 동양음악연구소 학술지 『민족음악학』 창간호 ~ 제19집 발행 |\n| 1982. ~ 1983. | 한국 정신문화연구원의 위탁사업으로 경남지역 민요의 조사 담당 |\n| 1985. ~ 1994. | 倭政下 定期刊行物 所在 “國樂關係記事(1) - (8)” 수집-정리 |\n| 1996. | '조선조 궁중의례와 음악' 프로젝트 진행 |\n| 1996. ~ 현재 | 동양음악연구소 제1회 국제학술회의 (국립국악원 공동주최) “동아시아의 현악기” 이하 제11회 개최 |\n| 1998. | 『민족음악학』 (제20집)을 『동양음악(Tongyang Ŭmak)』으로 개칭 국내학술지에서 국제학술지로 개정 |\n| 1998. | '한국 토속민요 연구' 프로젝트 진행 |\n| 1998. ~ 현재 | 동양음악연구소 학술지 『동양음악(Tongyang Ŭmak)』 제20집 ~ 제55집 발행 |\n| 1998. ~ 현재 | 동양음악연구소 연구총서 1 『조선조 궁중의례와 음악』 이하 11권 발행 |\n| 1999. | 서울대학교 연구소 종합평가(인문-사회-예체능) 최우수연구기관 선정 |\n| 2015. ~ 2018. | '민속악 현장조사 자료의 수집 및 정리, DB 구축' 프로젝트 진행 |\n| 2015. ~ 발행 | 동양음악연구소 학술총서 1 『거문고 육보체계에 관한 통시적 고찰』외 한국음악학과 관련하여 엄선된 다양한 주제로 총 34권 발행 |\n| 2021. ~ 현재 | 제1회 서울대학교 음악대학 동양음악연구소 초청 “가교를 세우다: 국제 인류음악학 교류 세미나 시리즈” <키쓰 하워드 교수 초청 강연회> 이하 4회 개최 |\n| 2022. | KIAS 초학제연구단 & SNU 동양음악연구소 공동주관 워크샵 “국악의 짜임새와 선율적 특징” 개최 |\n| 2023. | 2023년 하반기 서울대학교박물관 & 동양음악연구소 공동주최 수요교양강좌 “우리 음악, 우리 문화” 개최 |\n| 2023.10.20 | 2023 동양음악연구소 주최 제20회 국내학술대회 개최 |\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/oriental_music\n- 원문(raw): raw/md/music/inst-oriental-music.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/asianmusic01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/asianmusic02.jpg · https://music.snu.ac.kr/theme/basic/image/sub/asianmusic03.jpg · https://music.snu.ac.kr/theme/basic/image/sub/asianmusic04.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)"
+    }
+  ],
+  "syntheses": [],
+  "facts": [],
+  "stances": [],
+  "overviews": [
+    {
+      "id": "academic-info",
+      "title": "음악대학 학사 안내",
+      "편": "소개",
+      "tags": "",
+      "content": "# 음악대학 학사 안내\n공지 · 알림\n\n아래 내용을 클릭하면 자세한 내용을 확인하실 수 있습니다.\n\n- 학사일정\n\n- · 학사일정\n\n- 등록금\n\n- · 납부안내 · 납부방법 · 납입확인서\n\n- 수업\n\n- · 학사일정 · 수강신청 · 재수강 · 계절수업\n\n- 학적\n\n- · 학적변동 · 전과 · 전공이수제도 · 교직이수 · 학점안정 · 학위취득(수료)\n\n- 장학금\n\n- · 교내장학금 · 교외장학금 · 학자금대출\n\n- 증명서\n\n- · 발급안내 · 증명서 종류 · 유학 서류 · 성적등급 및 환산기준표 · 학적부 기재사항 정정\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/info\n- 원문(raw): raw/md/music/academic-info.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "dean",
+      "title": "음악대학 학장 소개",
+      "편": "소개",
+      "tags": "",
+      "content": "# 음악대학 학장 소개\n대학소개\n\n- 1대 현 제 명 (玄濟明) 1953. 4. 20 - 1960. 10. 17\n\n- 2 - 6대 김 성 태 (金聖泰) 1960. 10. 18 - 1969. 12. 31\n\n- 7 - 8대 이 혜 구 (李惠九) 1970. 1. 1 - 1973. 12. 31\n\n- 9 - 10대 이 상 춘 (李想春) 1974. 1. 1 - 1975. 12. 31\n\n- 11 - 12대 전 봉 초 (全鳳楚) 1976. 1. 1 - 1979. 12. 31\n\n- 13 - 14대 박 민 종 (朴敏鍾) 1980. 1. 1 - 1983. 8. 31\n\n- 15대 이 성 재 (李誠載) 1983. 9. 1 - 1985. 8. 31\n\n- 16대 정 회 갑 (鄭回甲) 1985. 9. 1 - 1987. 8. 31\n\n- 17대 백 낙 호 (白樂皓) 1987. 9. 1 - 1989. 8. 31\n\n- 18대 이 남 수 (李南洙) 1989. 9. 1 - 1991. 8. 31\n\n- 19대 김 용 진 (金容振) 1991. 9. 1 - 1993. 8. 31\n\n- 20대 서 우 석 (徐友錫) 1993. 9. 1 - 1995. 8. 31\n\n- 21대 이 성 균 (李成均) 1995. 9. 1 - 1997. 8. 31\n\n- 22대 이 성 천 (李成千) 1997. 9. 1 - 1999. 8. 31\n\n- 23 - 25대 김 민 (金 旻) 1999. 9. 1 - 2005. 8. 31\n\n- 26대 신 수 정 (申秀貞) 2005. 9. 1 - 2007. 8. 31\n\n- 27대 - 28대 정 태 봉 (鄭台鳳) 2007. 9. 1 - 2011. 3. 14\n\n- 29대 김 영 욱 (金永旭) 2011. 3. 18 - 2013. 2. 28\n\n- 30대 김 영 률 (金泳律) 2013. 3. 1 – 2014. 5. 16\n\n- 31대 김 귀 현 (金貴賢) 2014. 6. 12 – 2016. 6. 11\n\n- 32대 - 33대 전 상 직 (全商直) 2016. 6. 12 – 2020. 6. 11\n\n- 34대 민 은 기 (閔恩基) 2020. 6. 12. - 2022. 6. 11\n\n- 35대 - 36대 최 은 식 (崔銀植) 2022. 6. 12 – 2026. 6. 11\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/dean\n- 원문(raw): raw/md/music/dean.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/dean/01.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/02-06.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/07-08.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/09-10.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/11-12.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/13-14.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/15.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/16.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/17.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/18.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/19.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/20.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/21.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/22.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/23-25.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/26.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/27-28.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/29.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/30.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/31.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/32-33.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/34.jpg · https://music.snu.ac.kr/theme/basic/image/sub/dean/35-36.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    },
+    {
+      "id": "organization",
+      "title": "음악대학 조직",
+      "편": "소개",
+      "tags": "",
+      "content": "# 음악대학 조직\n대학소개\n\n| 직위 | 성명 | 위치 | 연락처 | 이메일 |\n| --- | --- | --- | --- | --- |\n| 학장(관현악과) | 최은식 | 220호 424호 | 02-880-7900 | ensik67@snu.ac.kr |\n| 교무부학장(성악과) | 전승현 | 220호 423호 | 02-880-7911 | attila@snu.ac.kr |\n| 학생부학장(관현악과) | 김두민 | 53동 113호 | 02-880-7935 | dusycello@snu.ac.kr |\n| 기획홍보센터장(관현악과) | 김홍박 | 53동 315호 | 02-880-8959 | hongparkkim@snu.ac.kr |\n| 예술관장(관현악과) | 성재창 | 53동 314호 | 02-880-7974 | tromba@snu.ac.kr |\n| 음악도서관장(작곡과) | 임종우 | 53동 104호 | 02-880-7951 | jongwooyim@snu.ac.kr |\n\n| 직위 및 소속 | 성명 | 위치 | 담당업무 | 연락처 | 이메일 |\n| --- | --- | --- | --- | --- | --- |\n| 행정실장 | 전소연 | 220동 410호 | 행정업무 총괄 | 02-880-7902 | schon0517@snu.ac.kr |\n| 교무(팀장) | 권영주 | 220동 411호 | 교학업무 총괄,전임교원 신규채용 | 02-880-7917 | dffactory@snu.ac.kr |\n| 교무 | 최혜인 | 220동 411호 | 전임교원 승진·재임용 ·정년보장,강사 인사 등 | 02-880-7906 | hyeni08@snu.ac.kr |\n| 교무 | 김정현 | 220동 411호 | 교과과정, 수업, 강사료, 대학원 입시 | 02-880-7903 | jhk2707@snu.ac.kr |\n| 교무 | 조나연 | 220동 411호 | 학부 입시, 논자시, 졸업 | 02-880-7980 | lrdusv@snu.ac.kr |\n| 교무 | 이동주 | 220동 411호 | 장학, 학생, 학적 | 02-880-7905 | amnidongju@snu.ac.kr |\n| 시설(팀장) | 김석 | 220동 411호 | 서무업무 총괄, 시설 등 | 02-880-7922 | yanye2003@snu.ac.kr |\n| 시설 및 예술관 | 이상훈 | 220동 411호 | 예술관 운영 등 | 02-880-7849 | rookie928@snu.ac.kr |\n| 49동 220호 | 02-880-7916 |  |  |  |  |\n| 서무(팀장) | 박준우 | 220동 411호 | 서무업무 총괄, 인사, 급여, 연구비 등 | 02-880-7904 | 7luckyp7@snu.ac.kr |\n| 서무 | 박혜수 | 220동 411호 | 예산, 집행, 서무 등 | 02-880-1333 | phsoo@snu.ac.kr |\n| 기획홍보센터 및 부속실 | 김소영 | 220동 422호 | 기획, 홍보, 비서 | 02-880-7900 | musicsoyoung@snu.ac.kr |\n| 도서관(주임) | 장신문 | 74동 102호 | 도서관 총괄 | 02-880-7909 | changsm@snu.ac.kr |\n| 도서관 | 김현희 | 74동 102호 | 도서 관리 등 | 02-880-7915 | khhlove86@snu.ac.kr |\n\n| 학과 | 위치 | 연락처 |  |\n| --- | --- | --- | --- |\n| 성악과 | 220동 402호 | 02-880-7930~1 |  |\n| 작곡과 | 220동 425호 | 02-880-7944 |  |\n| 음악학과 | 220동 425호 | 02-880-7945 |  |\n| 피아노과 | 220동 410-1호 | 02-880-7960 |  |\n| 관현악과 | 관악 | 220동 408호 | 02-880-7921 |\n| 현악 | 02-880-7961 |  |  |\n| 국악과 | 220동 416호 | 02-880-7981~2 |  |\n| 대학원 음악과 | 220동 425호 | 02-880-7945 |  |\n\nLogin English\n\n서울대학교 중앙도서관 입학 예약하샤\n## 출처\n- 외부: https://music.snu.ac.kr/content/organization\n- 원문(raw): raw/md/music/organization.md\n- 첨부(URL만): https://music.snu.ac.kr/theme/basic/image/sub/ori_new2.jpg · https://music.snu.ac.kr/theme/basic/image/logot.png\n## 변경이력\n- 2026-06-04: 최초 ingest (Phase 2, Tier 1)",
+      "sensitive": false
+    }
+  ],
+  "index": ""
+}

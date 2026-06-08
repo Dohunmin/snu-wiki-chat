@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth/config';
 import { canChat } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
+import { routeToAgent, type AgentIntent } from '@/lib/agents/agent-router';
 import { enforceContextBudget } from '@/lib/agents/context-budget';
 import { complexityBudget } from '@/lib/agents/complexity';
 import { getStructuredFact, getLiveBoard, type DirectAnswer } from '@/lib/agents/structured';
@@ -39,22 +40,23 @@ const chatSchema = z.object({
   mode: z.string().regex(/^(normal|policy|lens:[a-z0-9-]+)$/).default('normal'),
 });
 
-// college-grad-wiki / web-search-fallback — 위키로 못 답하는 외부·최신·비교 질문만 라이브 검색.
-//   max_uses:1로 비용 캡(검색 결과 본문이 입력토큰 → 1회로 제한해 ~$0.09/질문). 평소 질문은 미발동 → $0.
-const WEB_SEARCH_TOOL = { type: 'web_search_20250305', name: 'web_search', max_uses: 1 };
-const WEB_SEARCH_GUIDANCE = `\n\n[웹 검색 도구]\n` +
-  `- 기본은 위 위키 컨텍스트([N])로만 답한다. 위키에 있는 내용은 절대 웹 검색하지 않는다(비용·정확도).\n` +
-  `- 다음 경우에만 web_search 사용: (1) 위키에 없는 외부 기관·타 대학·인물(예: 카이스트) (2) 위키 범위를 벗어난 최신/실시간 정보 (3) 위키와 외부를 비교 요청.\n` +
-  `- 웹 결과를 사용하면 반드시 본문에 출처를 마크다운 링크 [제목](URL)로 명시한다.\n` +
-  `- 위키로 충분하면 web_search를 호출하지 않는다.`;
-
-// 공약설계 모드(policy-agent §8) — 외부 벤치마크·사례. max_uses:1로 하드 바운드(비용: web 페이지 본문이 입력토큰).
-const WEB_SEARCH_TOOL_POLICY = { type: 'web_search_20250305', name: 'web_search', max_uses: 1 };
-const WEB_SEARCH_GUIDANCE_POLICY = `\n\n[웹 검색 도구 — 공약설계 (능동 판단·직접 실행)]\n` +
-  `- 답에 외부 정보가 필요한지 네가 판단하고, *필요하면 직접 web_search로 가져온다*(최대 1회).\n` +
-  `- 외부가 필요한 경우 → **즉시 검색**: 질문이 타 대학·외부 기관과의 *비교를 전제*하거나, 현행 외부 법령·제도·외부 사례·통계가 답의 핵심인데 내부 위키에 없을 때.\n` +
-  `- ⛔ 금지: "자료에 없다"며 거절하거나 "원하시면 검색해 드리겠다"고 사용자에게 되묻는 것. 외부가 필요하다 판단한 순간 *네가 바로 검색해 답에 반영*하라. "내부에 없음"의 해결책은 거절이 아니라 검색이다.\n` +
-  `- 내부 거버넌스 사실로 충분히 답할 수 있으면 검색하지 않는다(비용). 검색 내용은 (외부지식)으로 표시, 출처 URL은 시스템이 자동 첨부.`;
+// web_search는 insight(policy) 전용. fact(normal) 파이프는 웹 미사용 — 내부 KB 전용(출처 리스크 차단).
+//   blocked_domains: 이용자 편집 위키·블로그를 하드 차단(거버넌스 도구 신뢰성 — 교수·총장후보 사용).
+//   max_uses:1로 비용 캡(검색 결과 본문이 입력토큰).
+const WEB_SEARCH_TOOL_POLICY = {
+  type: 'web_search_20250305',
+  name: 'web_search',
+  max_uses: 1,
+  blocked_domains: [
+    'namu.wiki', 'm.namu.wiki', 'thewiki.kr', 'librewiki.net',
+    'blog.naver.com', 'm.blog.naver.com', 'tistory.com', 'brunch.co.kr', 'velog.io',
+  ],
+};
+const WEB_SEARCH_GUIDANCE_POLICY = `\n\n[웹 검색 — 인사이트 전용]\n` +
+  `- 발동 원칙(하나만): 제공된 내부 자료([N])로 질문의 핵심을 충실히 답할 수 있으면 검색하지 않는다. 핵심의 일부라도 내부 자료에 없어 "자료 밖·별도 확인 필요"라고 쓰게 되는 상황이면, 떠넘기지 말고 그 부분을 web_search로 보강한다(최대 1회). ⚠️ 외부/비교/최신 같은 *주제 분류*로 판단하지 말고, 오직 "내부 자료로 답되느냐"로만 판단한다.\n` +
+  `- 실행: 외부가 필요하다 판단되면 거절하거나 "검색해 드릴까요"라고 되묻지 말고, 네가 직접 검색해 답에 반영한다.\n` +
+  `- 출처 기준: 정부·서울대 공식 공시·법령·판결·확립된 언론 보도 등 *1차·공신력 출처만* 사용한다. 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템이 차단). 특정 실명 인물에 대한 미검증 주장은 인용하지 않는다. 공신력 출처로 확인되지 않으면 단정하지 말고 생략하거나 "확인되지 않음"으로 표시한다.\n` +
+  `- 검색 내용은 (외부지식)으로 표시, 출처 URL은 시스템이 자동 첨부.`;
 
 /** web_search 출처를 본문 끝 "🌐 외부 출처" 블록으로 렌더 — 메타데이터 직접(모델 인라인 의존 X). URL+제목 중복제거 + 상위 6개. */
 function renderWebSources(cites: { url: string; title: string }[]): string {
@@ -88,15 +90,15 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: '질문 형식이 올바르지 않습니다.' }, { status: 400 });
   }
 
-  const { message, conversationId, mode } = parsed.data;
+  const { message, conversationId, mode: requestedMode } = parsed.data;
   const userId = session.user.id;
 
-  // lens 모드 — admin 전용
-  if (mode.startsWith('lens:') && role !== 'admin') {
+  // lens 모드 — admin 전용 (사용자가 명시적으로 고른 모드 → 라우터 우회)
+  if (requestedMode.startsWith('lens:') && role !== 'admin') {
     return Response.json({ error: '관리자 전용 모드입니다.' }, { status: 403 });
   }
-  // 공약설계 — admin + tier1 (D5: tier1까지 확대). tier2·pending 제외.
-  if (mode === 'policy' && role !== 'admin' && role !== 'tier1') {
+  // 명시적 policy 요청 — admin + tier1만. (라우터 자동승급은 아래에서 role을 다시 확인하므로 무관)
+  if (requestedMode === 'policy' && role !== 'admin' && role !== 'tier1') {
     return Response.json({ error: '접근 권한이 없습니다.' }, { status: 403 });
   }
 
@@ -122,6 +124,24 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('Failed to ensure chat user exists', err);
     return Response.json({ error: '사용자 정보를 준비하지 못했습니다.' }, { status: 500 });
+  }
+
+  // ── 상위 라우터 (multi-agent §5 Phase 3): 질문 의도 분류 → effective mode 결정 ──────────
+  //   UI 토글 없음 → 클라는 항상 mode='normal' 전송. Haiku 라우터가 질문을 fact/insight로
+  //   분류해 'normal'일 때만 실질 모드를 정한다. lens·명시적 policy는 사용자가 직접 고른 것 → 우회.
+  //   권한 게이트: insight(=policy 파이프)는 admin·tier1만. tier2·pending은 insight 의도여도 fact.
+  //   비용: 라우터 = Haiku ~$0.001/질문(짧은 분류). 실패 시 내부적으로 키워드 fallback(무료).
+  let mode = requestedMode;
+  let routerIntent: AgentIntent | null = null;
+  if (requestedMode === 'normal') {
+    const decision = await routeToAgent(message);
+    routerIntent = decision.agent;
+    const canInsight = role === 'admin' || role === 'tier1';
+    if (decision.agent === 'insight' && canInsight) mode = 'policy';
+    console.log(
+      `[router] intent=${decision.agent} via=${decision.via} role=${role} ` +
+      `→ mode=${mode} | ${decision.reason}`,
+    );
   }
 
   let routing;
@@ -196,7 +216,7 @@ export async function POST(req: NextRequest) {
       const parts = buildSystemPromptParts(budgetedContexts, role);
       systemPrompt = [
         { type: 'text', text: parts.stable, cache_control: { type: 'ephemeral' } },
-        { type: 'text', text: parts.tail + WEB_SEARCH_GUIDANCE },
+        { type: 'text', text: parts.tail },   // fact 파이프 — 웹 가이드 없음(내부 KB 전용)
       ];
       userMessage = buildUserMessage(message, numbered.contextMarkdown, numbered.summary);
     }
@@ -250,6 +270,8 @@ export async function POST(req: NextRequest) {
           agentNames: routing.contexts.map(c => c.agentName),
           conversationId: convId,
           lensPersona: lensPersonaInfo,
+          mode,                    // effective 모드(normal|policy|lens:xxx) — UI 배지용
+          intent: routerIntent,    // 상위 라우터 분류(fact|insight|null) — UI 표시 후속 훅
         });
 
         const client = getAnthropicClient();
@@ -280,17 +302,16 @@ export async function POST(req: NextRequest) {
           for (const m of selected) history.push({ role: m.role, content: m.content });
         }
 
-        // web_search: normal 모드만(lens는 페르소나 전용, 회귀위험 회피). 위키로 답하면 미발동 → 비용 0.
+        // web_search: insight(policy) 전용 — fact(normal)·lens는 내부 KB만(출처 리스크 차단, 비용 0).
         const anthropicStream = client.messages.stream({
           model: LLM_MODEL,
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
           messages: [...history, { role: 'user', content: userMessage }],
-          ...(mode.startsWith('lens:')
-            ? {}
-            : mode === 'policy'
-              ? { tools: [WEB_SEARCH_TOOL_POLICY] as unknown as never }
-              : { tools: [WEB_SEARCH_TOOL] as unknown as never }),
+          // 웹 도구는 insight(policy) 전용 — fact(normal)·lens는 미부착(내부 KB만).
+          ...(mode === 'policy'
+            ? { tools: [WEB_SEARCH_TOOL_POLICY] as unknown as never }
+            : {}),
         });
 
         // 스트리밍 + [N] → [위키] sid resolve

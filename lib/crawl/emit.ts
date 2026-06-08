@@ -87,7 +87,15 @@ export function writeObsidianPage(input: EmitInput): string {
   // label은 entity·strategy 등 config에 표시명이 있는 페이지에 공통 적용.
   const isEntity = pageType === 'entity';
   const koCat = isEntity ? input.entityKind ?? '학과' : koCategory(category);
-  const displayTitle = input.label ?? content.title;
+  // 제목: label > 추출제목 > (overview에서 추출제목이 영문 슬러그류면 "{기관} {한글라벨}" 보정)
+  let displayTitle: string;
+  if (input.label) displayTitle = input.label;
+  else if (isEntity) displayTitle = content.title;
+  else {
+    const t = (content.title ?? '').trim();
+    const slugLike = !t || /^[a-z0-9][a-z0-9_./-]*$/.test(t);
+    displayTitle = slugLike ? `${org.display_name} ${TITLE_LABEL[slug] ?? koCat}` : t;
+  }
 
   const fm: Record<string, unknown> = {
     type: pageType,
@@ -109,11 +117,16 @@ export function writeObsidianPage(input: EmitInput): string {
   if (isEntity) fm.entity_type = input.entityKind ?? '학과';
   if (pageType === 'fact') fm.verified_at = fetchedAt;
 
+  // 본문 첫 헤딩이 제목과 동일하면 제거 — emit이 `# 제목`을 이미 붙이므로 중복 H1 방지(QA 2026-06-04, gsph 등)
+  let bodyMd = content.markdown;
+  const lead = bodyMd.match(/^\s*#{1,6}\s+(.+?)\s*(?:\n|$)/);
+  if (lead && lead[1].trim() === displayTitle.trim()) bodyMd = bodyMd.slice(lead[0].length);
+
   const body = [
     `# ${displayTitle}`,
     '',
     pageType === 'fact' ? '## 내용' : '',
-    content.markdown,
+    bodyMd,
     '',
     '## 출처',
     `- 외부: ${sourceUrl}`,
@@ -147,6 +160,21 @@ function koCategory(cat: Category): string {
   };
   return map[cat];
 }
+
+// 페이지 slug → 한글 제목 라벨 (overview 제목 보정용, 이모지 없음). 미상 slug는 koCategory로 폴백.
+const TITLE_LABEL: Record<string, string> = {
+  greeting: '인사말', history: '연혁', vision: '비전', dept: '학과 안내',
+  'dean-profile': '학장 소개', 'dean-intro': '학장 소개', dean: '학장 소개', 'core-agenda': '핵심 아젠다',
+  organization: '조직', 'organization-chart': '조직도', 'org-chart': '조직도', orgchart: '조직도',
+  'history-records': '역사 기록', facts: '현황', intro: '소개', status: '보직자 현황',
+  'former-deans': '역대 학장', 'former-dean': '역대 학장', 'past-dean': '역대 학장', 'past-deans': '역대 학장',
+  'deans-history': '학장실 연혁', 'admission-guide': '입학 안내', talent: '인재상', leadership: '리더십',
+  'edu-goals': '교육 목표', 'education-goals': '교육 목표', kpi: '성과 지표', 'curriculum-system': '교육과정',
+  'major-design': '전공 설계', directions: '찾아오시는 길', 'contact-map': '연락처·약도', 'admin-office': '행정실',
+  'academic-info': '학사 안내', iab: '국제자문위원회', 'research-activities': '연구활동·성과',
+  'ai-policy': 'AI 정책·가이드라인', 'teaching-award': '우수강의', 'vision-overview': '비전 개요',
+  'strategy-vision': '비전·전략과제', 'dean-pledge': '학장 비전', 'core-strategy': '핵심전략', 'dev-plan': '발전계획',
+};
 
 // 페이지 slug → 표시 라벨 (index 카탈로그용).
 const SLUG_LABEL: Record<string, string> = {

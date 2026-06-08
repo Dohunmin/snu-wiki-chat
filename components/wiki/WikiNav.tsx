@@ -5,6 +5,7 @@ import { useState } from 'react';
 interface WikiMeta {
   id: string;
   name: string;
+  group?: string | null;
   counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number };
 }
 
@@ -24,6 +25,7 @@ const TABS = [
   { key: 'overviews', label: '개요', color: 'bg-teal-100 text-teal-700' },
 ] as const;
 
+// 거버넌스 위키는 위키별 색, 단과대/대학원은 그룹 색.
 const WIKI_COLORS: Record<string, string> = {
   senate: 'border-l-blue-500',
   board: 'border-l-purple-500',
@@ -33,13 +35,24 @@ const WIKI_COLORS: Record<string, string> = {
   status: 'border-l-teal-500',
   'yhl-speeches': 'border-l-rose-500',
   finance: 'border-l-indigo-500',
+  leesj: 'border-l-fuchsia-500',
 };
+const GROUP_COLOR: Record<string, string> = {
+  '단과대': 'border-l-cyan-500',
+  '대학원': 'border-l-violet-500',
+};
+
+function colorFor(wiki: WikiMeta): string {
+  return WIKI_COLORS[wiki.id] ?? GROUP_COLOR[wiki.group ?? ''] ?? 'border-l-gray-400';
+}
 
 export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Record<string, string>>({});
   const [items, setItems] = useState<Record<string, Record<string, { id: string; title?: string; name?: string; query?: string }[]>>>({});
   const [loading, setLoading] = useState<string | null>(null);
+  // 단과대·대학원 섹션은 기본 접힘(거버넌스만 펼침) — 초기 화면 간결 유지.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ '단과대': false, '대학원': false });
 
   async function expand(agentId: string) {
     if (expanded === agentId) { setExpanded(null); return; }
@@ -63,9 +76,111 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
     setLoading(null);
   }
 
-  function getTab(agentId: string) {
-    return activeTab[agentId] ?? 'sources';
+  // 기본 탭 = 첫 번째 비어있지 않은 탭(단과대/대학원은 소스 0 → 개요·엔티티로 시작)
+  function firstTab(wiki: WikiMeta): string {
+    const t = TABS.find(tab => (wiki.counts[tab.key as keyof typeof wiki.counts] ?? 0) > 0);
+    return t?.key ?? 'sources';
   }
+  function getTab(wiki: WikiMeta) {
+    return activeTab[wiki.id] ?? firstTab(wiki);
+  }
+
+  const renderCard = (wiki: WikiMeta) => (
+    <div key={wiki.id} className={`rounded-xl border border-gray-200 overflow-hidden border-l-4 ${colorFor(wiki)}`}>
+      <button
+        onClick={() => expand(wiki.id)}
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 text-left bg-white"
+      >
+        <div>
+          <span className="text-sm font-semibold text-gray-800">{wiki.name}</span>
+          <p className="text-xs text-gray-400 mt-1">
+            {[
+              wiki.counts.sources > 0 ? `소스 ${wiki.counts.sources}` : null,
+              wiki.counts.topics > 0 ? `토픽 ${wiki.counts.topics}` : null,
+              wiki.counts.entities > 0 ? `엔티티 ${wiki.counts.entities}` : null,
+              (wiki.counts.facts ?? 0) > 0 ? `팩트 ${wiki.counts.facts}` : null,
+              (wiki.counts.stances ?? 0) > 0 ? `입장 ${wiki.counts.stances}` : null,
+              (wiki.counts.overviews ?? 0) > 0 ? `개요 ${wiki.counts.overviews}` : null,
+            ].filter(Boolean).join(' · ') || '준비 중'}
+          </p>
+        </div>
+        <span className="text-gray-400 text-lg">{expanded === wiki.id ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded === wiki.id && (
+        <div className="border-t border-gray-100 bg-gray-50">
+          {/* 탭 */}
+          <div className="flex flex-wrap gap-1.5 px-4 py-3">
+            {TABS.filter(tab => (wiki.counts[tab.key as keyof typeof wiki.counts] ?? 0) > 0).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(p => ({ ...p, [wiki.id]: tab.key }))}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                  getTab(wiki) === tab.key
+                    ? tab.color
+                    : 'text-gray-500 bg-white border border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                {tab.label}
+                <span className="ml-1 opacity-70">({wiki.counts[tab.key as keyof typeof wiki.counts]})</span>
+              </button>
+            ))}
+          </div>
+
+          {loading === wiki.id ? (
+            <div className="px-4 py-4 text-sm text-gray-400">불러오는 중...</div>
+          ) : (
+            <ul className="max-h-72 overflow-y-auto border-t border-gray-100">
+              {(items[wiki.id]?.[getTab(wiki)] ?? []).map(item => {
+                const label = item.title ?? item.name ?? item.query ?? item.id;
+                const isActive = selected?.agentId === wiki.id && selected?.type === getTab(wiki) && selected?.itemId === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => onSelect(wiki.id, getTab(wiki), item.id)}
+                      className={`w-full text-left px-4 py-2.5 text-sm border-b border-gray-100 last:border-0 transition-colors ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-700 hover:bg-white'
+                      }`}
+                    >
+                      <span className="line-clamp-2">{label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+              {(items[wiki.id]?.[getTab(wiki)] ?? []).length === 0 && (
+                <li className="px-4 py-4 text-sm text-gray-400">항목 없음</li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const governance = wikis.filter(w => !w.group);
+  const colleges = wikis.filter(w => w.group === '단과대');
+  const grads = wikis.filter(w => w.group === '대학원');
+
+  const renderGroup = (title: string, list: WikiMeta[]) => {
+    if (list.length === 0) return null;
+    const open = openGroups[title];
+    return (
+      <div>
+        <button
+          onClick={() => setOpenGroups(p => ({ ...p, [title]: !p[title] }))}
+          className="w-full flex items-center justify-between px-2 py-2 text-left hover:bg-gray-100 rounded-lg"
+        >
+          <span className="text-xs font-bold text-gray-500 tracking-wide">
+            {title} <span className="text-gray-400">{list.length}</span>
+          </span>
+          <span className="text-gray-400 text-sm">{open ? '▲' : '▼'}</span>
+        </button>
+        {open && <div className="space-y-2 mt-2">{list.map(renderCard)}</div>}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -73,80 +188,18 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
         <p className="text-xs text-gray-400 mt-0.5">위키를 클릭해 소스·팩트·입장 등을 탐색하세요</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {wikis.map(wiki => (
-          <div key={wiki.id} className={`rounded-xl border border-gray-200 overflow-hidden border-l-4 ${WIKI_COLORS[wiki.id] ?? 'border-l-gray-400'}`}>
-            <button
-              onClick={() => expand(wiki.id)}
-              className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 text-left bg-white"
-            >
-              <div>
-                <span className="text-sm font-semibold text-gray-800">{wiki.name}</span>
-                <p className="text-xs text-gray-400 mt-1">
-                  {[
-                    wiki.counts.sources > 0 ? `소스 ${wiki.counts.sources}` : null,
-                    wiki.counts.topics > 0 ? `토픽 ${wiki.counts.topics}` : null,
-                    wiki.counts.entities > 0 ? `엔티티 ${wiki.counts.entities}` : null,
-                    (wiki.counts.facts ?? 0) > 0 ? `팩트 ${wiki.counts.facts}` : null,
-                    (wiki.counts.stances ?? 0) > 0 ? `입장 ${wiki.counts.stances}` : null,
-                    (wiki.counts.overviews ?? 0) > 0 ? `개요 ${wiki.counts.overviews}` : null,
-                  ].filter(Boolean).join(' · ')}
-                </p>
-              </div>
-              <span className="text-gray-400 text-lg">{expanded === wiki.id ? '▲' : '▼'}</span>
-            </button>
-
-            {expanded === wiki.id && (
-              <div className="border-t border-gray-100 bg-gray-50">
-                {/* 탭 */}
-                <div className="flex flex-wrap gap-1.5 px-4 py-3">
-                  {TABS.filter(tab => (wiki.counts[tab.key as keyof typeof wiki.counts] ?? 0) > 0).map(tab => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab(p => ({ ...p, [wiki.id]: tab.key }))}
-                      className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                        getTab(wiki.id) === tab.key
-                          ? tab.color
-                          : 'text-gray-500 bg-white border border-gray-200 hover:bg-gray-100'
-                      }`}
-                    >
-                      {tab.label}
-                      <span className="ml-1 opacity-70">({wiki.counts[tab.key as keyof typeof wiki.counts]})</span>
-                    </button>
-                  ))}
-                </div>
-
-                {loading === wiki.id ? (
-                  <div className="px-4 py-4 text-sm text-gray-400">불러오는 중...</div>
-                ) : (
-                  <ul className="max-h-72 overflow-y-auto border-t border-gray-100">
-                    {(items[wiki.id]?.[getTab(wiki.id)] ?? []).map(item => {
-                      const label = item.title ?? item.name ?? item.query ?? item.id;
-                      const isActive = selected?.agentId === wiki.id && selected?.type === getTab(wiki.id) && selected?.itemId === item.id;
-                      return (
-                        <li key={item.id}>
-                          <button
-                            onClick={() => onSelect(wiki.id, getTab(wiki.id), item.id)}
-                            className={`w-full text-left px-4 py-2.5 text-sm border-b border-gray-100 last:border-0 transition-colors ${
-                              isActive
-                                ? 'bg-blue-50 text-blue-700 font-medium'
-                                : 'text-gray-700 hover:bg-white'
-                            }`}
-                          >
-                            <span className="line-clamp-2">{label}</span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                    {(items[wiki.id]?.[getTab(wiki.id)] ?? []).length === 0 && (
-                      <li className="px-4 py-4 text-sm text-gray-400">항목 없음</li>
-                    )}
-                  </ul>
-                )}
-              </div>
-            )}
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+        {/* 거버넌스 — 항상 펼침 */}
+        {governance.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold text-gray-500 tracking-wide px-2">거버넌스</p>
+            {governance.map(renderCard)}
           </div>
-        ))}
+        )}
+
+        {/* 단과대 · 대학원 — 접이식 */}
+        {renderGroup('단과대', colleges)}
+        {renderGroup('대학원', grads)}
 
         {/* 채팅 Synthesis */}
         <div className="rounded-xl border border-gray-200 overflow-hidden border-l-4 border-l-rose-400">

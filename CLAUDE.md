@@ -52,6 +52,28 @@
 - 빌드 위치: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (lensPersona 위키는 제외 — `395d21f` 커밋)
 - 로딩 위치: [lib/agents/router.ts:60-70](lib/agents/router.ts#L60-L70) (`getConceptIndex`, 캐시됨)
 
+### 2.1 단과대/대학원 위키 (college-grad-wiki, per-college 동적 생성)
+
+위 9개 외에, **각 단과대·대학원 = 독립 wiki_id**로 동적 등록된다. (통합 위키 아님 — wiki_id 격리로 "공대 X"는 eng 위키로만 라우팅, 교차오염 0.)
+
+- **레지스트리**: [config/colleges.yaml](config/colleges.yaml) — 28개 조직(survey_status 기반). `active: true`만 위키화.
+- **소스**: Obsidian `SNU_단과대_LLM_Wiki` / `SNU_대학원_LLM_Wiki`의 `wiki/{overviews,facts,sources,entities}/{org.id}/` 하위폴더.
+- **생성**: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) `buildCollegeWiki` + `ensureCollegeAgent` — active 조직마다 `data/{org.id}.json` + agent 항목(`group: '단과대'|'대학원'`) 자동 생성. **조직 추가 = yaml `active` 플래그만 → O(1)**.
+- **라우팅**: 기존 wiki_id 메커니즘 그대로. `group` 위키가 선택되면 [lib/agents/tier-classifier.ts](lib/agents/tier-classifier.ts) `classifyTier`로 Tier(1~4) 산출 → `RoutingResult.tier`/`.college`. T3(연락처·통계)/T4(최신공지)는 chat 핸들러가 분기(structured_facts/live_cache, 후속 module).
+- **크롤**: [lib/crawl/](lib/crawl/) (8개 사이트 엔진 어댑터) → Tier1/2 `.md` 생성(raw HTML는 `raw/html/`에 원본 보존) → 위 빌드 파이프라인. cleanser는 콘텐츠셀렉터+밀도기반선택(readability-lite)+반복블록 메뉴제거로 nav/메뉴 걸러냄.
+- **Tier3/4** (`lib/agents/structured.ts`, 앱 DB): T3=`structured_facts`(연락처·통계, TTL 90일), T4=`live_cache`(최신공지, TTL 6h). chat route가 `routing.tier===3|4 && routing.college`일 때 직답(`streamDirectAnswer`, LLM 0토큰). 미스/만료→Tier1 degrade.
+- Phase 1 active: `eng`·`humanities`·`social`·`science`. Phase 2~4는 yaml `active` 전환으로 확장.
+
+### 2.2 웹검색 — insight(policy) 전용 (2026-06 설계 변경)
+
+> ⚠️ **변경**: 과거엔 normal(fact) 모드도 `web_search`를 썼으나, **fact 답변이 웹發 사실을 권위 있게 단정하는 리스크**(특히 교수·총장후보가 쓰는 거버넌스 도구) 때문에 **fact 파이프에서 웹 완전 제거**. 웹은 **insight(policy) 파이프 전용**으로 이전. → fact는 내부 KB로만 답하고, 없으면 "내부 자료 범위 밖"으로 정직하게 답함(웹發 리스크 0). 상위 라우터(§3.0)가 fact/insight를 가르므로, 외부 reach가 필요할 수 있는 애매한 질문은 "애매하면 insight" 비대칭으로 insight에 배정 → 웹 도달 보장.
+
+- **위치**: [app/api/chat/route.ts](app/api/chat/route.ts) — `mode === 'policy'`일 때만 메인 스트림에 `WEB_SEARCH_TOOL_POLICY` + `WEB_SEARCH_GUIDANCE_POLICY` 부착. fact(normal)·lens는 도구 미부착.
+- **발동 원칙(하나)**: 주제 분류(외부/비교/최신)가 아니라 **"내부 자료([N])로 핵심이 답되느냐"** 만으로 판단. 답되면 검색 안 함, 핵심 일부가 내부에 없으면 떠넘기지 말고 보강(max_uses:1).
+- **출처 가드**: `blocked_domains`로 나무위키·더위키·개인 블로그 **하드 차단** + 프롬프트로 1차·공신력 출처만, 실명 미검증 주장 인용 금지, 미확인은 생략/표시.
+- **권한·격리**: insight 자체가 admin·tier1 전용(§7) → 웹 노출이 그 경로로만 좁혀짐. tier2·pending은 fact만 → 웹 절대 미도달. lens 미적용.
+- **비용**: fact·lens **$0**(웹 없음). insight 발동 시 **~$0.18~0.36**(웹 페이지 본문이 입력토큰). `[chat-usage] web=N` 로깅.
+
 ---
 
 ## 3. 라우팅 엔진

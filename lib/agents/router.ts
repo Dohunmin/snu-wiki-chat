@@ -11,7 +11,7 @@ import { semanticRoutingHints } from '@/lib/embed/search';
 import { globalTopK, partitionByWiki } from '@/lib/embed/global-retrieve';
 import type { KeywordRankedChunk } from '@/lib/embed/types';
 import { detectBreadthIntent } from './recency';
-import { isCollegeGroup, isCollegeReferenced } from './college-route';
+import { isCollegeGroup, isCollegeReferenced, detectGroupBreadth } from './college-route';
 // college-grad-wiki — tier 분류 (T3/T4 게이트)
 import { classifyTier, type Tier } from './tier-classifier';
 
@@ -28,6 +28,10 @@ export interface RoutingResult {
 const MIN_ABSOLUTE_SCORE = 3;
 const RELATIVE_THRESHOLD = 0.4;
 const MAX_WIKIS = 6;
+// "전체/종합" 글로벌 경로에서 단과대/대학원이 breadth로 admit됐을 때 dispatch 상한.
+//   거버넌스(9)는 전부 dispatch하되, 단과대/대학원 28개 전체를 getContext하면 비용·답변 희석 →
+//   prefilter 상위 N개로 캡. 집계 레이어는 alwaysContext인 대학현황(status)이 이미 제공.
+const GLOBAL_COLLEGE_CAP = 4;
 const ALWAYS_CONTEXT_CAP = 5;
 const TOTAL_CHUNK_BUDGET = 22;   // 30→22: B-2 가중분배라 하위 청크는 토큰만 먹고 기여 적음(입력 토큰 절감)
 
@@ -107,13 +111,23 @@ function lookupConceptIndex(queryWords: string[]): {
   return { forcedWikis, guaranteedPages };
 }
 
-/** lensPersona 항상 제외, adminOnly는 비admin 제외, 단과대/대학원은 *명시 지칭* 질문에만 포함(wiki_id 격리). */
+/**
+ * lensPersona 항상 제외, adminOnly는 비admin 제외.
+ * 단과대/대학원은 두 신호 중 하나면 후보 풀에 admit:
+ *   (1) 명시 지칭 — 특정 단과대명/약칭(isCollegeReferenced). 기존 격리 정밀도 유지.
+ *   (2) 그룹 breadth — "각 단과대"·"전공"·"대학원별" 등 그룹 전체 지칭(detectGroupBreadth).
+ * admit ≠ 강제 선택. 이후 prefilter/semantic/MAX_WIKIS 게이트를 통과해야 실제 라우팅됨.
+ *   → 거버넌스 질문(신호 0)은 단과대 전부 제외(오염 0) 그대로, 횡단·집계 질문만 recall 복구.
+ */
 function getRoutableAgents(userRole: Role, query: string) {
+  const breadth = detectGroupBreadth(query);
   return registry.getAll().filter(a => {
     if (a.config.lensPersona) return false;
     if (a.config.adminOnly && userRole !== 'admin') return false;
-    // 단과대는 질문이 그 단과대를 명시적으로 지칭할 때만 — 거버넌스 질문 오염 차단(college-route.ts).
-    if (isCollegeGroup(a.config) && !isCollegeReferenced(query, a.config)) return false;
+    if (isCollegeGroup(a.config)) {
+      const grp = a.config.group as '단과대' | '대학원';
+      if (!isCollegeReferenced(query, a.config) && !breadth[grp]) return false;
+    }
     return true;
   });
 }
@@ -127,8 +141,21 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   // === Tier 0: 글로벌 키워드 → 전체 위키 full coverage ===
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
   if (hasGlobalKeyword) {
+    // 거버넌스는 전부, 단과대/대학원(breadth로 admit된 경우)은 prefilter 상위 GLOBAL_COLLEGE_CAP개만.
+    //   신호 없으면 agents에 단과대가 애초에 없음 → pool == 거버넌스(기존 동작 그대로, 회귀 없음).
+    const collegeAgents = agents.filter(a => isCollegeGroup(a.config));
+    let pool = agents;
+    if (collegeAgents.length > GLOBAL_COLLEGE_CAP) {
+      const govAgents = agents.filter(a => !isCollegeGroup(a.config));
+      const topColleges = collegeAgents
+        .map(a => ({ a, score: prefilterScore(a, queryWords) }))
+        .sort((x, y) => y.score - x.score)
+        .slice(0, GLOBAL_COLLEGE_CAP)
+        .map(x => x.a);
+      pool = [...govAgents, ...topColleges];
+    }
     const contexts = await Promise.all(
-      agents.map(a => a.getContext(query, userRole, true))
+      pool.map(a => a.getContext(query, userRole, true))
     );
     return { selectedAgentIds: contexts.map(c => c.agentId), contexts, isGlobal: true };
   }
@@ -227,7 +254,12 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   const selected = scored.filter((s, i) => {
     if (s.agent.config.alwaysContext) return true;
     if (forcedWikis.has(s.agent.config.id)) return true;
-    if (topScore === 0) return true;
+    if (topScore === 0) {
+      // 아무 위키도 키워드 매칭 0: 거버넌스는 기존 fallback(전체 후보) 유지.
+      //   단, breadth로 admit된 단과대/대학원은 semantic/concept로 forced된 것만(위에서 이미 통과) —
+      //   여기선 제외해 무관한 그룹 위키가 무더기 진입하는 것 차단(forced 콜리지는 영향 없음).
+      return !isCollegeGroup(s.agent.config);
+    }
     if (s.score < MIN_ABSOLUTE_SCORE) return false;
     if (s.score < relativeThreshold) return false;
     if (i > gapCutoff) return false;
