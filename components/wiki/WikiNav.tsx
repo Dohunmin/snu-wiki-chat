@@ -163,21 +163,29 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
   const colleges = wikis.filter(w => w.group === '단과대');
   const grads = wikis.filter(w => w.group === '대학원');
 
-  const renderGroup = (title: string, list: WikiMeta[]) => {
+  // 단과대·대학원 = 거버넌스 카드와 *동급* 독립 위키집 폴더카드.
+  //   클릭 → 하위 단과대/대학원 카드 목록 펼침 → 각 카드 클릭 → 탭(소스·엔티티·팩트·토픽…).
+  //   = 거버넌스보다 깊이 1단계 더(폴더 → 목록 → 탭).
+  const renderGroupCard = (title: string, list: WikiMeta[], border: string, icon: string) => {
     if (list.length === 0) return null;
     const open = openGroups[title];
     return (
-      <div>
+      <div className={`rounded-xl border border-gray-200 overflow-hidden border-l-4 ${border}`}>
         <button
           onClick={() => setOpenGroups(p => ({ ...p, [title]: !p[title] }))}
-          className="w-full flex items-center justify-between px-2 py-2 text-left hover:bg-gray-100 rounded-lg"
+          className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 text-left bg-white"
         >
-          <span className="text-xs font-bold text-gray-500 tracking-wide">
-            {title} <span className="text-gray-400">{list.length}</span>
-          </span>
-          <span className="text-gray-400 text-sm">{open ? '▲' : '▼'}</span>
+          <div>
+            <span className="text-sm font-semibold text-gray-800">{icon} {title}</span>
+            <p className="text-xs text-gray-400 mt-1">{list.length}개 위키 · 클릭해 펼치기</p>
+          </div>
+          <span className="text-gray-400 text-lg">{open ? '▲' : '▼'}</span>
         </button>
-        {open && <div className="space-y-2 mt-2">{list.map(renderCard)}</div>}
+        {open && (
+          <div className="border-t border-gray-100 bg-gray-50 p-2 space-y-2">
+            {list.map(renderCard)}
+          </div>
+        )}
       </div>
     );
   };
@@ -197,9 +205,9 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
           </div>
         )}
 
-        {/* 단과대 · 대학원 — 접이식 */}
-        {renderGroup('단과대', colleges)}
-        {renderGroup('대학원', grads)}
+        {/* 단과대 · 대학원 — 독립 위키집 폴더카드(클릭 → 하위 목록 → 각 위키 → 탭) */}
+        {renderGroupCard('단과대', colleges, 'border-l-cyan-500', '🏛️')}
+        {renderGroupCard('대학원', grads, 'border-l-violet-500', '🎓')}
 
         {/* 채팅 Synthesis */}
         <div className="rounded-xl border border-gray-200 overflow-hidden border-l-4 border-l-rose-400">

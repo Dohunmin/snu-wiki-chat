@@ -121,10 +121,11 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
         <h1 className="text-xl font-semibold text-gray-900 mb-3">{title}</h1>
         {Object.keys(meta).length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
-            {(meta.tags as string[] | undefined)?.map(t => (
+            {/* tags/topics가 배열이 아닐 수 있음(단과대 빌드가 빈값을 "" 문자열로 내보냄) → Array.isArray 가드로 .map 크래시 방지 */}
+            {(Array.isArray(meta.tags) ? meta.tags as string[] : []).map(t => (
               <span key={t} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{t}</span>
             ))}
-            {(meta.topics as string[] | undefined)?.map(t => (
+            {(Array.isArray(meta.topics) ? meta.topics as string[] : []).map(t => (
               <span key={t} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">{t}</span>
             ))}
             {meta.date != null && <span className="text-xs text-gray-400">{String(meta.date)}</span>}
