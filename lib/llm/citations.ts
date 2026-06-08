@@ -14,6 +14,7 @@
  */
 
 import type { AgentContext } from '@/lib/agents/types';
+import agentsConfig from '@/data/agents.config.json';
 
 export interface CitationRef {
   wiki: string;       // 위키 display name (e.g., "평의원회")
@@ -121,12 +122,13 @@ export function buildNumberedContexts(contexts: AgentContext[], opts: { showSour
   };
 }
 
-// 위키명 → agent ID 매핑 (ChatPage.tsx의 WIKI_ID_MAP과 동기화)
+// 위키명 → agent ID 매핑. agents.config에서 동적 구성 → 거버넌스 9 + 단과대/대학원 전부 커버.
+//   (기존 하드코딩은 거버넌스만 → 단과대/대학원 인용이 agentId 못 찾아 raw `[인문대학] vision`으로 노출되던 버그.)
 const WIKI_TO_AGENT: Record<string, string> = {
-  '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan',
-  '중장기발전계획': 'vision', '중장기': 'vision',
-  '70년역사': 'history', '대학현황': 'status',
-  '유홍림총장연설': 'yhl-speeches', '재무정보공시': 'finance',
+  ...Object.fromEntries(
+    (agentsConfig.agents as { id: string; name: string }[]).map(a => [a.name, a.id]),
+  ),
+  '중장기': 'vision',   // 별칭 보존
 };
 
 function buildFriendlyLabel(ref: CitationRef): string {
@@ -156,16 +158,20 @@ export function resolveText(text: string, mapping: Map<number, CitationRef>): st
     const ref = mapping.get(n);
     if (!ref) return match;
 
-    // 친화 처리 대상: stance / fact / overview
+    // 친화 처리 대상: stance / fact / overview.
+    //   type 결정 — page suffix(.stance/.fact/.overview = 거버넌스) 우선, 없으면 topic(단과대/대학원의 c.type).
     const suffixMatch = ref.page.match(/\.(stance|fact|overview)$/);
-    if (suffixMatch) {
-      const typeMap = { stance: 'stances', fact: 'facts', overview: 'overviews' };
-      const type = typeMap[suffixMatch[1] as 'stance' | 'fact' | 'overview'];
+    const typeKey = suffixMatch?.[1]
+      ?? (ref.topic === 'overview' || ref.topic === 'fact' || ref.topic === 'stance' ? ref.topic : null);
+    if (typeKey) {
+      const typeMap = { stance: 'stances', fact: 'facts', overview: 'overviews' } as const;
+      const type = typeMap[typeKey as 'stance' | 'fact' | 'overview'];
       const agentId = WIKI_TO_AGENT[ref.wiki];
       const friendly = buildFriendlyLabel(ref);
-      if (!agentId) return `[${ref.wiki}] ${friendly}`;
+      if (!agentId) return `[${ref.wiki}] ${friendly}`;   // 링크 못 만들어도 raw slug 대신 친화이름 노출
       const url = `/wiki?agent=${agentId}&type=${type}&id=${encodeURIComponent(ref.page)}`;
-      return `[${ref.wiki} ${friendly}](${url})`;
+      const linkText = friendly.startsWith(ref.wiki) ? friendly : `${ref.wiki} ${friendly}`;
+      return `[${linkText}](${url})`;
     }
     // source는 기존 형식 — UI linkifyCitations가 처리
     return `[${ref.wiki}] ${ref.page}`;
