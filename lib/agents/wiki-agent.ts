@@ -168,7 +168,8 @@ export class WikiAgent implements AgentPlugin {
     const queryLower = query.toLowerCase();
     const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
     // Plan SC: SC1 (시간성 쿼리에 신규 source 진입)
-    const isRecencyQuery = detectRecencyIntent(query);
+    // unified-intent-router: plan.recency 주입 시 우선, 없으면(flag OFF/스크립트) 정규식 fallback.
+    const isRecencyQuery = options.recency ?? detectRecencyIntent(query);
 
     const allowedSources = data.sources.filter(s => isSensitiveAllowed || !s.sensitive);
     const allowedSourceIds = new Set(allowedSources.map(s => s.id));

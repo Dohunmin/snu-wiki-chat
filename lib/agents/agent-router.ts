@@ -12,6 +12,22 @@
 import { getAnthropicClient, LLM_MODEL_LIGHT } from '@/lib/llm/client';
 
 export type AgentIntent = 'fact' | 'insight';
+/** college 그룹 신호 — 특정 단과대명(isCollegeReferenced)이 아닌 *그룹 전체* 지칭 범위. */
+export type CollegeGroupScope = '단과대' | '대학원' | 'both' | 'none';
+
+/**
+ * 통합 쿼리 플랜 — 단일 Haiku 콜(planQuery)이 산출하는 의도 데이터.
+ *   흩어진 정규식 분류기(complexity.ts/recency.ts/college-route.ts)를 대체(unified-intent-router).
+ */
+export interface QueryPlan {
+  intent: AgentIntent;                 // 답변 스타일 (fact/insight)
+  complexity: 'simple' | 'complex';    // → 컨텍스트 예산 (16k/40k)
+  recency: boolean;                    // → 최신 source 주입
+  collegeBreadth: CollegeGroupScope;   // → 단과대/대학원 그룹 admit
+  collegeAggregate: CollegeGroupScope; // → 그룹 전체 집계 force-select
+  reason: string;
+  via: 'llm' | 'fallback';
+}
 
 const ROUTER_SYSTEM = `당신은 서울대 거버넌스 챗봇의 *질문 분류기*입니다. 질문의 **답변 방식**을 두 유형으로 분류하세요.
 ⚠️ 데이터가 내부 자료에 있냐 / 외부 웹검색이 필요하냐는 **분류 기준이 아닙니다** — 그건 답변 에이전트가 따로 판단합니다. "웹이 필요해 보인다"는 이유로 insight로 분류하지 마세요.
@@ -34,6 +50,14 @@ export interface RouteDecision { agent: AgentIntent; reason: string; via: 'llm' 
 
 // 라우터는 매 채팅의 임계경로 → 행(hang)이 곧 채팅 멈춤. 빠른 실패 후 키워드 fallback이 안전.
 const ROUTER_TIMEOUT_MS = 4000;
+
+/** 토큰 사용량 누적기 — 측정 스크립트(shadow-intent 등)가 실비용 산정에 사용. 프로덕션 동작엔 무영향. */
+export const routerUsage = { calls: 0, inputTokens: 0, outputTokens: 0 };
+function recordUsage(u: { input_tokens: number; output_tokens: number }) {
+  routerUsage.calls++;
+  routerUsage.inputTokens += u.input_tokens;
+  routerUsage.outputTokens += u.output_tokens;
+}
 
 /**
  * Haiku 응답에서 agent 값을 직접 추출 — reason이 max_tokens로 잘려 닫는 }가 없어도 잡힌다.
@@ -58,6 +82,7 @@ export async function routeToAgent(query: string): Promise<RouteDecision> {
       },
       { timeout: ROUTER_TIMEOUT_MS, maxRetries: 1 },
     );
+    recordUsage(resp.usage);
     const text = resp.content.find((b): b is { type: 'text'; text: string } => b.type === 'text')?.text ?? '';
     const agent = extractAgent(text);
     if (agent) {
@@ -69,4 +94,94 @@ export async function routeToAgent(query: string): Promise<RouteDecision> {
     console.error('[router] LLM 분류 실패/타임아웃 → insight 기본값:', err);
   }
   return { agent: 'insight', reason: '분류 실패 → insight 기본값', via: 'fallback' };
+}
+
+// ─── unified-intent-router: 통합 QueryPlan (planQuery) ──────────────────────────
+// routeToAgent(위 ROUTER_SYSTEM)는 flag OFF(shadow) 동안 라이브 intent→mode를 *불변*으로 유지(회귀 0).
+// planQuery(아래 PLAN_SYSTEM)는 INTENT_PLAN_ENABLED=ON일 때 라이브 소비 + offline shadow 비교용.
+//   cutover(검증 후) 시 routeToAgent/ROUTER_SYSTEM/extractAgent 은퇴 → planQuery 단일화.
+
+const PLAN_SYSTEM = `당신은 서울대 거버넌스 챗봇의 *질문 분석기*입니다. 질문을 읽고 아래 5개 항목을 JSON 한 줄로 판정하세요.
+
+═══ 1) intent — 답변 방식 (fact / insight) ═══
+⚠️ 데이터가 내부에 있냐 / 웹이 필요하냐는 **기준 아님**. "웹 필요해 보인다"는 이유로 insight 금지.
+- **fact**: 내부 자료로 *직접 찾아 보고·나열·비교*하면 되는 질문(자료가 곧 답). 구체적 사실의 연관성·차이·패턴 *보고*, 이슈·현황·연혁의 *단순 보고*도 fact.
+  예: "2026 예산은?", "이사회 안건 종류", "법인화 후 재정구조 변화", "인문대 이슈 알려줘", "역대 총장 전공과 사업의 연관성".
+- **insight**: 사실을 *해석·판단·진단·제안*하거나, **외부 정보**(외부 시선·여론·언론 언급·타 대학/기관 비교)가 필요한 질문. 자료로 답돼도 해석/판단/원인/제안이면 insight.
+  예: "예산 늘릴 방안?", "~가능할까?", "종합대학 체계가 최선인가", "어떻게 개선해야 하나", "채용 어려운 이유/원인", "외부에서 서울대를 보는 시선·부정 언급", "인문대와 사회대 입장 차이".
+  ⭐ 이유·원인·의미·의의를 묻는 건 "~는 무엇인가"로 끝나도 insight. 외부 정보 필요시 insight. 애매하면 insight.
+
+═══ 2) complexity — 필요한 자료 범위 (simple / complex) ═══
+- "simple": 단일 사실 조회(무엇/얼마/언제/누구·짧은 목록·연락처), 또는 단일 주제 이슈·현황을 *나열·보고*만 요구(분석·비교·인과 없음). 예: "2026 예산은?", "이사회 안건 종류", "인문대 이슈 알려줘".
+- "complex": 분석·종합·비교·다면적·여러 물음. 예: "원인이 뭐야", "개선 방안", "A와 B 비교", "정리해줘", "각 단과대별 ~", "재정구조 어떻게 변했나? 재원구성 변화는?".
+  애매하면 complex.
+
+═══ 3) recency — 최신성 (true / false) ═══
+질문에 **명시적 시간어**(최근·최신·올해·이번·지금·현재·작년·N년·요즘)가 있을 때만 true. "이슈·내용·현황·정보 알려줘"처럼 시간어 없이 일반 조회면 **false**(최신성 임의 추론 금지). "역대·과거·연혁" 등 과거지향도 false.
+
+═══ 4) collegeBreadth — 단과대/대학원 그룹 전체 지칭 ("단과대"|"대학원"|"both"|"none") ═══
+특정 단과대명(공대·경영대 등)을 콕 집지 않고 *그룹 전체*를 가리키나.
+- "단과대": "전공 추천", "각 학과", "계열별", "단과대 현안".  "대학원": "대학원별", "전문대학원 종류".  "both": 둘 다.
+- "none": 특정 단과대명만 있거나("공대 소개"), 거버넌스 질문("역대 총장", "서울대 재정").
+
+═══ 5) collegeAggregate — 그룹 전체 집계 ("단과대"|"대학원"|"both"|"none") ═══
+*모든/각/전체/~별*로 그룹을 한 번에 집계해 묻나.
+- "단과대": "각 단과대별 학과", "모든 단과대 비교", "단과대별 정원".  "대학원": "대학원별 교과", "각 대학원 정원".  "none": 집계 아니면.
+(aggregate가 특정 그룹이면 collegeBreadth도 같은 그룹으로 설정.)
+
+출력(엄수): JSON 한 줄만. 코드펜스/다른 텍스트 금지. reason은 20자 이내.
+예: {"intent":"fact","complexity":"complex","recency":false,"collegeBreadth":"단과대","collegeAggregate":"단과대","reason":"단과대 횡단 집계"}
+예: {"intent":"insight","complexity":"complex","recency":false,"collegeBreadth":"none","collegeAggregate":"none","reason":"원인 진단 요구"}`;
+
+/** Haiku 실패 시 안전 디폴트 — 과잉서빙(무해) 방향(harm-asymmetry). */
+export function defaultPlan(): QueryPlan {
+  return {
+    intent: 'insight', complexity: 'complex', recency: false,
+    collegeBreadth: 'none', collegeAggregate: 'none',
+    reason: '분류 실패 → 안전 디폴트', via: 'fallback',
+  };
+}
+
+const SCOPE_VALUES = new Set<CollegeGroupScope>(['단과대', '대학원', 'both', 'none']);
+function extractScope(text: string, key: string): CollegeGroupScope {
+  const v = text.match(new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`))?.[1] as CollegeGroupScope | undefined;
+  return v && SCOPE_VALUES.has(v) ? v : 'none';
+}
+
+/**
+ * 단일 Haiku 콜 → QueryPlan. intent 추출 성공 시 나머지는 필드별 robust 추출(누락→필드별 안전값),
+ *   실패/타임아웃 시 defaultPlan. (필드별 추출 = reason 잘림에도 핵심 복원, 한 필드 실패가 전체 fallback 강제 안 함.)
+ */
+export async function planQuery(query: string): Promise<QueryPlan> {
+  try {
+    const resp = await getAnthropicClient().messages.create(
+      {
+        model: LLM_MODEL_LIGHT,
+        max_tokens: 200,
+        temperature: 0,
+        system: PLAN_SYSTEM,
+        messages: [{ role: 'user', content: query }],
+      },
+      { timeout: ROUTER_TIMEOUT_MS, maxRetries: 1 },
+    );
+    recordUsage(resp.usage);
+    const text = resp.content.find((b): b is { type: 'text'; text: string } => b.type === 'text')?.text ?? '';
+    const intent = text.match(/"intent"\s*:\s*"(fact|insight)"/)?.[1];
+    if (intent === 'fact' || intent === 'insight') {
+      const cx = text.match(/"complexity"\s*:\s*"(simple|complex)"/)?.[1];
+      return {
+        intent,
+        complexity: cx === 'simple' ? 'simple' : 'complex',   // 안전디폴트 complex
+        recency: /"recency"\s*:\s*true/.test(text),
+        collegeBreadth: extractScope(text, 'collegeBreadth'),
+        collegeAggregate: extractScope(text, 'collegeAggregate'),
+        reason: text.match(/"reason"\s*:\s*"([^"]*)"/)?.[1] ?? '',
+        via: 'llm',
+      };
+    }
+    console.error('[plan] intent 추출 실패 → 안전 디폴트. raw:', text.slice(0, 120));
+  } catch (err) {
+    console.error('[plan] LLM 분류 실패/타임아웃 → 안전 디폴트:', err);
+  }
+  return defaultPlan();
 }

@@ -14,6 +14,8 @@ import { detectBreadthIntent } from './recency';
 import { isCollegeGroup, isCollegeReferenced, detectGroupBreadth, detectGroupAggregate } from './college-route';
 // college-grad-wiki — tier 분류 (T3/T4 게이트)
 import { classifyTier, type Tier } from './tier-classifier';
+// unified-intent-router — 통합 QueryPlan 소비 (plan?: 있으면 정규식 대체, 없으면 fallback)
+import type { QueryPlan, CollegeGroupScope } from './agent-router';
 
 export interface RoutingResult {
   selectedAgentIds: string[];
@@ -34,6 +36,10 @@ const MAX_WIKIS = 6;
 const GLOBAL_COLLEGE_CAP = 4;
 const ALWAYS_CONTEXT_CAP = 5;
 const TOTAL_CHUNK_BUDGET = 22;   // 30→22: B-2 가중분배라 하위 청크는 토큰만 먹고 기여 적음(입력 토큰 절감)
+
+/** unified-intent-router: college 그룹 신호(plan)가 특정 그룹을 커버하나. getRoutableAgents/aggregate 공용. */
+const coversGroup = (scope: CollegeGroupScope | undefined, grp: '단과대' | '대학원') =>
+  scope === grp || scope === 'both';
 
 function prefilterScore(agent: ReturnType<typeof registry.getAll>[0], queryWords: string[]): number {
   let score = 0;
@@ -119,8 +125,14 @@ function lookupConceptIndex(queryWords: string[]): {
  * admit ≠ 강제 선택. 이후 prefilter/semantic/MAX_WIKIS 게이트를 통과해야 실제 라우팅됨.
  *   → 거버넌스 질문(신호 0)은 단과대 전부 제외(오염 0) 그대로, 횡단·집계 질문만 recall 복구.
  */
-function getRoutableAgents(userRole: Role, query: string) {
-  const breadth = detectGroupBreadth(query);
+function getRoutableAgents(userRole: Role, query: string, plan?: QueryPlan) {
+  // plan 있으면(flag ON) collegeBreadth/Aggregate 소비, 없으면 정규식 fallback(flag OFF/스크립트).
+  const breadth = plan
+    ? {
+        '단과대': coversGroup(plan.collegeBreadth, '단과대') || coversGroup(plan.collegeAggregate, '단과대'),
+        '대학원': coversGroup(plan.collegeBreadth, '대학원') || coversGroup(plan.collegeAggregate, '대학원'),
+      }
+    : detectGroupBreadth(query);
   return registry.getAll().filter(a => {
     if (a.config.lensPersona) return false;
     if (a.config.adminOnly && userRole !== 'admin') return false;
@@ -132,11 +144,11 @@ function getRoutableAgents(userRole: Role, query: string) {
   });
 }
 
-export async function routeQuery(query: string, userRole: Role): Promise<RoutingResult> {
+export async function routeQuery(query: string, userRole: Role, plan?: QueryPlan): Promise<RoutingResult> {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
   const globalKeywords: string[] = agentsConfig.routing.globalKeywords;
-  const agents = getRoutableAgents(userRole, query);
+  const agents = getRoutableAgents(userRole, query, plan);
 
   // === Tier 0: 글로벌 키워드 → 전체 위키 full coverage ===
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
@@ -155,7 +167,7 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
       pool = [...govAgents, ...topColleges];
     }
     const contexts = await Promise.all(
-      pool.map(a => a.getContext(query, userRole, true))
+      pool.map(a => a.getContext(query, userRole, true, { recency: plan?.recency }))
     );
     return { selectedAgentIds: contexts.map(c => c.agentId), contexts, isGlobal: true };
   }
@@ -188,7 +200,9 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   //   detectGroupBreadth는 admit만 → 특정 단과대명 없는 횡단질문은 점수 게이트서 탈락(데이터 있는데 retrieval 0).
   //   detectGroupAggregate(좁은 명시 집계 신호)일 때만 강제 — forcedWikis는 MAX_WIKIS 초과해도 보존(아래 cap 로직).
   //   크기 제어: enforceContextBudget(예산) + M1 관련도순 렌더가 학과-관련 청크를 상단에 채움.
-  const aggregate = detectGroupAggregate(query);
+  const aggregate = plan
+    ? { '단과대': coversGroup(plan.collegeAggregate, '단과대'), '대학원': coversGroup(plan.collegeAggregate, '대학원') }
+    : detectGroupAggregate(query);
   if (aggregate['단과대'] || aggregate['대학원']) {
     for (const a of agents) {
       if (isCollegeGroup(a.config) && aggregate[a.config.group as '단과대' | '대학원']) {
@@ -240,6 +254,7 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
           : (agent.config.alwaysContext ? ALWAYS_CONTEXT_CAP : 5);
         return agent.getContext(query, userRole, false, {
           vectorCandidates: cand, guaranteedPageIds: guaranteedPages.get(id), chunkCap,
+          recency: plan?.recency,
         });
       }));
       const gContexts = gCtxs.filter((c): c is AgentContext => c !== null);
@@ -346,6 +361,7 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
         ? ALWAYS_CONTEXT_CAP
         : (capByWiki.get(s.agent.config.id) ?? CAP_FLOOR),
       guaranteedPageIds: guaranteedPages.get(s.agent.config.id),
+      recency: plan?.recency,
     })
   ));
 

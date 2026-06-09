@@ -43,6 +43,8 @@ export interface GetContextOptions {
   lensMode?: boolean;
   /** Phase 3 — 전역 top-K가 분배한 이 위키 청크. 비어있지 않으면 getContext가 자체 검색 생략. */
   vectorCandidates?: GlobalChunk[];
+  /** unified-intent-router: 시간성 의도(QueryPlan.recency). undefined면 detectRecencyIntent로 fallback. */
+  recency?: boolean;
 }
 
 export interface SourceRef {

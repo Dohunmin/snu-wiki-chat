@@ -4,9 +4,9 @@ import { auth } from '@/lib/auth/config';
 import { canChat } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
-import { routeToAgent, type AgentIntent } from '@/lib/agents/agent-router';
+import { routeToAgent, planQuery, type AgentIntent, type QueryPlan } from '@/lib/agents/agent-router';
 import { enforceContextBudget } from '@/lib/agents/context-budget';
-import { complexityBudget } from '@/lib/agents/complexity';
+import { complexityBudget, budgetForComplexity } from '@/lib/agents/complexity';
 import { getStructuredFact, getLiveBoard, type DirectAnswer } from '@/lib/agents/structured';
 import { loadPersonaContext } from '@/lib/agents/lens';
 import {
@@ -133,15 +133,30 @@ export async function POST(req: NextRequest) {
   //   비용: 라우터 = Haiku ~$0.001/질문(짧은 분류). 실패 시 내부적으로 키워드 fallback(무료).
   let mode = requestedMode;
   let routerIntent: AgentIntent | null = null;
+  let queryPlan: QueryPlan | null = null;
+  // unified-intent-router: INTENT_PLAN_ENABLED=ON이면 planQuery(통합) 라이브 소비, OFF(기본)면
+  //   기존 routeToAgent 그대로 = intent→mode byte-identical(회귀 0). shadow는 offline 배치(scripts/shadow-intent).
+  const usePlan = process.env.INTENT_PLAN_ENABLED === 'true';
   if (requestedMode === 'normal') {
-    const decision = await routeToAgent(message);
-    routerIntent = decision.agent;
     const canInsight = role === 'admin' || role === 'tier1';
-    if (decision.agent === 'insight' && canInsight) mode = 'policy';
-    console.log(
-      `[router] intent=${decision.agent} via=${decision.via} role=${role} ` +
-      `→ mode=${mode} | ${decision.reason}`,
-    );
+    if (usePlan) {
+      queryPlan = await planQuery(message);
+      routerIntent = queryPlan.intent;
+      if (queryPlan.intent === 'insight' && canInsight) mode = 'policy';
+      console.log(
+        `[plan] intent=${queryPlan.intent} cx=${queryPlan.complexity} rec=${queryPlan.recency} ` +
+        `cb=${queryPlan.collegeBreadth} ca=${queryPlan.collegeAggregate} via=${queryPlan.via} ` +
+        `role=${role} → mode=${mode} | ${queryPlan.reason}`,
+      );
+    } else {
+      const decision = await routeToAgent(message);
+      routerIntent = decision.agent;
+      if (decision.agent === 'insight' && canInsight) mode = 'policy';
+      console.log(
+        `[router] intent=${decision.agent} via=${decision.via} role=${role} ` +
+        `→ mode=${mode} | ${decision.reason}`,
+      );
+    }
   }
 
   let routing;
@@ -153,7 +168,7 @@ export async function POST(req: NextRequest) {
   let convId = conversationId;
 
   try {
-    routing = await routeQuery(message, role);
+    routing = await routeQuery(message, role, usePlan ? (queryPlan ?? undefined) : undefined);
 
     // Design Ref: §4.1 I-9 — Tier3/4 직답 분기 (college-grad-wiki).
     //   governance 쿼리는 routing.tier === undefined → 이 블록 통째로 skip → 아래 일반 RAG와 byte-identical.
@@ -183,7 +198,9 @@ export async function POST(req: NextRequest) {
     // 보편 컨텍스트 예산 — 모든 경로 합류점에서 총량 캡(비용 꼬리 차단) + 질문 복잡도별 예산.
     //   단순 factoid=작은 예산(저렴), 종합형=큰 예산(OLD급 품질). 실측 75% 단순 → 평균↓ + 깊은 품질 보존.
     //   CONTEXT_BUDGET_CHARS 설정 시 고정값으로 override(실험용).
-    const budgetChars = process.env.CONTEXT_BUDGET_CHARS ? Number(process.env.CONTEXT_BUDGET_CHARS) : complexityBudget(message);
+    const budgetChars = process.env.CONTEXT_BUDGET_CHARS
+      ? Number(process.env.CONTEXT_BUDGET_CHARS)
+      : (usePlan && queryPlan ? budgetForComplexity(queryPlan.complexity) : complexityBudget(message));
     const budgetedContexts = await enforceContextBudget(message, routing.contexts, budgetChars);
 
     // 번호 인용 매핑 구축 — LLM이 [N]만 사용하도록

@@ -31,9 +31,15 @@ export function classifyComplexity(query: string): Complexity {
   return 'simple';
 }
 
-/** 분류 → char 예산. BUDGET_SIMPLE/BUDGET_COMPLEX env로 튜닝. */
-export function complexityBudget(query: string): number {
+/** complexity → char 예산. BUDGET_SIMPLE/BUDGET_COMPLEX env로 튜닝.
+ *  (unified-intent-router: QueryPlan.complexity 직접 소비용으로 분리.) */
+export function budgetForComplexity(c: Complexity): number {
   const simple = Number(process.env.BUDGET_SIMPLE ?? '16000');
   const complex = Number(process.env.BUDGET_COMPLEX ?? '40000');
-  return classifyComplexity(query) === 'complex' ? complex : simple;
+  return c === 'complex' ? complex : simple;
+}
+
+/** 분류 → char 예산. */
+export function complexityBudget(query: string): number {
+  return budgetForComplexity(classifyComplexity(query));
 }
