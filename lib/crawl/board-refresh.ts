@@ -52,7 +52,7 @@ export async function refreshOrgBoards(org: Org, opts: RefreshOptions = {}): Pro
     result.skipped.push({ board: 'notice', reason: '게시판 URL 없음(board_pattern=null 또는 urls 미설정)' });
     return result;
   }
-  const ttlHours = opts.ttlHours ?? 26;   // 일 1회 크롤(07:00 KST) → 다음 크롤까지 신선 유지하려면 >24h (Action 지연 2h 버퍼)
+  const ttlHours = opts.ttlHours ?? 26;   // 일 2회 크롤(07:00·19:00 KST, 12h 간격) → 26h TTL이라 한 번 누락돼도 신선 유지(마진 14h)
   const relaxTLS = org.tool_blocked === 'tls';
 
   for (const { board, url } of targets) {

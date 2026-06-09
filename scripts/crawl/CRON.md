@@ -1,7 +1,7 @@
 # 뉴스 캐시(Tier4) 자동 갱신 설정
 
-게시판 공지·뉴스는 `live_cache`(앱 DB)에 캐시되며 **TTL 6시간**이다. 만료되면 챗이
-Tier1(.md)로 degrade하므로, **6시간마다 `--tier 4` 크롤**을 돌려야 최신 뉴스가 유지된다.
+게시판 공지·뉴스는 `live_cache`(앱 DB)에 캐시되며 **TTL 26시간**이다. 만료되면 챗이
+Tier1(.md)로 degrade하므로, **하루 2회(07:00·19:00 KST) `--tier 4` 크롤**을 돌려야 최신 뉴스가 유지된다.
 
 > 갱신 명령(수동 1회): `npm run crawl:colleges -- --phase 4 --tier 4`
 > 전 단과대(16) + 대학원(12)의 notice/news를 재크롤해 upsert. 비용 $0(HTTP+DB, API 없음).
@@ -14,20 +14,20 @@ Tier1(.md)로 degrade하므로, **6시간마다 `--tier 4` 크롤**을 돌려야
 2. **Settings > Secrets and variables > Actions > New secret**
    - 이름: `ENV_LOCAL`
    - 값: 로컬 `.env.local` 파일 **전체 내용** 붙여넣기 (DB 접속문자열 등)
-3. 끝. `.github/workflows/refresh-boards.yml`이 6시간마다 자동 실행된다.
-   (Actions 탭에서 **Run workflow**로 수동 실행도 가능)
+3. 끝. `.github/workflows/refresh-boards.yml`이 일 2회(10:00·22:00 UTC = 19:00·07:00 KST) 자동 실행된다.
+   (공개 repo라 Actions 무제한 무료. Actions 탭에서 **Run workflow**로 수동 실행도 가능)
 
 ## B. 로컬 Windows 작업 스케줄러 (자체 PC/서버일 때)
 
 관리자 PowerShell에서 1회 등록:
 
 ```powershell
-schtasks /Create /SC HOURLY /MO 6 /TN "SNU-Wiki-RefreshBoards" `
+schtasks /Create /SC HOURLY /MO 12 /TN "SNU-Wiki-RefreshBoards" `
   /TR "powershell -NoProfile -ExecutionPolicy Bypass -File `"C:\Users\USER\Desktop\snu-wiki-chat\scripts\crawl\refresh-boards.ps1`"" `
   /RL HIGHEST
 ```
 
-- 6시간마다 `refresh-boards.ps1` 실행.
+- 12시간마다 `refresh-boards.ps1` 실행.
 - 해제: `schtasks /Delete /TN "SNU-Wiki-RefreshBoards" /F`
 - 즉시 테스트: `schtasks /Run /TN "SNU-Wiki-RefreshBoards"`
 

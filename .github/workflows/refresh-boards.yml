@@ -1,11 +1,11 @@
-# Tier4 게시판(공지·뉴스) live_cache 갱신 — 매일 1회(07:00 KST).
+# Tier4 게시판(공지·뉴스) live_cache 갱신 — 매일 2회(07:00·19:00 KST). 공개 repo → Actions 무제한 무료.
 # 활성화: 이 repo를 GitHub에 푸시 + Settings>Secrets에 ENV_LOCAL(=.env.local 전체 내용) 등록.
 # 수동 실행: Actions 탭 > Refresh board cache > Run workflow.
 name: Refresh board cache (Tier4)
 
 on:
   schedule:
-    - cron: '0 22 * * *' # 매일 22:00 UTC = 07:00 KST (오전 7시경)
+    - cron: '0 10,22 * * *' # 10:00·22:00 UTC = 19:00·07:00 KST (일 2회 — GH 크론 누락 대비 마진)
   workflow_dispatch: {}
 
 jobs:
