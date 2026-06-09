@@ -50,13 +50,38 @@ export async function enforceContextBudget(
       used += blocks[i].text.length;
     }
 
-    const out: AgentContext[] = [];
+    // ── 렌더: rerank 순서를 살림(관련도순) — context-spine v1 §3.2 ──
+    //   kept 블록을 source-doc(회의록) 그룹화 → 그룹을 best-rerank순 → 그룹 내부는 원순서(회의록 시계열 보존).
+    //   위키(컨텍스트)도 best-rerank순. 선택(keep)·예산·citation 매핑은 불변 — *순서만* 바뀜(내용 무손실).
+    const rankOf = new Map<number, number>();
+    order.forEach((blkIdx, rank) => rankOf.set(blkIdx, rank));
+    const pageIdOf = (t: string): string | null =>
+      t.match(/##\s+(?:\[[^\]]+\]\s+)?[^\n(]*?\(([^()\n]+)\)/)?.[1]?.trim() ?? null;
+    const bestRank = (idxs: number[]) => Math.min(...idxs.map(i => rankOf.get(i) ?? Number.MAX_SAFE_INTEGER));
+
+    const rendered: { ctx: AgentContext; rank: number }[] = [];
     contexts.forEach((c, ci) => {
-      const keptBlocks = blocks.filter((b, i) => b.ci === ci && keep.has(i)).map(b => b.text);
-      if (keptBlocks.length === 0) return;                 // 이 위키 블록이 전부 탈락 → 컨텍스트 제외
-      const relevantData = keptBlocks.join(SEP);
-      out.push({ ...c, relevantData, sources: filterSources(c, relevantData) });
+      const mine = blocks
+        .map((b, i) => ({ i, text: b.text, ci: b.ci }))
+        .filter(b => b.ci === ci && keep.has(b.i));
+      if (mine.length === 0) return;                       // 이 위키 블록이 전부 탈락 → 컨텍스트 제외
+
+      // source-doc 그룹화(원순서 유지)
+      const groups = new Map<string, typeof mine>();
+      for (const b of mine) {
+        const sid = pageIdOf(b.text) ?? `__row${b.i}`;     // 헤더 없는 블록은 단독 그룹
+        if (!groups.has(sid)) groups.set(sid, []);
+        groups.get(sid)!.push(b);
+      }
+      // 그룹을 best-rerank순 정렬, 그룹 내부는 원순서
+      const orderedGroups = [...groups.values()].sort((a, b) => bestRank(a.map(x => x.i)) - bestRank(b.map(x => x.i)));
+      const relevantData = orderedGroups.flatMap(g => g.map(x => x.text)).join(SEP);
+      rendered.push({ ctx: { ...c, relevantData, sources: filterSources(c, relevantData) }, rank: bestRank(mine.map(x => x.i)) });
     });
+
+    // 위키도 best-rerank순(관련 위키가 컨텍스트 상단 — cross-wiki lost-in-middle 완화)
+    rendered.sort((a, b) => a.rank - b.rank);
+    const out = rendered.map(r => r.ctx);
     return out.length > 0 ? out : contexts.slice(0, 1);
   }
 
