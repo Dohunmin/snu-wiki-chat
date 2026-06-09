@@ -134,9 +134,9 @@ export async function POST(req: NextRequest) {
   let mode = requestedMode;
   let routerIntent: AgentIntent | null = null;
   let queryPlan: QueryPlan | null = null;
-  // unified-intent-router: INTENT_PLAN_ENABLED=ON이면 planQuery(통합) 라이브 소비, OFF(기본)면
-  //   기존 routeToAgent 그대로 = intent→mode byte-identical(회귀 0). shadow는 offline 배치(scripts/shadow-intent).
-  const usePlan = process.env.INTENT_PLAN_ENABLED === 'true';
+  // unified-intent-router: 기본 ON(planQuery 통합 라우터 라이브 소비) — shadow 검증(실질의로그 121건) 통과 후 활성화.
+  //   비상 복구: INTENT_PLAN_ENABLED=false 설정 시 기존 routeToAgent로 즉시 복귀(재배포 불필요).
+  const usePlan = process.env.INTENT_PLAN_ENABLED !== 'false';
   if (requestedMode === 'normal') {
     const canInsight = role === 'admin' || role === 'tier1';
     if (usePlan) {
