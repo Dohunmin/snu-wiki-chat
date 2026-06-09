@@ -11,7 +11,7 @@ import { semanticRoutingHints } from '@/lib/embed/search';
 import { globalTopK, partitionByWiki } from '@/lib/embed/global-retrieve';
 import type { KeywordRankedChunk } from '@/lib/embed/types';
 import { detectBreadthIntent } from './recency';
-import { isCollegeGroup, isCollegeReferenced, detectGroupBreadth } from './college-route';
+import { isCollegeGroup, isCollegeReferenced, detectGroupBreadth, detectGroupAggregate } from './college-route';
 // college-grad-wiki — tier 분류 (T3/T4 게이트)
 import { classifyTier, type Tier } from './tier-classifier';
 
@@ -183,6 +183,19 @@ export async function routeQuery(query: string, userRole: Role): Promise<Routing
   const forcedWikis = new Set<string>();
   for (const w of conceptResult.forcedWikis) if (routableIds.has(w)) forcedWikis.add(w);
   for (const w of semantic.hints) if (routableIds.has(w)) forcedWikis.add(w);
+
+  // cross-college 집계 질문("각 단과대별 학과") → admit된 그룹 위키 전체를 force-select.
+  //   detectGroupBreadth는 admit만 → 특정 단과대명 없는 횡단질문은 점수 게이트서 탈락(데이터 있는데 retrieval 0).
+  //   detectGroupAggregate(좁은 명시 집계 신호)일 때만 강제 — forcedWikis는 MAX_WIKIS 초과해도 보존(아래 cap 로직).
+  //   크기 제어: enforceContextBudget(예산) + M1 관련도순 렌더가 학과-관련 청크를 상단에 채움.
+  const aggregate = detectGroupAggregate(query);
+  if (aggregate['단과대'] || aggregate['대학원']) {
+    for (const a of agents) {
+      if (isCollegeGroup(a.config) && aggregate[a.config.group as '단과대' | '대학원']) {
+        forcedWikis.add(a.config.id);
+      }
+    }
+  }
 
   // === Phase 3: 전역 top-K 검색 (rag-cost-reduction.phase3.design) — flag 게이트 ===
   //   위키 통째 덤프 → 전 코퍼스 청크 top-K. 무관 위키는 dispatch 안 됨(0 토큰).
