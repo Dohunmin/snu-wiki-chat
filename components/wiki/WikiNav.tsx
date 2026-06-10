@@ -109,6 +109,19 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
 
       {expanded === wiki.id && (
         <div className="border-t border-gray-100 bg-gray-50">
+          {/* 단과대/대학원 — 최신 공지·뉴스(live_cache, Tier4) 바로가기. 클릭 → 우측 뷰어에 board 리스트. */}
+          {wiki.group && (
+            <button
+              onClick={() => onSelect(wiki.id, 'liveBoards', '__list')}
+              className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2 transition-colors ${
+                selected?.agentId === wiki.id && selected?.type === 'liveBoards'
+                  ? 'bg-blue-50 text-blue-700 font-medium'
+                  : 'text-gray-700 hover:bg-white'
+              }`}
+            >
+              📰 최신 공지·뉴스
+            </button>
+          )}
           {/* 탭 */}
           <div className="flex flex-wrap gap-1.5 px-4 py-3">
             {TABS.filter(tab => (wiki.counts[tab.key as keyof typeof wiki.counts] ?? 0) > 0).map(tab => (

@@ -6,6 +6,9 @@ import path from 'path';
 import fs from 'fs';
 import type { WikiData } from '@/lib/agents/types';
 import agentsConfig from '@/data/agents.config.json';
+import { db } from '@/lib/db/client';
+import { liveCache } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(
   _req: Request,
@@ -44,6 +47,34 @@ export async function GET(
     ? (data.stances ?? [])
     : (data.stances ?? []).filter(s => !s.sensitive);
 
+  // Tier4 live_cache(최신 공지·뉴스) — 단과대/대학원 org만. DB read(LLM 0토큰). 만료여도 신선도 badge로 표시.
+  const group = (agentMeta as { group?: string } | undefined)?.group;
+  let liveBoards:
+    | { board: string; items: { title: string; date?: string; url: string }[]; sourceUrl: string | null; fetchedAt: string; fresh: boolean }[]
+    | undefined;
+  if (group) {
+    try {
+      const rows = await db.select().from(liveCache).where(eq(liveCache.org, agentId));
+      const now = Date.now();
+      liveBoards = rows
+        .map(r => {
+          const items = Array.isArray(r.payload) ? (r.payload as { title: string; date?: string; url: string }[]) : [];
+          const ageH = (now - new Date(r.fetchedAt).getTime()) / 3.6e6;
+          return {
+            board: r.board,
+            items: items.map(it => ({ title: it.title, date: it.date, url: it.url })),
+            sourceUrl: r.sourceUrl,
+            fetchedAt: (r.fetchedAt instanceof Date ? r.fetchedAt : new Date(r.fetchedAt)).toISOString(),
+            fresh: ageH <= (r.ttlHours ?? 26),
+          };
+        })
+        .sort((a, b) => (a.board === 'notice' ? -1 : b.board === 'notice' ? 1 : 0)); // 공지 먼저
+    } catch (e) {
+      console.error('[wiki] live_cache 조회 실패:', e);
+      liveBoards = [];
+    }
+  }
+
   return NextResponse.json({
     id: data.id,
     name: data.name,
@@ -54,5 +85,6 @@ export async function GET(
     facts: facts.map(f => ({ id: f.id, title: f.title, category: f.category, yearsCovered: f.yearsCovered, unit: f.unit, tags: f.tags, content: f.content })),
     stances: stances.map(s => ({ id: s.id, title: s.title, holder: s.holder, topic: s.topic, tags: s.tags, content: s.content })),
     overviews: (data.overviews ?? []).map(o => ({ id: o.id, title: o.title, 편: o.편, 시기: o.시기, tags: o.tags, content: o.content })),
+    liveBoards,
   });
 }

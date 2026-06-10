@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+type LiveBoard = { board: string; items: { title: string; date?: string; url: string }[]; sourceUrl: string | null; fetchedAt: string; fresh: boolean };
+
+function relTime(iso: string): string {
+  const h = (Date.now() - new Date(iso).getTime()) / 3.6e6;
+  if (h < 1) return '방금 전 갱신';
+  if (h < 24) return `${Math.round(h)}시간 전 갱신`;
+  return `${Math.round(h / 24)}일 전 갱신`;
+}
+
 interface WikiViewerProps {
   selected: { agentId: string; type: string; itemId: string } | null;
 }
@@ -15,12 +24,23 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
   const [loading, setLoading] = useState(false);
   const [dbSyntheses, setDbSyntheses] = useState<{ id: string; query: string; answeredAt: string; routedTo: string[]; content: string }[]>([]);
   const [selectedSynth, setSelectedSynth] = useState<string | null>(null);
+  const [liveBoards, setLiveBoards] = useState<LiveBoard[]>([]);
 
   useEffect(() => {
     if (!selected) return;
 
     if (selected.agentId === 'chat') {
       loadDbSyntheses();
+      return;
+    }
+
+    // 최신 공지·뉴스(live_cache, Tier4) — board 리스트 뷰
+    if (selected.type === 'liveBoards') {
+      setLoading(true);
+      fetch(`/api/wiki/${selected.agentId}`)
+        .then(r => r.json())
+        .then(data => { setLiveBoards(data.liveBoards ?? []); setTitle(''); setContent(''); setMeta({}); })
+        .finally(() => setLoading(false));
       return;
     }
 
@@ -110,6 +130,45 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
           ) : (
             <div className="text-gray-400 text-sm">좌측에서 synthesis를 선택하세요</div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // 최신 공지·뉴스(live_cache) 뷰 — 항목 클릭 시 원문으로 이동
+  if (selected.type === 'liveBoards') {
+    return (
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-3xl">
+          <h1 className="text-xl font-semibold text-gray-900 mb-1">📰 최신 공지·뉴스</h1>
+          <p className="text-xs text-gray-400 mb-4">게시판 캐시(자동 갱신, 일 2회) · 항목 클릭 시 원문으로 이동</p>
+          {liveBoards.length === 0 && (
+            <div className="text-gray-400 text-sm">갱신된 공지·뉴스가 없습니다. (크롤 미실행 또는 만료)</div>
+          )}
+          {liveBoards.map(b => (
+            <section key={b.board} className="mb-6">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <h2 className="text-sm font-semibold text-gray-700">
+                  {b.board === 'notice' ? '📌 공지' : b.board === 'news' ? '🗞️ 뉴스' : b.board}
+                </h2>
+                <span className="text-xs text-gray-400">{b.items.length}건</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${b.fresh ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {b.fresh ? '✓ 신선' : '⚠ 갱신 지연'} · {relTime(b.fetchedAt)}
+                </span>
+              </div>
+              <ul className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
+                {b.items.map((it, i) => (
+                  <li key={i}>
+                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="block px-4 py-2.5 hover:bg-gray-50">
+                      <span className="text-sm text-gray-700 line-clamp-2">{it.title}</span>
+                      {it.date && <span className="text-xs text-gray-400 mt-0.5 block">{it.date}</span>}
+                    </a>
+                  </li>
+                ))}
+                {b.items.length === 0 && <li className="px-4 py-3 text-sm text-gray-400">항목 없음</li>}
+              </ul>
+            </section>
+          ))}
         </div>
       </div>
     );
