@@ -97,7 +97,14 @@ export function cleanseMain(
 function proseLen(md: string): number {
   return md
     .split('\n')
-    .filter((l) => l.trim() && !l.startsWith('- '))
+    .filter((l) => {
+      const t = l.trim();
+      if (!t) return false;
+      // 짧은 nav 링크('- HOME')는 제외하되, 긴 리스트 항목(연혁 타임라인 '- 2025 03. ...')은 콘텐츠로 인정.
+      //   nav 메뉴는 짧아 여전히 제외 → 메뉴-탈출 폴백(science/humanities) 무영향. 연혁/리스트형 본문만 구제.
+      if (l.startsWith('- ')) return t.length > 30;
+      return true;
+    })
     .join('')
     .replace(/\s+/g, '').length;
 }
@@ -148,6 +155,10 @@ function stripNavLists($: cheerio.CheerioAPI, $main: cheerio.Cheerio<AnyNode>): 
         if ($(li).find('a[href]').length > 0) linkLis++;
       });
       if (linkLis / lis.length >= 0.6) {
+        // 링크 많아도 항목이 긴 콘텐츠 리스트(탭이 본문을 감싼 경우·연혁 타임라인)는 nav가 아니므로 보존.
+        //   nav 메뉴는 항목 라벨이 짧음(<40자) → 여전히 제거. medicine 연혁 ul.history_tab(항목당 700자) 구제.
+        const avgLen = $ul.text().replace(/\s+/g, '').length / lis.length;
+        if (avgLen > 40) return;
         $ul.remove();
         removedAny = true;
       }

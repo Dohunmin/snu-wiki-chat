@@ -65,7 +65,7 @@ orgs:
     adapter_key: snu-cms
     render: static
     board_pattern: "?md=v&bbsidx={id}"
-    dept_count: 11
+    dept_count: 12
     urls:
       greeting: "/about/dean/greetings"
       history: "/about/engineering/history"
@@ -117,7 +117,7 @@ orgs:
       greeting: "/about/deans/greetings"
       history: "/about/history/opening"
       vision: "/about/goal"
-      departments: "/academics/department"
+      departments: null   # /academics/department → dept.md가 dept-1(국어국문)과 100% 완전중복(dup-check 2026-06-09). 17개 학과 entity로 충분
       notice: "/community/notice"
       news: "/community/department"
     about_pages:
@@ -187,7 +187,7 @@ orgs:
       # Phase 2b: 7개 학과 외부 마이크로사이트(정찰 실측). math는 bare host self-signed→www 호스트 사용.
       - { entity: 학과, slug: dept-math,    label: 수리과학부,           path: "https://www.math.snu.ac.kr/bbs/page.php?hid=vision" }
       - { entity: 학과, slug: dept-stat,    label: 통계학과,             path: "https://stat.snu.ac.kr/학과안내/학과소개/전공소개/" }
-      - { entity: 학과, slug: dept-physics, label: "물리·천문학부(물리학전공)", path: "https://physics.snu.ac.kr/about/history" }
+      - { entity: 학과, slug: dept-physics, label: "물리·천문학부(물리학전공)", path: "https://physics.snu.ac.kr/academics/undergraduate/curriculum" }   # 학부 교과과정(12780자). 기존 /about/history=연혁(428자)이라 교체(직접확인 2026-06-09). 소개 전용페이지는 사이트에 없음
       - { entity: 학과, slug: dept-astron,  label: "물리·천문학부(천문학전공)", path: "https://astron.snu.ac.kr/연구분야/" }
       - { entity: 학과, slug: dept-chem,    label: 화학부,               path: "https://chem.snu.ac.kr/about/introduction" }
       - { entity: 학과, slug: dept-biosci,  label: 생명과학부,           path: "https://biosci.snu.ac.kr/about/overview" }
@@ -255,13 +255,13 @@ orgs:
       greeting: "/about/dean/greetings"
       history: "/about/introduction/history"
       vision: "/about/introduction/vision"
-      departments: "/academics/undergraduate"
+      departments: null   # /academics/undergraduate → dept.md가 첫 학과(식물생산)와 100% 완전중복(dup-check 2026-06-09). entity로 충분
       notice: "/board/notice"
       news: "/board/news"
     about_pages:
       - { slug: deans-history, path: /about/dean/history-of-the-office }
-      - { slug: organization-chart, path: /about/organization/chart }
-      - { slug: admission-guide, path: /about/guide/admission }
+      # organization-chart 제거(정찰 2026-06-09): 본문이 조직도 PNG(텍스트0) → cleanser가 전역 CCTV 푸터를 본문으로 긁음 = junk
+      # admission-guide 제거: 외부 admission.snu.ac.kr 위임 인덱스(first-party 전형 본문 없음)
     entity_pages:
       - { entity: 학과, slug: dept-plant-production, label: 식물생산과학부, path: "/academics/undergraduate?deptidx=26" }
       - { entity: 학과, slug: dept-forest-sciences, label: 산림과학부, path: "/academics/undergraduate?deptidx=27" }
@@ -273,9 +273,7 @@ orgs:
       - { entity: 학과, slug: dept-smart-systems-science, label: 스마트시스템과학과, path: "/academics/undergraduate?deptidx=55" }
       - { entity: 부속기관, slug: inst-agricultural-science, label: 농업생명과학연구원, path: "/research/institute/institute?centidx=2" }
       - { entity: 부속기관, slug: inst-research-list, label: 연구소(원) 목록, path: /research/institute/institute }
-    strategy_pages:
-      # strategy-vision 제거: urls.vision(/about/introduction/vision)과 동일 URL 중복(2026-06-03 정리).
-      - { slug: strategy-dean-pledge, label: 학장 비전(CALS for CALS), path: /about/dean/greetings }
+    # strategy_pages 전부 폐기: strategy-vision(urls.vision 중복)·strategy-dean-pledge(greeting과 100% 완전중복, dup-check 2026-06-09) 모두 중복.
     faculty: { path: /about/organization/search/faculty }
     notes: "⚠ board가 ?bm=v= 변종(표준 md=v 아님). 어댑터가 bm/md 둘 다 처리."
 
@@ -320,7 +318,7 @@ orgs:
       - { entity: 학과, slug: dept-earthsci, label: 지구과학교육과, path: /학부-대학원/학과소개/지구과학교육과/ }
       - { entity: 학과, slug: dept-pe, label: 체육교육과, path: /학부-대학원/학과소개/체육교육과/ }
       - { entity: 학과, slug: dept-learnsci, label: 융합학습과학전공, path: /학부-대학원/학과소개/융합학습과학전공/ }
-      - { entity: 학과, slug: dept-aied, label: AI융합교육학과(계약학과), path: "https://aied.snu.ac.kr/" }
+      - { entity: 학과, slug: dept-aied, label: AI융합교육학과(계약학과), path: "https://aied.snu.ac.kr/new/sub_about/introduct.php" }   # 학과소개 본문(2400자). 기존 홈/=메뉴+공지 site-chrome이라 교체(정찰 2026-06-09)
       - { entity: 부속기관, slug: inst-edu-research, label: 교육연구소, path: /연구-부설기관/교육연구소/ }
       # inst-korean-edu-research 제거: 라벨(국어교육연구소)↔경로(교육종합연구원) 불일치 + 본문 nav스텁(2026-06-03 정리).
       - { entity: 부속기관, slug: inst-sports-science, label: 스포츠과학연구소, path: /연구-부설기관/스포츠과학연구소/ }
@@ -356,7 +354,7 @@ orgs:
       - { slug: past-dean, path: /about/past-dean }
       - { slug: iab, path: /about/IAB }
     entity_pages:
-      - { entity: 학과, slug: dept-business, label: 경영학과, path: /about/greetings }
+      - { entity: 학과, slug: dept-business, label: 경영학과, path: /academics/graduate/major }   # 전공분야 소개(경영정보·마케팅 등). 기존 /about/greetings=인사말 중복이라 교체(정찰 2026-06-09)
       - { entity: 부속기관, slug: inst-imr, label: 경영연구소, path: /research/institute/imr }
       - { entity: 부속기관, slug: inst-entrepreneurship, label: 벤처경영기업가센터, path: /research/institute/entrepreneurship-center }
     strategy_pages:
@@ -388,11 +386,13 @@ orgs:
     about_pages:
       - { slug: edu-goals, path: /교육목표/ }
       - { slug: admin-office, path: /행정실/ }
+      # 규모 fact — 학부 교수/학생 현황표(소비자·아동·식품·의류 학과별 정원) + MOU현황(정찰 2026-06-09 실측). vision(/대학현황-2/)과 별개 페이지(/대학현황/).
+      - { slug: facts, path: "/대학현황/" }
     entity_pages:
       - { entity: 학과, slug: dept-consumer, label: 소비자학과, path: "https://consumer.snu.ac.kr/학과소개-2/" }
       - { entity: 학과, slug: dept-childfamily, label: 아동가족학과, path: "https://childfamily.snu.ac.kr/intro/" }
       - { entity: 학과, slug: dept-foodnutrition, label: 식품영양학과, path: "https://foodnutrition.snu.ac.kr/학과장-인사말/" }
-      - { entity: 학과, slug: dept-clothing, label: 의류학과, path: "https://clothing.snu.ac.kr/" }
+      - { entity: 학과, slug: dept-clothing, label: 의류학과, path: "https://clothing.snu.ac.kr/교과과정/" }   # 학부안내=교과과정(23KB). 기존 홈/=메뉴쓰레기라 교체. /학과소개/는 사범대 오염(정찰 2026-06-09)
       - { entity: 부속기관, slug: inst-human-ecology, label: 생활과학연구소, path: /생활과학연구소/ }
     faculty: { path: /명예교수/ }
     notes: "WP multisite(#35)+kboard. 4개 학과 외부 서브도메인(consumer/childfamily/foodnutrition/clothing)."
@@ -423,7 +423,7 @@ orgs:
       - { slug: nursing-100-overview, path: /about/introduction/100 }
       - { slug: facilities, path: /about/facilities }
     entity_pages:
-      - { entity: 학과, slug: dept-nursing, label: 간호학과, path: /about/introduction/goal }
+      - { entity: 학과, slug: dept-nursing, label: 간호학과, path: /education/undergraduate/curriculum }   # 학부 교과과정(개념틀·130학점). 기존 /about/introduction/goal=비전 중복이라 교체(정찰 2026-06-09)
       - { entity: 학과, slug: dept-clinical-nursing, label: 임상간호학과, path: "https://apn.snu.ac.kr/about/goal" }
     faculty: { path: /faculty/professor }
     notes: "⚠ bm=v 변종. 단일 학과."
@@ -479,9 +479,9 @@ orgs:
     board_pattern: "/board/general/view/{id} (목록 /board/general); 콘텐츠 /content/{slug}"
     dept_count: 4
     urls:
-      greeting: null           # /content/{slug} 패턴이나 정확 slug 미확인 (도구 TLS 차단)
-      history: null
-      vision: null
+      greeting: "/content/greetings"   # 학장 인사말 (정찰 2026-06-08 curl 확인, 본문 3611자)
+      history: "/content/history"      # 연혁 1940's~2020's (3374자)
+      vision: "/content/vision"        # 비전 및 현황 — 건축물·강의실·교수진 현황 통계 (2348자)
       departments: null
       departments_grad: "/content/department_gs"   # 대학원 음악과 (사용자 제보 확인)
       notice: "/board/general"
@@ -518,15 +518,17 @@ orgs:
     dept_count: 1
     urls:
       greeting: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=80"
-      history: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=70"
+      history: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=70&upper_menu_no=2500000&menu_no=2510000"   # bare URL은 egovframe 에러페이지 → menu_no 붙여야 연혁 8895자 정상렌더(정찰 2026-06-09)
       vision: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=24009"
-      departments: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=24369"
+      departments: null   # nttId=24369 → dept.md가 학과명 중복나열 nav-junk(정찰 2026-06-09). 5개 학과 entity로 충분
       notice: "/fnt/nac/selectNoticeList.do?bbsId=BBSMSTR_000000000001"
       news: "/fnt/bbm/sbbs/selectBbsSmpleList.do?bbsId=BBSMSTR_000000000020"
     about_pages:
       - { slug: past-deans, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=79" }
       - { slug: org-chart, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=521" }
       - { slug: education-goals, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=139" }
+      # 개요 — 의대 일반소개(1899 전통·QS세계30위권·비전수립경과, 1529자). 적대검증 2026-06-09. 기존 vision(nttId=24009)·greeting과 별개.
+      - { slug: overview, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=24512" }
     entity_pages:
       - { entity: 학과, slug: dept-medicine, label: 의학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=512" }
       - { entity: 학과, slug: dept-medical-science, label: 의과학과, path: "/fnt/bbm/bbs/selectBoardArticleView.do?nttId=513" }
@@ -564,7 +566,7 @@ orgs:
       - { slug: organization, path: /organization/ }
       - { slug: staff, path: /staff/ }
     entity_pages:
-      - { entity: 학과, slug: dept-veterinary, label: 수의학과, path: /admissions1/ }
+      - { entity: 학과, slug: dept-veterinary, label: 수의학과, path: /graduate_curriculum/ }   # 수의 교과목안내(551.xxx). 기존 /admissions1/=입시 일반론이라 교체. /학과소개/·/연혁/는 사범대 오염(정찰 2026-06-09)
     faculty: { path: /faculty/ }
     notes: "WP+kboard(mod=document&uid 변종). 단일 학과(수의학과)."
 
@@ -592,6 +594,8 @@ orgs:
     about_pages:
       - { slug: previous-deans, path: "/%ec%97%ad%eb%8c%80%ed%95%99%ec%9e%a5/" }
       - { slug: organization, path: "/%ec%a1%b0%ec%a7%81%eb%8f%84-%eb%b0%8f-%eb%b3%b4%ec%a7%81%ec%9e%90/" }
+      # 학과별 산문 소개가 사이트에 없음(정찰 2026-06-09) → 약대 교육·연구현황(정원·전공·시설·ESI 1위, 3.8K자)을 기본 개요로 추가
+      - { slug: education-research, path: "/약학대학-교육-및-연구현황/" }
     entity_pages:
       - { entity: 학과, slug: dept-pharmacy, label: 약학과, path: "/%ed%95%99%ea%b3%bc%eb%b3%84-%ea%b5%90%ec%9c%a1%eb%aa%a9%ed%91%9c/" }
       - { entity: 학과, slug: dept-manufacturing-pharmacy, label: 제약학과, path: "/%ed%95%99%ea%b3%bc%eb%b3%84-%ea%b5%90%ec%9c%a1%eb%aa%a9%ed%91%9c/" }
@@ -617,7 +621,7 @@ orgs:
     urls:
       greeting: "/greetings/"
       history: "/about-history/"
-      vision: "/organization/"
+      vision: "/talent/"          # 인재상=비전 텍스트 (정찰 2026-06-08). 기존 /organization/은 이미지뿐이라 교체
       departments: "/organization/"
       notice: "/category/board-215-GN-IWAuloKV-20230830171309/"
       news: "/category/board-215-GN-LFA7ob0C-20240522155911/"
@@ -650,9 +654,9 @@ orgs:
     board_pattern: "/공지사항/?mod=document&uid={id}"
     dept_count: 0
     urls:
-      greeting: "/en/greetings/"
-      history: "/en/history/"
-      vision: "/en/mission/"
+      greeting: "/인사말/"        # 한글 정본(학부대학장 노유선, 2025 출범). 기존 /en/greetings/ 영문 교체(정찰 2026-06-09)
+      history: "/연혁/"           # 한글 정본 연혁(기초교육원2002~학부대학출범2025). 기존 /en/history/ 영문 교체
+      vision: null               # /en/mission/는 about_pages talent(/인재상/)의 영문 번역 중복 → 제거(한글 talent 유지)
       departments: "/en/college-of-liberal-studies/"
       notice: "/공지사항/"
       news: "/category/board-305-BL-qyVQ8VF9-20250307172846/"
@@ -698,7 +702,10 @@ orgs:
       departments: null     # 〃 depts_shared_with: 단과대
       notice: "/graduate/general/notice"
       news: null
-    notes: "⚠ 전용사이트 없음. 3개 소스: ①admission.snu.ac.kr/graduate/general(공지) ②snu.ac.kr/academics/graduate/graduate_schools(과정리스트) ③각 단과대 사이트의 '대학원' 섹션(학과별 대학원 정보 — 사용자 제보). 단과대 크롤 시 대학원 섹션 URL도 함께 수집."
+    about_pages:
+      # 연합대학원 개요 — 전용 인사말/연혁이 아니라 '75학과+32협동과정이 단과대와 공유되는 연합구조'를 설명(사용자 지적 2026-06-08).
+      - { slug: intro, path: "https://www.snu.ac.kr/academics/graduate/graduate_schools" }
+    notes: "⚠ 전용사이트 없음. 3개 소스: ①admission.snu.ac.kr/graduate/general(공지) ②snu.ac.kr/academics/graduate/graduate_schools(과정리스트=연합구조 개요) ③각 단과대 사이트의 '대학원' 섹션(학과별 대학원 정보 — 사용자 제보). 단과대 크롤 시 대학원 섹션 URL도 함께 수집."
 
   # ── 전문대학원 11개 ──
   - id: gsph
@@ -721,6 +728,13 @@ orgs:
       departments: "/보건학전공/"
       notice: "/일반공지/"
       news: "/gsph-뉴스/"
+    about_pages:
+      # 규모 fact — 인원현황(교수·학생·직원 수). 정찰 2026-06-09 사이트맵 /인원현황/ 실존 확인. post-cleanse 본문 검증 필요.
+      - { slug: facts, path: "/인원현황/" }
+    entity_pages:
+      # 학과 기본소개 — 기존 dept.md(보건학전공)에 누락된 학과(적대검증 2026-06-09).
+      - { entity: 학과, slug: dept-env-health, label: 환경보건학과, path: "/환경보건학과/" }
+      - { entity: 학과, slug: dept-health-policy, label: 보건정책관리학전공, path: "/보건정책관리학전공/" }
     notes: "WP multisite(#136)+kboard(mod=document&uid). 1959 설립."
 
   - id: gspa
@@ -743,6 +757,11 @@ orgs:
       departments: "/kr/curriculum/school/info"
       notice: "/kr/Board/List/Notice"
       news: "/kr/Board/List/GspaNews"
+    about_pages:
+      # 개요 — 설립취지(1959 국내최초 전문대학원)+졸업생통계(석5650·박294, 1156자). 적대검증 2026-06-09.
+      - { slug: overview, path: "/kr/gspa/intro/purpose" }
+    entity_pages:
+      - { entity: 학과, slug: dept-majors, label: 전공소개(글로벌행정·공기업정책 등), path: "/kr/curriculum/school/info3" }
     notes: "⚠ /kr 로케일 필수, 루트는 404. 게시판 dynamic → Tier4는 headless 필요."
 
   - id: gses
@@ -810,6 +829,13 @@ orgs:
       departments: "dentemp:/research/department/"
       notice: "/fnt/nac/selectNoticeList.do?bbsId=BBS_0000000000001"
       news: "/fnt/bbm/sbbs/selectBbsSmpleList.do?bbsId=BBS_0000000000002"
+    about_pages:
+      # 규모 fact — 학생현황(학석사통합 131·전문석사 351·학술 206 재학) + 과정별 표(정찰 2026-06-09, dentemp 도메인). 기준 2016.06.
+      - { slug: facts, path: "dentemp:/intro/about/facts/" }
+      # 개요 — 일반소개(1922 경성치과의학교 기원·설립목적·교육목표6·인재상, 3256자). 적대검증 2026-06-09.
+      - { slug: overview, path: "dentemp:/intro/about/" }
+    entity_pages:
+      - { entity: 학과, slug: dept-grad, label: 학술대학원 치의과학과, path: "dentemp:/edu/graduate/" }
     notes: "이중 사이트: 정적 소개=dentemp(영문슬러그), 게시판=dentistry(eGovFrame .do, 라이브 글 확인). notice/news는 dentistry 도메인. urls의 dentemp: 접두어는 alt_domain 기준."
 
   - id: mba
@@ -832,6 +858,11 @@ orgs:
       departments: null
       notice: "/admission/notice?sc=y"
       news: "/snu-gsb/mba-news?sc=y"
+    about_pages:
+      # 규모 fact — EMBA 학생현황(재학230·평균42세·경력14년·산업분포, 1098자). 적대검증 2026-06-09.
+      - { slug: facts, path: "/program/executive-mba/class-profile" }
+    entity_pages:
+      - { entity: 학과, slug: dept-fulltime-mba, label: Full-time MBA 프로그램, path: "/program/full-time-mba/overview" }
     notes: "표준 CMS. 인사말/연혁은 mba-news 게시글·overview에 인라인. cba와 별개 사이트."
 
   - id: law
@@ -854,6 +885,9 @@ orgs:
       departments: "/page/master_curriculum.php"
       notice: "/bbs/board.php?bo_table=normal_board"
       news: null
+    about_pages:
+      # 비전/교육이념 — eduGoal.php(교육이념·4대 교육목표·특성화3분야 산문 11K자). 기존 vision.md(=situation.php 현황통계)와 별개. 적대검증 2026-06-09.
+      - { slug: vision-edugoal, path: "/page/eduGoal.php" }
     notes: "그누보드 PHP. 영문 .php 슬러그. 교수59/원생502(2026-03)."
 
   - id: gsct
@@ -876,6 +910,11 @@ orgs:
       departments: "/appl_bio_intro/"
       notice: "/category/notice/"
       news: "/category/newsletter/"
+    entity_pages:
+      # 학과 기본소개 — _intro 슬러그 페이지별 고유본문(적대검증 2026-06-09). 기존 dept.md(appl_bio_intro)와 별개.
+      - { entity: 학과, slug: dept-intl-inf, label: 지능정보융합학과, path: "/intl_inf_intro/" }
+      - { entity: 학과, slug: dept-math-info, label: 수리정보과학과, path: "/math_info_intro/" }
+      - { entity: 학과, slug: dept-health-info, label: 헬스케어융합학과, path: "/health_info_intro/" }
     notes: "WP multisite(#214)+kboard. 콘텐츠는 static, 게시판 글링크는 JS. 5개 학과."
 
   - id: gsiat
@@ -898,6 +937,11 @@ orgs:
       departments: null   # 이 URL은 단일전공(경제동물과학) 강의덤프 → 제외 (QA bad, 2026-06-04)
       notice: "/notice/?gbn=1&htop=MN0007&ctop=MN0037&ptop=MN0007"
       news: "/notice/?gbn=6&htop=MN0007&ctop=MN0095&ptop=MN0007"
+    about_pages:
+      # 규모 fact — 취업현황(2016~2022 졸업/취업/진학 수치표, 536자). 적대검증 2026-06-09. (비전은 이미지기반이라 제외)
+      - { slug: facts, path: "/admission/admission07.asp" }
+    entity_pages:
+      - { entity: 학과, slug: dept-econ-animal, label: 경제동물과학전공, path: "/include/?pidx=7&htop=MN0004&ctop=MN0025&ptop=MN0004" }
     notes: "ASP CMS, pidx/htop/ctop 파라미터 라우팅. 평창캠퍼스. 게시판 bidx(≠bbsidx)."
 
   - id: gsep
@@ -920,7 +964,13 @@ orgs:
       departments: null
       notice: "/boards/notice/news/notice/"
       news: "/boards/notice/introduction/news/"
-    notes: "경로기반(Django 추정). /staticdata/ 정적 + /boards/ 게시판. 목록 ?paginate_by=10&page=N."
+    about_pages:
+      # 개요 — 전용 연혁 페이지는 사이트에 없음(정찰 2026-06-08). gsep_program이 프로그램 소개/개요 본문(4253자).
+      - { slug: intro, path: /staticdata/static/introduction/gsep_program/ }
+    entity_pages:
+      # GSEP는 학과 없이 산업별 교육트랙이 전공단위 — 6개 트랙 교육목표+교과목(적대검증 2026-06-09, 1730자).
+      - { entity: 학과, slug: dept-tracks, label: 산업별 교육트랙(6), path: "/staticdata/static/curriculum/track/" }
+    notes: "경로기반(Django 추정). /staticdata/ 정적 + /boards/ 게시판. 목록 ?paginate_by=10&page=N. history 전용페이지 부재(정찰)."
 
   - id: gsds
     display_name: 데이터사이언스대학원
@@ -942,6 +992,8 @@ orgs:
       departments: "/integrated/department/"
       notice: "/news/announcement/"
       news: "/news/news-school/"
+    entity_pages:
+      - { entity: 학과, slug: dept-integrated, label: 응용데이터사이언스 융합전공, path: "/integrated/" }
     notes: "WP 커스텀테마(gsds), kboard 없음. 영문 슬러그 메뉴 + 한글 퍼머링크 게시글."
 
 # =============================================================================
