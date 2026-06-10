@@ -1,9 +1,10 @@
-// Design Ref: college-grad-wiki §2.2 / §3.3 / §4.1 I-9 — Tier3/Tier4 런타임 직답.
-// Plan SC: "공대 학장 이메일?" → T3 1레코드 LLM 0토큰 / "공대 최근 공지?" → T4 리스트.
+// Design Ref: college-grad-wiki §2.2 / §3.3 / §4.1 I-9 — AnswerClass 3/4 런타임 직답.
+// Plan SC: "공대 학장 이메일?" → AC3 1레코드 LLM 0토큰 / "공대 최근 공지?" → AC4 리스트.
+// ⚠️ 여기서의 AnswerClass(3/4)는 답변 방식 분류이며 권한 tier1/tier2와 무관.
 //
 // 격리(§9.2): 이 모듈은 app-side. lib/db만 의존하고 lib/crawl을 import하지 않는다.
-//   - Tier3(structured_facts)·Tier4(live_cache) row는 crawl(producer)이 채우고 여기선 읽기만.
-//   - 미스/TTL 만료 → null 반환 → 호출측(route.ts)이 Tier1 RAG로 degrade.
+//   - AnswerClass 3(structured_facts)·AnswerClass 4(live_cache) row는 crawl(producer)이 채우고 여기선 읽기만.
+//   - 미스/TTL 만료 → null 반환 → 호출측(route.ts)이 AnswerClass 1 RAG로 degrade.
 // college = router가 선택한 단과대/대학원 wiki_id(= org.id). 별도 detectCollege 불필요.
 
 import { db } from '@/lib/db/client';
@@ -22,12 +23,12 @@ export type BoardKind = 'notice' | 'news' | 'research';
 export interface DirectAnswer {
   answer: string;
   sources: { wiki: string; page: string; topic?: string }[];
-  tier: 3 | 4;
+  answerClass: 3 | 4;
   field?: FactField;
   board?: BoardKind;
 }
 
-// 쿼리 → 구조화 field. tier-classifier가 이미 tier=3으로 분류한 쿼리만 들어온다(여기선 세분).
+// 쿼리 → 구조화 field. answer-class가 이미 answerClass=3으로 분류한 쿼리만 들어온다(여기선 세분).
 const FIELD_PATTERNS: { field: FactField; words: string[] }[] = [
   { field: 'dean_contact', words: ['이메일', '메일', '연락처', '전화', '이메일 주소', '학장 이메일', '연락'] },
   { field: 'faculty_roster', words: ['명단', '교수진', '교수 명단', '교원 명단', '보직자', 'roster', '구성원'] },
@@ -42,7 +43,7 @@ const BOARD_PATTERNS: { board: BoardKind; words: string[] }[] = [
   { board: 'notice', words: ['공지', '게시판', '알림', '일정', '모집', '행사', '안내'] },
 ];
 
-/** tier3 쿼리 → 구체 field (없으면 dean_contact를 기본으로 — 가장 흔한 T3 질의). */
+/** AnswerClass 3 쿼리 → 구체 field (없으면 dean_contact를 기본으로 — 가장 흔한 AC3 질의). */
 export function detectFactField(query: string): FactField {
   const q = query.toLowerCase();
   for (const { field, words } of FIELD_PATTERNS) {
@@ -51,7 +52,7 @@ export function detectFactField(query: string): FactField {
   return 'dean_contact';
 }
 
-/** tier4 쿼리 → 게시판 종류 (없으면 notice 기본). */
+/** AnswerClass 4 쿼리 → 게시판 종류 (없으면 notice 기본). */
 export function detectBoard(query: string): BoardKind {
   const q = query.toLowerCase();
   for (const { board, words } of BOARD_PATTERNS) {
@@ -66,8 +67,8 @@ function isFresh(fetchedAt: Date, ttl: number, unit: 'days' | 'hours'): boolean 
 }
 
 /**
- * Tier3 직답: structured_facts에서 `${org}:${field}` 1레코드.
- * 적중 + TTL 유효 시 DirectAnswer 반환(LLM 0토큰), 아니면 null(→ Tier1 degrade).
+ * AnswerClass 3 직답: structured_facts에서 `${org}:${field}` 1레코드.
+ * 적중 + TTL 유효 시 DirectAnswer 반환(LLM 0토큰), 아니면 null(→ AnswerClass 1 degrade).
  */
 export async function getStructuredFact(org: string, query: string): Promise<DirectAnswer | null> {
   const field = detectFactField(query);
@@ -76,7 +77,7 @@ export async function getStructuredFact(org: string, query: string): Promise<Dir
   try {
     [row] = await db.select().from(structuredFacts).where(eq(structuredFacts.id, id)).limit(1);
   } catch (err) {
-    console.error('[tier3] structured_facts 조회 실패:', err);
+    console.error('[answer-class:3] structured_facts 조회 실패:', err);
     return null;
   }
   if (!row) return null;
@@ -85,14 +86,14 @@ export async function getStructuredFact(org: string, query: string): Promise<Dir
   return {
     answer: `${formatFact(field, row.value)}\n\n출처: ${row.sourceUrl}`,
     sources: [{ wiki: org, page: row.sourceUrl }],
-    tier: 3,
+    answerClass: 3,
     field,
   };
 }
 
 /**
- * Tier4 직답: live_cache에서 `${org}:${board}` 게시판 리스트.
- * 적중 + TTL 유효 시 DirectAnswer 반환, 아니면 null(→ Tier1 degrade).
+ * AnswerClass 4 직답: live_cache에서 `${org}:${board}` 게시판 리스트.
+ * 적중 + TTL 유효 시 DirectAnswer 반환, 아니면 null(→ AnswerClass 1 degrade).
  * (런타임 라이브 fetch 안 함 — 갱신은 오프라인 crawl --tier 4. §9.2 격리)
  */
 export async function getLiveBoard(org: string, query: string): Promise<DirectAnswer | null> {
@@ -102,7 +103,7 @@ export async function getLiveBoard(org: string, query: string): Promise<DirectAn
   try {
     [row] = await db.select().from(liveCache).where(eq(liveCache.id, id)).limit(1);
   } catch (err) {
-    console.error('[tier4] live_cache 조회 실패:', err);
+    console.error('[answer-class:4] live_cache 조회 실패:', err);
     return null;
   }
   if (!row) return null;
@@ -115,7 +116,7 @@ export async function getLiveBoard(org: string, query: string): Promise<DirectAn
   return {
     answer: row.sourceUrl ? `${body}\n\n게시판: ${row.sourceUrl}` : body,
     sources: [{ wiki: org, page: row.sourceUrl ?? '' }],
-    tier: 4,
+    answerClass: 4,
     board,
   };
 }

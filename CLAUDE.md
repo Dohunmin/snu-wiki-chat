@@ -7,7 +7,7 @@
 
 ## 0. 프로젝트 한 줄 요약
 
-서울대 거버넌스 자료(평의원회·이사회·총장연설·재무공시 등 **9개 위키**)를 LLM으로 질의응답하는 Next.js 웹앱. 다중 위키 자동 라우팅 + **하이브리드 검색(키워드 + Voyage 임베딩/pgvector 벡터 + RRF 융합)** + 권한 관리 + Lens 페르소나 + 한계답변 추적.
+서울대 거버넌스·단과대·대학원 자료를 **다수의 위키**로 질의응답하는 Next.js 웹앱. (거버넌스·단과대·대학원은 모두 **동등한 wiki_id**이며, 위키 수는 **고정이 아니라 동적으로 증가**한다 — 현재 목록의 source of truth는 [data/agents.config.json](data/agents.config.json).) 다중 위키 자동 라우팅 + **하이브리드 검색(키워드 + Voyage 임베딩/pgvector 벡터 + RRF 융합)** + 권한 관리 + Lens 페르소나 + 한계답변 추적.
 
 > ⚠️ **문서 정합성(2026-05-29 갱신)**: 한때 "벡터 검색 미도입"으로 적혀 있었으나 실제로는 `lib/embed/`(Voyage + pgvector + RRF)가 **이미 도입**됨. `lib/limitations/`(DBSCAN/ANN 클러스터링), `lib/llm/citations.ts`(번호 인용), `lib/agents/recency.ts`, `lib/google-sheets.ts`도 문서에 누락돼 있었음 → §18에 보강. 전반 점검은 [docs/코드_감사_보고서_2026-05-29.md](docs/코드_감사_보고서_2026-05-29.md) 참조.
 
@@ -30,7 +30,9 @@
 
 ---
 
-## 2. 위키 에이전트 — 9개
+## 2. 위키 에이전트 (동적 등록 — 거버넌스·단과대·대학원 모두 동등)
+
+> ⚠️ 위키 수는 **고정이 아니라 동적으로 증가**한다. 거버넌스·단과대·대학원은 `group` 태그만 다를 뿐 라우팅·검색·권한상 **완전히 동등한 wiki_id**다 (별개 시스템 아님). 현재 등록 목록의 source of truth는 [data/agents.config.json](data/agents.config.json). 아래 표는 그중 **거버넌스/기본 group**이며, 단과대·대학원 group은 §2.1 참조.
 
 **정의 위치**: [data/agents.config.json](data/agents.config.json) (전체 설정 + 키워드)
 **타입 정의**: [lib/agents/types.ts:6-24](lib/agents/types.ts#L6-L24) (`AgentConfig` 인터페이스)
@@ -54,14 +56,14 @@
 
 ### 2.1 단과대/대학원 위키 (college-grad-wiki, per-college 동적 생성)
 
-위 9개 외에, **각 단과대·대학원 = 독립 wiki_id**로 동적 등록된다. (통합 위키 아님 — wiki_id 격리로 "공대 X"는 eng 위키로만 라우팅, 교차오염 0.)
+거버넌스 위키와 **완전히 동등하게**, 각 단과대·대학원도 독립 wiki_id로 동적 등록된다 (`group` 태그만 다름 — 라우팅·검색·권한 메커니즘은 §2 거버넌스와 동일). (통합 위키 아님 — wiki_id 격리로 "공대 X"는 eng 위키로만 라우팅, 교차오염 0.)
 
 - **레지스트리**: [config/colleges.yaml](config/colleges.yaml) — 28개 조직(survey_status 기반). `active: true`만 위키화.
 - **소스**: Obsidian `SNU_단과대_LLM_Wiki` / `SNU_대학원_LLM_Wiki`의 `wiki/{overviews,facts,sources,entities}/{org.id}/` 하위폴더.
 - **생성**: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) `buildCollegeWiki` + `ensureCollegeAgent` — active 조직마다 `data/{org.id}.json` + agent 항목(`group: '단과대'|'대학원'`) 자동 생성. **조직 추가 = yaml `active` 플래그만 → O(1)**.
-- **라우팅**: 기존 wiki_id 메커니즘 그대로. `group` 위키가 선택되면 [lib/agents/tier-classifier.ts](lib/agents/tier-classifier.ts) `classifyTier`로 Tier(1~4) 산출 → `RoutingResult.tier`/`.college`. T3(연락처·통계)/T4(최신공지)는 chat 핸들러가 분기(structured_facts/live_cache, 후속 module).
-- **크롤**: [lib/crawl/](lib/crawl/) (8개 사이트 엔진 어댑터) → Tier1/2 `.md` 생성(raw HTML는 `raw/html/`에 원본 보존) → 위 빌드 파이프라인. cleanser는 콘텐츠셀렉터+밀도기반선택(readability-lite)+반복블록 메뉴제거로 nav/메뉴 걸러냄.
-- **Tier3/4** (`lib/agents/structured.ts`, 앱 DB): T3=`structured_facts`(연락처·통계, TTL 90일), T4=`live_cache`(최신공지, TTL 6h). chat route가 `routing.tier===3|4 && routing.college`일 때 직답(`streamDirectAnswer`, LLM 0토큰). 미스/만료→Tier1 degrade.
+- **라우팅**: 기존 wiki_id 메커니즘 그대로. `group` 위키가 선택되면 [lib/agents/answer-class.ts](lib/agents/answer-class.ts) `classifyAnswerClass`로 **AnswerClass(1~4)** 산출 → `RoutingResult.answerClass`/`.college`. AnswerClass 3(연락처·통계)/4(최신공지)는 chat 핸들러가 분기(structured_facts/live_cache). ⚠️ **AnswerClass(답변 방식 분류)는 권한 등급 tier1/tier2와 무관** — 과거 둘 다 'tier'라 혼동돼 2026-06-10 `AnswerClass`로 분리.
+- **크롤**: [lib/crawl/](lib/crawl/) (8개 사이트 엔진 어댑터) → 크롤 Tier1/2 `.md` 생성(raw HTML는 `raw/html/`에 원본 보존) → 위 빌드 파이프라인. (lib/crawl의 `Tier`는 크롤 콘텐츠 깊이로, 위 AnswerClass와 같은 1~4 의미축이나 별도 모듈.) cleanser는 콘텐츠셀렉터+밀도기반선택(readability-lite)+반복블록 메뉴제거로 nav/메뉴 걸러냄.
+- **AnswerClass 3/4** (`lib/agents/structured.ts`, 앱 DB): 3=`structured_facts`(연락처·통계, TTL 90일), 4=`live_cache`(최신공지, TTL 6h). chat route가 `routing.answerClass===3|4 && routing.college`일 때 직답(`streamDirectAnswer`, LLM 0토큰). 미스/만료→AnswerClass 1 degrade.
 - Phase 1 active: `eng`·`humanities`·`social`·`science`. Phase 2~4는 yaml `active` 전환으로 확장.
 
 ### 2.2 웹검색 — insight(policy) 전용 (2026-06 설계 변경)
@@ -286,7 +288,7 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 
 처리 내용:
 - Obsidian 마크다운 + frontmatter 파싱 (`OBSIDIAN_PATH` 환경변수 기준, 기본 `../Obsidian`)
-- 9개 위키별 sources/topics/entities/facts/stances/overviews 추출
+- 각 위키별 sources/topics/entities/facts/stances/overviews 추출
 - Topic/Entity → Source 역매핑
 - 키워드 자동 보강 → `data/agents.config.json` 갱신
 - Concept Index 생성 → `data/concept-index.json` (lensPersona 위키 제외)
@@ -339,7 +341,7 @@ RAG_DEBUG                    # 'true'면 RRF/시맨틱라우팅 디버그 로그
 
 ## 16. 관련 설계 문서
 
-- [docs/SNU_거버넌스_위키_시스템_보고서.md](docs/SNU_거버넌스_위키_시스템_보고서.md) — ⚠️ **2026-04-30 작성, 일부 stale** (위키 9개 중 4개만 언급)
+- [docs/SNU_거버넌스_위키_시스템_보고서.md](docs/SNU_거버넌스_위키_시스템_보고서.md) — ⚠️ **2026-04-30 작성, 일부 stale** (거버넌스 위키 일부만 언급)
 - [docs/라우팅_스코어링_상세.md](docs/라우팅_스코어링_상세.md) — 라우팅/스코어링 로직 보충
 - [docs/스코어링_및_답변_생성_보고서.md](docs/스코어링_및_답변_생성_보고서.md)
 - [docs/01-plan/features/](docs/01-plan/features/) — smart-retrieval, multi-wiki-integration 등 plan
@@ -373,7 +375,7 @@ aeaadbe Fix middleware 504: remove DB query from session callback
 
 ### 18.1 RAG — 하이브리드 검색 ([lib/embed/](lib/embed/))
 
-키워드 스코어링(WikiAgent) 결과와 벡터 검색 결과를 **RRF(Reciprocal Rank Fusion)** 로 융합. 9개 위키 모두 `ragEnabled: true`.
+키워드 스코어링(WikiAgent) 결과와 벡터 검색 결과를 **RRF(Reciprocal Rank Fusion)** 로 융합. 모든 위키 `ragEnabled: true`.
 
 | 파일 | 역할 |
 |------|------|

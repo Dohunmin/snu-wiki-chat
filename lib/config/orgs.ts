@@ -130,7 +130,7 @@ export function getOrgsByWiki(parent: ParentWiki): Org[] {
 /**
  * detectCollege용 별칭 맵: 질의 substring → org.id.
  * id, display_name, 그리고 "대학" 제거형(공과대학→공과/공대 류)을 키로.
- * 라우터(tier-classifier)가 소비. (Design Ref §6.2.4)
+ * 라우터(answer-class)가 소비. (Design Ref §6.2.4)
  */
 export function buildCollegeAliases(): Map<string, string> {
   const map = new Map<string, string>();

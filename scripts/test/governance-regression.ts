@@ -1,8 +1,8 @@
 // Design Ref: college-grad-wiki §8.4 (SC-7/SC-8 회귀) — governance 코드경로 불변 가드.
 // 목적: per-college 피봇이 기존 9위키 governance 흐름을 한 줄도 바꾸지 않았음을 결정적으로(무료·무DB·무API) 검증.
-//   - 벡터 경로(searchVector/searchVectorGlobal/global-retrieve/chunker/types/schema)에 college/tier 없음
-//   - tier/college는 router에서 group('단과대'|'대학원') 게이트로만 set
-//   - route.ts T3/T4 직답은 tier===3|4 가드 (governance=undefined→skip)
+//   - 벡터 경로(searchVector/searchVectorGlobal/global-retrieve/chunker/types/schema)에 college/answerClass 없음
+//   - answerClass/college는 router에서 group('단과대'|'대학원') 게이트로만 set
+//   - route.ts AnswerClass 3/4 직답은 answerClass===3|4 가드 (governance=undefined→skip)
 //   - 9 governance agent 존재 + group 필드 없음
 // 실행: npx tsx scripts/test/governance-regression.ts
 
@@ -59,19 +59,19 @@ const router = read('lib/agents/router.ts');
 // group 게이트(cSel/collegeSel: 선택된 agent 중 group==='단과대'|'대학원') 존재
 check('router.ts: group 게이트(단과대|대학원) 존재',
   /group === '단과대'/.test(router) && /group === '대학원'/.test(router));
-// tier/college: 콜론 할당 라인(글로벌 경로)은 게이트 변수(cSel) 참조 — 코드 라인만(주석 제외)
-const tierCollegeLines = router.split('\n').filter(l => /\btier:|\bcollege:/.test(l) && !/^\s*\*|^\s*\/\//.test(l));
-check('router.ts: tier/college 콜론 할당은 모두 게이트 변수 참조',
+// answerClass/college: 콜론 할당 라인(글로벌 경로)은 게이트 변수(cSel) 참조 — 코드 라인만(주석 제외)
+const tierCollegeLines = router.split('\n').filter(l => /\banswerClass:|\bcollege:/.test(l) && !/^\s*\*|^\s*\/\//.test(l));
+check('router.ts: answerClass/college 콜론 할당은 모두 게이트 변수 참조',
   tierCollegeLines.length >= 1 && tierCollegeLines.every(l => /cSel|collegeSel/.test(l)));
-// 일반 경로: const tier = collegeSel ? classifyTier / const college = collegeSel?.agent.config.id
-check('router.ts: 일반 경로 tier/college는 collegeSel 게이트로만 산출',
-  /const tier = collegeSel \? classifyTier\(query\) : undefined/.test(router) &&
+// 일반 경로: const answerClass = collegeSel ? classifyAnswerClass / const college = collegeSel?.agent.config.id
+check('router.ts: 일반 경로 answerClass/college는 collegeSel 게이트로만 산출',
+  /const answerClass = collegeSel \? classifyAnswerClass\(query\) : undefined/.test(router) &&
   /const college = collegeSel\?\.agent\.config\.id/.test(router));
 
-// ── (E) route.ts: T3/T4 직답은 tier===3|4 가드 ──
+// ── (E) route.ts: AnswerClass 3/4 직답은 answerClass===3|4 가드 ──
 const route = read('app/api/chat/route.ts');
-check('route.ts: 직답 분기가 routing.tier===3||===4 && routing.college 가드',
-  /routing\.tier === 3 \|\| routing\.tier === 4\) && routing\.college/.test(route));
+check('route.ts: 직답 분기가 routing.answerClass===3||===4 && routing.college 가드',
+  /routing\.answerClass === 3 \|\| routing\.answerClass === 4\) && routing\.college/.test(route));
 check('route.ts: streamDirectAnswer는 direct 적중 시에만 호출(미스→fall through)',
   /if \(direct\) \{[\s\S]*?streamDirectAnswer/.test(route));
 

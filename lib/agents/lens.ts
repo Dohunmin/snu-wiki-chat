@@ -7,7 +7,7 @@
 
 import path from 'path';
 import fs from 'fs';
-import type { WikiData, AgentConfig } from './types';
+import type { WikiData, AgentConfig, AgentContext } from './types';
 import type { Role } from '@/lib/auth/roles';
 import { canAccessSensitive } from '@/lib/auth/roles';
 import agentsConfig from '@/data/agents.config.json';
@@ -156,5 +156,28 @@ export async function loadPersonaContext(
     })),
     stanceBlock,
     insufficient: scored.length === 0,
+  };
+}
+
+/**
+ * persona의 stance를 번호 인용(buildNumberedContexts)에 태울 AgentContext로 변환.
+ *
+ * 헤더를 `## [stance] {title} ({id}) | topic: {topic}` 형식으로 렌더 → buildNumberedContexts가
+ *   다른 위키 source와 동일하게 [N] 번호를 부여하고, stance id가 `.stance`로 끝나므로
+ *   resolveText가 `/wiki?agent=leesj&type=stances&id=...` 클릭 링크로 변환한다.
+ *   (기존 stanceBlock=`[이름-stance]` raw 형식은 번호 매핑에 없어 [N] 불가 → 옛 형식 인용으로 흐르던 문제 해결.)
+ * 매칭 stance 0개면 null(insufficient).
+ */
+export function personaToContext(persona: PersonaContext): AgentContext | null {
+  if (persona.stances.length === 0) return null;
+  const relevantData = persona.stances
+    .map((s) => `## [stance] ${s.title} (${s.id}) | topic: ${s.topic}\n${s.content}`)
+    .join('\n\n---\n\n');
+  return {
+    agentId: persona.id,
+    agentName: persona.name,
+    relevantData,
+    sources: persona.stances.map((s) => ({ wiki: persona.name, page: s.id, topic: s.topic })),
+    confidence: 0.9,
   };
 }

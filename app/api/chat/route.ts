@@ -8,7 +8,7 @@ import { routeToAgent, planQuery, type AgentIntent, type QueryPlan } from '@/lib
 import { enforceContextBudget } from '@/lib/agents/context-budget';
 import { complexityBudget, budgetForComplexity } from '@/lib/agents/complexity';
 import { getStructuredFact, getLiveBoard, type DirectAnswer } from '@/lib/agents/structured';
-import { loadPersonaContext } from '@/lib/agents/lens';
+import { loadPersonaContext, personaToContext } from '@/lib/agents/lens';
 import {
   buildSystemPromptParts,
   buildUserMessage,
@@ -170,13 +170,14 @@ export async function POST(req: NextRequest) {
   try {
     routing = await routeQuery(message, role, usePlan ? (queryPlan ?? undefined) : undefined);
 
-    // Design Ref: §4.1 I-9 — Tier3/4 직답 분기 (college-grad-wiki).
-    //   governance 쿼리는 routing.tier === undefined → 이 블록 통째로 skip → 아래 일반 RAG와 byte-identical.
-    //   T3 적중: structured_facts 1레코드 → LLM 0토큰. T4 적중: live_cache 게시판 리스트.
-    //   미스/TTL 만료(direct === null) → fall through → 일반 RAG(Tier1 degrade).
-    if ((routing.tier === 3 || routing.tier === 4) && routing.college) {
+    // Design Ref: §4.1 I-9 — AnswerClass 3/4 직답 분기 (college-grad-wiki).
+    //   governance 쿼리는 routing.answerClass === undefined → 이 블록 통째로 skip → 아래 일반 RAG와 byte-identical.
+    //   AC3 적중: structured_facts 1레코드 → LLM 0토큰. AC4 적중: live_cache 게시판 리스트.
+    //   미스/TTL 만료(direct === null) → fall through → 일반 RAG(AnswerClass 1 degrade).
+    //   ⚠️ answerClass(1~4)=답변 방식 분류, 권한 tier1/tier2와 무관.
+    if ((routing.answerClass === 3 || routing.answerClass === 4) && routing.college) {
       const direct =
-        routing.tier === 3
+        routing.answerClass === 3
           ? await getStructuredFact(routing.college, message)
           : await getLiveBoard(routing.college, message);
       if (direct) {
@@ -214,8 +215,15 @@ export async function POST(req: NextRequest) {
       if (!persona) {
         return Response.json({ error: '존재하지 않는 페르소나입니다.' }, { status: 400 });
       }
+      // stance도 [N] 번호 인용 네임스페이스에 포함 → 입장 인용이 클릭 가능한 출처가 됨(budgetedContexts와 동일 처리).
+      const stanceCtx = personaToContext(persona);
+      const lensNumbered = stanceCtx
+        ? buildNumberedContexts([...budgetedContexts, stanceCtx])
+        : numbered;
+      citationMapping = lensNumbered.mapping;
+      citationSummary = lensNumbered.summary;
       systemPrompt = buildLensSystemPrompt(budgetedContexts, persona, role);
-      userMessage = buildLensUserMessage(message, numbered.contextMarkdown, numbered.summary, persona);
+      userMessage = buildLensUserMessage(message, lensNumbered.contextMarkdown, lensNumbered.summary, persona);
       lensPersonaInfo = {
         id: persona.id,
         displayName: persona.displayName,
@@ -592,7 +600,7 @@ async function streamDirectAnswer(args: {
     mode,
   });
 
-  // assistant 메시지 저장 (LLM 없이 즉시 — Tier 출처 포함)
+  // assistant 메시지 저장 (LLM 없이 즉시 — 직답 출처 포함)
   await db.insert(messages).values({
     id: crypto.randomUUID(),
     conversationId: convId,
@@ -623,7 +631,7 @@ async function streamDirectAnswer(args: {
     start(controller) {
       const send = (data: object) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-      send({ type: 'routing', agents: selectedAgentIds, agentNames, conversationId: finalConvId, tier: direct.tier });
+      send({ type: 'routing', agents: selectedAgentIds, agentNames, conversationId: finalConvId, answerClass: direct.answerClass });
       send({ type: 'chunk', content: direct.answer });
       send({ type: 'sources', refs: direct.sources });
       send({ type: 'done', conversationId: finalConvId });

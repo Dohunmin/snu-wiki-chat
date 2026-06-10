@@ -13,7 +13,7 @@ import type { KeywordRankedChunk } from '@/lib/embed/types';
 import { detectBreadthIntent } from './recency';
 import { isCollegeGroup, isCollegeReferenced, detectGroupBreadth, detectGroupAggregate } from './college-route';
 // college-grad-wiki — tier 분류 (T3/T4 게이트)
-import { classifyTier, type Tier } from './tier-classifier';
+import { classifyAnswerClass, type AnswerClass } from './answer-class';
 // unified-intent-router — 통합 QueryPlan 소비 (plan?: 있으면 정규식 대체, 없으면 fallback)
 import type { QueryPlan, CollegeGroupScope } from './agent-router';
 
@@ -22,7 +22,7 @@ export interface RoutingResult {
   contexts: AgentContext[];
   isGlobal: boolean;
   /** college-grad-wiki — 단과대/대학원 위키가 선택됐을 때만 set. 기존 9위키는 undefined. */
-  tier?: Tier;
+  answerClass?: AnswerClass;
   /** 선택된 college/grad wiki_id (= org.id, e.g. 'eng'). T3/T4 핸들러가 사용. */
   college?: string;
 }
@@ -150,7 +150,7 @@ export async function routeQuery(query: string, userRole: Role, plan?: QueryPlan
   const globalKeywords: string[] = agentsConfig.routing.globalKeywords;
   const agents = getRoutableAgents(userRole, query, plan);
 
-  // === Tier 0: 글로벌 키워드 → 전체 위키 full coverage ===
+  // === Stage 0: 글로벌 키워드 → 전체 위키 full coverage === (라우팅 단계 라벨, AnswerClass와 무관)
   const hasGlobalKeyword = globalKeywords.some(kw => queryLower.includes(kw));
   if (hasGlobalKeyword) {
     // 거버넌스는 전부, 단과대/대학원(breadth로 admit된 경우)은 prefilter 상위 GLOBAL_COLLEGE_CAP개만.
@@ -265,7 +265,7 @@ export async function routeQuery(query: string, userRole: Role, plan?: QueryPlan
           .find(a => a?.config.group === '단과대' || a?.config.group === '대학원');
         return {
           selectedAgentIds: gOut.map(c => c.agentId), contexts: gOut, isGlobal: false,
-          tier: cSel ? classifyTier(query) : undefined, college: cSel?.config.id,
+          answerClass: cSel ? classifyAnswerClass(query) : undefined, college: cSel?.config.id,
         };
       }
       // gOut 비면 아래 per-wiki로 fallback
@@ -374,14 +374,14 @@ export async function routeQuery(query: string, userRole: Role, plan?: QueryPlan
   const collegeSel = finalSelected.find(
     s => s.agent.config.group === '단과대' || s.agent.config.group === '대학원',
   );
-  const tier = collegeSel ? classifyTier(query) : undefined;
+  const answerClass = collegeSel ? classifyAnswerClass(query) : undefined;
   const college = collegeSel?.agent.config.id;
 
   return {
     selectedAgentIds: finalContexts.map(c => c.agentId),
     contexts: finalContexts,
     isGlobal: false,
-    tier,
+    answerClass,
     college,
   };
 }
