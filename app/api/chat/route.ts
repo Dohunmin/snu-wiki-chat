@@ -9,16 +9,20 @@ import { enforceContextBudget } from '@/lib/agents/context-budget';
 import { complexityBudget, budgetForComplexity } from '@/lib/agents/complexity';
 import { getStructuredFact, getLiveBoard, type DirectAnswer } from '@/lib/agents/structured';
 import { loadPersonaContext, personaToContext } from '@/lib/agents/lens';
+import { SEARCH_WIKI_TOOL, runSearchWiki } from '@/lib/agents/tools';
 import {
   buildSystemPromptParts,
   buildUserMessage,
   buildLensSystemPrompt,
   buildLensUserMessage,
   buildPolicySystemPrompt,
+  buildAgentLoopSystemPrompt,
+  buildAgentLoopUserMessage,
 } from '@/lib/llm/prompts';
 import { selectRecentHistory, type ChatTurn } from '@/lib/llm/memory';
 import {
   buildNumberedContexts,
+  CitationRegistry,
   resolveText,
   extractCitedNumbers,
   resolveCitations,
@@ -55,7 +59,8 @@ const WEB_SEARCH_TOOL_POLICY = {
 const WEB_SEARCH_GUIDANCE_POLICY = `\n\n[웹 검색 — 인사이트 전용]\n` +
   `- 발동 원칙(하나만): 제공된 내부 자료([N])로 질문의 핵심을 충실히 답할 수 있으면 검색하지 않는다. 핵심의 일부라도 내부 자료에 없어 "자료 밖·별도 확인 필요"라고 쓰게 되는 상황이면, 떠넘기지 말고 그 부분을 web_search로 보강한다(최대 1회). ⚠️ 외부/비교/최신 같은 *주제 분류*로 판단하지 말고, 오직 "내부 자료로 답되느냐"로만 판단한다.\n` +
   `- 실행: 외부가 필요하다 판단되면 거절하거나 "검색해 드릴까요"라고 되묻지 말고, 네가 직접 검색해 답에 반영한다.\n` +
-  `- 출처 기준: 정부·서울대 공식 공시·법령·판결·확립된 언론 보도 등 *1차·공신력 출처만* 사용한다. 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템이 차단). 특정 실명 인물에 대한 미검증 주장은 인용하지 않는다. 공신력 출처로 확인되지 않으면 단정하지 말고 생략하거나 "확인되지 않음"으로 표시한다.\n` +
+  `- 출처 기준: 정부·서울대 공식 공시·법령·판결·확립된 언론 보도 등 *1차·공신력 출처만* 사용한다. 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템이 차단).\n` +
+  `- 실명 인물 평가(장단점·강점·약점 포함): insight의 본령이므로 회피·생략하지 말고, **공신력 출처로 교차확인된 범위 안에서 근거와 함께 서술한다**. 각 평가에 출처를 붙이고, 그것이 특정 출처의 주장·논평이면 "(○○의 평가)"처럼 누구의 판단인지 귀속한다. **동명이인 주의**(이름 같아도 소속·경력 다르면 배제). 공신력 출처로 뒷받침되지 않는 평가는 단정하지 말고 "확인되지 않음"으로 표시한다(없는 평가를 지어내지 말 것).\n` +
   `- 검색 내용은 (외부지식)으로 표시, 출처 URL은 시스템이 자동 첨부.`;
 
 // C안(가드된 agentic): fact(normal) 답변에도 모델이 *직접* 외부 reach를 판단하게 하는 가이드.
@@ -159,6 +164,10 @@ export async function POST(req: NextRequest) {
   let mode = requestedMode;
   let routerIntent: AgentIntent | null = null;
   let queryPlan: QueryPlan | null = null;
+  // agent-loop(middle-path 1안): 플래그 ON + normal 요청이면 도구기반 루프 경로. OFF면 현행과 byte-identical.
+  //   loopMode면 fact/insight 분기(→policy 승급) 건너뜀 — 루프가 통합 처리(분류기 휴리스틱 제거 방향).
+  //   lens·명시 policy 요청은 사용자가 직접 고른 것 → 레거시 유지.
+  const loopMode = process.env.AGENT_LOOP_ENABLED === 'true' && requestedMode === 'normal';
   // unified-intent-router: 기본 ON(planQuery 통합 라우터 라이브 소비) — shadow 검증(실질의로그 121건) 통과 후 활성화.
   //   비상 복구: INTENT_PLAN_ENABLED=false 설정 시 기존 routeToAgent로 즉시 복귀(재배포 불필요).
   const usePlan = process.env.INTENT_PLAN_ENABLED !== 'false';
@@ -167,18 +176,19 @@ export async function POST(req: NextRequest) {
     if (usePlan) {
       queryPlan = await planQuery(message, recentTurns.slice(-6));   // 직전 3교환으로 맥락 해소
       routerIntent = queryPlan.intent;
-      if (queryPlan.intent === 'insight' && canInsight) mode = 'policy';
+      // loopMode면 mode를 normal로 유지(루프가 외부reach·분석 깊이를 자기판단). webEnabled은 role로만 결정.
+      if (queryPlan.intent === 'insight' && canInsight && !loopMode) mode = 'policy';
       console.log(
         `[plan] intent=${queryPlan.intent} cx=${queryPlan.complexity} rec=${queryPlan.recency} ` +
         `cb=${queryPlan.collegeBreadth} ca=${queryPlan.collegeAggregate} via=${queryPlan.via} ` +
-        `role=${role} → mode=${mode} | ${queryPlan.reason}`,
+        `role=${role} loop=${loopMode} → mode=${mode} | ${queryPlan.reason}`,
       );
     } else {
       const decision = await routeToAgent(message);
       routerIntent = decision.agent;
-      if (decision.agent === 'insight' && canInsight) mode = 'policy';
+      if (decision.agent === 'insight' && canInsight && !loopMode) mode = 'policy';
       console.log(
-        `[router] intent=${decision.agent} via=${decision.via} role=${role} ` +
+        `[router] intent=${decision.agent} via=${decision.via} role=${role} loop=${loopMode} ` +
         `→ mode=${mode} | ${decision.reason}`,
       );
     }
@@ -195,6 +205,9 @@ export async function POST(req: NextRequest) {
   let citationSummary: string;
   let lensPersonaInfo: { id: string; displayName: string; insufficient: boolean } | undefined;
   let convId = conversationId;
+  // agent-loop: 누적 인용기 + 예산을 스트리밍 클로저까지 노출(loopMode 도구 디스패치가 사용).
+  let citationRegistry: CitationRegistry | null = null;
+  let budgetChars = 0;
   // 후속질문이면 라우터가 푼 독립형 질문으로 검색·예산 산정(맥락 정조준). 독립질문이면 원문과 동일.
   //   사용자에게 보이는 질문·DB 저장·답변 LLM 입력은 원문(message) 유지 — resolvedQuery는 내부 검색/분류용.
   const effectiveQuery = queryPlan?.resolvedQuery || message;
@@ -231,7 +244,7 @@ export async function POST(req: NextRequest) {
     // 보편 컨텍스트 예산 — 모든 경로 합류점에서 총량 캡(비용 꼬리 차단) + 질문 복잡도별 예산.
     //   단순 factoid=작은 예산(저렴), 종합형=큰 예산(OLD급 품질). 실측 75% 단순 → 평균↓ + 깊은 품질 보존.
     //   CONTEXT_BUDGET_CHARS 설정 시 고정값으로 override(실험용).
-    const budgetChars = process.env.CONTEXT_BUDGET_CHARS
+    budgetChars = process.env.CONTEXT_BUDGET_CHARS
       ? Number(process.env.CONTEXT_BUDGET_CHARS)
       : (usePlan && queryPlan ? budgetForComplexity(queryPlan.complexity) : complexityBudget(message));
     const budgetedContexts = await enforceContextBudget(effectiveQuery, routing.contexts, budgetChars);
@@ -241,7 +254,17 @@ export async function POST(req: NextRequest) {
     citationMapping = numbered.mapping;
     citationSummary = numbered.summary;
 
-    if (mode.startsWith('lens:')) {
+    if (loopMode) {
+      // agent-loop: 상단 routeQuery 결과를 registry에 seed(첫 왕복 절약) — 모델은 부족하면 도구로 추가 검색.
+      //   인용 [N]은 이 registry가 도구호출에 걸쳐 누적. citationMapping은 같은 Map 참조(스트리밍 중 grow).
+      citationRegistry = new CitationRegistry();
+      const seedMarkdown = citationRegistry.add(budgetedContexts);
+      citationMapping = citationRegistry.mapping;
+      citationSummary = citationRegistry.summary;
+      // 캐싱(A): 루프는 매 iter가 누적 대화를 재전송 → 시스템(고정)에 cache_control로 재읽기 10% 단가.
+      systemPrompt = [{ type: 'text', text: buildAgentLoopSystemPrompt(role, { webEnabled }), cache_control: { type: 'ephemeral' } }];
+      userMessage = buildAgentLoopUserMessage(message, seedMarkdown, citationRegistry.summary);
+    } else if (mode.startsWith('lens:')) {
       const personaId = mode.slice(5);
       const persona = await loadPersonaContext(personaId, message, role);
       if (!persona) {
@@ -354,74 +377,150 @@ export async function POST(req: NextRequest) {
           for (const m of turns) history.push({ role: m.role, content: m.content });
         }
 
-        // web_search: insight(policy) 전용 — fact(normal)·lens는 내부 KB만(출처 리스크 차단, 비용 0).
-        const anthropicStream = client.messages.stream({
-          model: LLM_MODEL,
-          max_tokens: MAX_TOKENS,
-          system: systemPrompt,
-          messages: [...history, { role: 'user', content: userMessage }],
-          // 웹 도구: policy + admin/tier1 fact(webEnabled). tier2 fact·lens·pending은 미부착(내부 KB만).
-          ...(webEnabled
-            ? { tools: [WEB_SEARCH_TOOL_POLICY] as unknown as never }
-            : {}),
-        });
-
-        // 스트리밍 + [N] → [위키] sid resolve
-        // buffer에 누적하다가 safe flush point 까지만 resolve해서 송신
-        // → 부분 [N] (예: "[1" 가 chunk 경계에 걸린 경우) 안전 처리
-        // Design Ref: rag-cost-reduction §2 M0c — 사용량·절단 계측(Phase 0)
-        //   stop_reason: max_tokens 절단을 감지(현재는 무음 통과 → 답변 말미 P5 한계마커/인용 손실).
-        //   usage: input/output + 캐시 토큰 로깅 → Phase 1 prompt-caching 적중률 의사결정 데이터.
-        //   출력은 불변(로깅만 추가) — 회귀 표면 0.
+        // ── 스트리밍 (+ agent-loop 도구 디스패치) ───────────────────────────────
+        // 레거시(loopMode=false): 단일 스트림(MAX_ITERS=1, 도구 미부착/웹만).
+        // loopMode=true: search_wiki(client tool)를 stop_reason='tool_use' 때 실행→결과 주입→재스트림.
+        //   마지막 iter엔 search_wiki 제거 → 모델이 반드시 답변(도구 무한루프 방지). 인용 [N]은 공유 registry가 누적.
+        // web_search는 server tool — 스트림 내부에서 자동 실행되어 segment를 멈추지 않음(stop_reason!=='tool_use').
         let stopReason: string | null = null;
         const streamUsage: { input?: number; output?: number; cacheRead?: number; cacheWrite?: number; webSearches?: number } = {};
         const webCitations: { url: string; title: string }[] = [];   // web_search 인용 메타 누적 → 본문 끝 출처 블록
 
-        for await (const chunk of anthropicStream) {
-          if (closed || req.signal?.aborted) break;  // 클라 연결 끊김 → LLM 스트림 소비 중단
-          if (chunk.type === 'message_start') {
-            const u = chunk.message.usage;
-            streamUsage.input = u.input_tokens;
-            streamUsage.cacheRead = u.cache_read_input_tokens ?? undefined;
-            streamUsage.cacheWrite = u.cache_creation_input_tokens ?? undefined;
-          } else if (chunk.type === 'message_delta') {
-            stopReason = chunk.delta.stop_reason ?? stopReason;
-            streamUsage.output = chunk.usage.output_tokens;
-            const stu = (chunk.usage as { server_tool_use?: { web_search_requests?: number } }).server_tool_use;
-            if (stu?.web_search_requests) streamUsage.webSearches = stu.web_search_requests;
-          } else if (
-            chunk.type === 'content_block_delta' &&
-            chunk.delta.type === 'text_delta'
-          ) {
-            fullContentRaw += chunk.delta.text;
-            buffer += chunk.delta.text;
-            const flushPoint = safeFlushPoint(buffer);
-            if (flushPoint > 0) {
-              const toFlush = buffer.slice(0, flushPoint);
-              const resolved = resolveText(toFlush, citationMapping);
-              send({ type: 'chunk', content: resolved });
-              buffer = buffer.slice(flushPoint);
+        const webTools = webEnabled ? [WEB_SEARCH_TOOL_POLICY] : [];
+        const MAX_ITERS = loopMode ? 4 : 1;
+        const MAX_SEARCH_WIKI = 3;   // 총 search_wiki 호출 캡(anti-runaway). 실제 비용절감은 addOnlyNew dedup이 담당.
+        let searchWikiCount = 0;
+        const convo: Anthropic.MessageParam[] = [...history, { role: 'user', content: userMessage }];
+
+        // 캐싱(A) 롤링 브레이크포인트: 매 호출 직전 *마지막 메시지의 마지막 블록*에 cache_control →
+        //   누적 대화(seed+이전 tool_result)가 통째로 캐시 prefix가 됨(다음 호출서 10% 재읽기).
+        //   이전 마커는 제거해 항상 system(1)+rolling(1)=2개 유지(4개 한도 내). loopMode 전용.
+        let prevRollingBlock: Record<string, unknown> | null = null;
+        const markRollingCache = () => {
+          if (prevRollingBlock) { delete prevRollingBlock.cache_control; prevRollingBlock = null; }
+          const last = convo[convo.length - 1];
+          if (!last) return;
+          if (typeof last.content === 'string') last.content = [{ type: 'text', text: last.content }];
+          const blocks = last.content as unknown as Array<Record<string, unknown>>;
+          const lb = blocks[blocks.length - 1];
+          if (lb) { lb.cache_control = { type: 'ephemeral' }; prevRollingBlock = lb; }
+        };
+
+        for (let iter = 0; iter < MAX_ITERS; iter++) {
+          if (closed || req.signal?.aborted) break;
+          const isLastIter = iter === MAX_ITERS - 1;
+          // search_wiki는 loopMode·중간iter·캡 미달일 때만 부착. 캡 도달/마지막iter/레거시는 웹만(또는 미부착) → 답변 강제.
+          const allowSearch = loopMode && !isLastIter && searchWikiCount < MAX_SEARCH_WIKI;
+          const iterTools = allowSearch ? [SEARCH_WIKI_TOOL, ...webTools] : webTools;
+
+          if (loopMode) markRollingCache();
+          const anthropicStream = client.messages.stream({
+            model: LLM_MODEL,
+            max_tokens: MAX_TOKENS,
+            system: systemPrompt,
+            messages: convo,
+            ...(iterTools.length ? { tools: iterTools as unknown as never } : {}),
+          });
+
+          // 세그먼트 단위 usage(누적) + 텍스트 처리.
+          //   loopMode: 텍스트를 segText에 모았다가 *세그먼트 끝*에 판정 — search_wiki를 호출한 세그먼트면
+          //     중간 진행텍스트("검색하겠습니다" 등)로 보고 **폐기**, 아니면(최종 답변) 송신. → 중간 문구 절대 노출 안 됨.
+          //   legacy: 기존대로 buffer+safeFlushPoint 실시간 스트리밍(회귀 0).
+          let segOutput = 0;
+          let segWeb = 0;
+          let segText = '';
+          let segHadSearchWiki = false;
+          for await (const chunk of anthropicStream) {
+            if (closed || req.signal?.aborted) break;
+            if (chunk.type === 'message_start') {
+              const u = chunk.message.usage;
+              streamUsage.input = (streamUsage.input ?? 0) + u.input_tokens;
+              streamUsage.cacheRead = (streamUsage.cacheRead ?? 0) + (u.cache_read_input_tokens ?? 0);
+              streamUsage.cacheWrite = (streamUsage.cacheWrite ?? 0) + (u.cache_creation_input_tokens ?? 0);
+            } else if (chunk.type === 'message_delta') {
+              stopReason = chunk.delta.stop_reason ?? stopReason;
+              segOutput = chunk.usage.output_tokens;
+              const stu = (chunk.usage as { server_tool_use?: { web_search_requests?: number } }).server_tool_use;
+              if (stu?.web_search_requests) segWeb = stu.web_search_requests;
+            } else if (
+              chunk.type === 'content_block_delta' &&
+              chunk.delta.type === 'text_delta'
+            ) {
+              if (loopMode) {
+                segText += chunk.delta.text;   // 세그먼트 끝에 송신/폐기 판정(중간 문구 차단)
+              } else {
+                fullContentRaw += chunk.delta.text;
+                buffer += chunk.delta.text;
+                const flushPoint = safeFlushPoint(buffer);
+                if (flushPoint > 0) {
+                  const toFlush = buffer.slice(0, flushPoint);
+                  send({ type: 'chunk', content: resolveText(toFlush, citationMapping) });
+                  buffer = buffer.slice(flushPoint);
+                }
+              }
+            } else if (
+              chunk.type === 'content_block_start' &&
+              (chunk.content_block as { type?: string }).type === 'tool_use' &&
+              (chunk.content_block as { name?: string }).name === 'search_wiki'
+            ) {
+              segHadSearchWiki = true;   // 이 세그먼트는 도구 호출 차례 → 텍스트 폐기 대상
+            } else if (
+              chunk.type === 'content_block_delta' &&
+              (chunk.delta as { type?: string }).type === 'citations_delta'
+            ) {
+              const cit = (chunk.delta as { citation?: { url?: string; title?: string } }).citation;
+              if (cit?.url) webCitations.push({ url: cit.url, title: cit.title ?? cit.url });
+            } else if (
+              chunk.type === 'content_block_start' &&
+              (chunk.content_block as { type?: string }).type === 'web_search_tool_result'
+            ) {
+              const wb = (chunk.content_block as { content?: Array<{ url?: string; title?: string }> }).content;
+              if (Array.isArray(wb)) for (const r of wb) if (r?.url) webCitations.push({ url: r.url, title: r.title ?? r.url });
             }
-          } else if (
-            chunk.type === 'content_block_delta' &&
-            (chunk.delta as { type?: string }).type === 'citations_delta'
-          ) {
-            // web_search 인용 메타(텍스트 옆 citation) 누적 — 본문 끝 출처 블록으로 렌더.
-            const cit = (chunk.delta as { citation?: { url?: string; title?: string } }).citation;
-            if (cit?.url) webCitations.push({ url: cit.url, title: cit.title ?? cit.url });
-          } else if (
-            chunk.type === 'content_block_start' &&
-            (chunk.content_block as { type?: string }).type === 'web_search_tool_result'
-          ) {
-            // web_search가 검색한 페이지 목록(URL 항상 존재) → 출처 블록용 누적 (모델 인라인 인용 없어도 출처 확보).
-            const wb = (chunk.content_block as { content?: Array<{ url?: string; title?: string }> }).content;
-            if (Array.isArray(wb)) for (const r of wb) if (r?.url) webCitations.push({ url: r.url, title: r.title ?? r.url });
           }
-        }
-        // 남은 버퍼 flush (마지막에 미완성 [ 가 있어도 그대로 전송)
-        if (buffer.length > 0) {
-          const resolved = resolveText(buffer, citationMapping);
-          send({ type: 'chunk', content: resolved });
+          streamUsage.output = (streamUsage.output ?? 0) + segOutput;
+          if (segWeb) streamUsage.webSearches = (streamUsage.webSearches ?? 0) + segWeb;
+
+          if (loopMode) {
+            // 최종 답변 세그먼트(search_wiki 미호출)만 송신. search_wiki 세그먼트의 진행텍스트는 폐기.
+            if (!segHadSearchWiki && segText) {
+              fullContentRaw += segText;
+              send({ type: 'chunk', content: resolveText(segText, citationMapping) });
+            }
+          } else if (buffer.length > 0) {
+            // legacy: 세그먼트 경계 남은 버퍼 flush(부분 [N] 안전).
+            send({ type: 'chunk', content: resolveText(buffer, citationMapping) });
+            buffer = '';
+          }
+
+          if (closed || req.signal?.aborted) break;
+          if (!loopMode) break;
+
+          // client tool(search_wiki) 호출 여부 판정 → 있으면 실행·주입·재스트림.
+          const finalMsg = await anthropicStream.finalMessage();
+          const toolUses = finalMsg.content.filter(
+            (b: Anthropic.ContentBlock): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === 'search_wiki',
+          );
+          if (finalMsg.stop_reason !== 'tool_use' || toolUses.length === 0) break;
+          searchWikiCount += toolUses.length;
+
+          convo.push({ role: 'assistant', content: finalMsg.content as Anthropic.ContentBlockParam[] });
+          const toolResults: Anthropic.ToolResultBlockParam[] = [];
+          for (const tu of toolUses) {
+            const q = String((tu.input as { query?: string })?.query ?? '');
+            let out: string;
+            try {
+              out = await runSearchWiki(
+                { query: q },
+                { role, registry: citationRegistry!, plan: usePlan ? (queryPlan ?? undefined) : undefined, budgetChars },
+              );
+            } catch (e) {
+              out = `검색 중 오류: ${e instanceof Error ? e.message : '알 수 없음'}`;
+            }
+            console.log(`[agent-loop] iter=${iter} search_wiki q="${q.slice(0, 40)}" → ${out.length}자`);
+            toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: out });
+          }
+          convo.push({ role: 'user', content: toolResults });
         }
 
         // Design Ref: rag-cost-reduction §2 M0c — 계측 로깅(평균 비용·캐시 적중·절단 추적)

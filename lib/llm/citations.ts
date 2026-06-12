@@ -31,95 +31,157 @@ export interface CitationRef {
  *   - mapping: N → CitationRef 매핑
  *   - summary: "[1] [평의원회] 19기-7차" 같은 매핑 요약 (LLM 빠른 참조용)
  */
+/**
+ * 누적형 인용 레지스트리 — `[N]` 번호를 **호출에 걸쳐 누적** 부여.
+ *
+ * 기존 buildNumberedContexts는 "고정 컨텍스트 배열"에 일회성으로 번호를 매겼다.
+ * agent-loop(도구 기반 검색)에서는 search_wiki가 *호출마다* 청크를 반환하므로,
+ * 같은 source는 같은 [N]으로 dedup하면서 새 source엔 다음 번호를 잇는 stateful 누적기가 필요.
+ *
+ * ⚠️ 무회귀 보장: `add()` 한 번 = 기존 buildNumberedContexts와 byte-identical
+ * (아래 buildNumberedContexts는 이 클래스의 단일 add() 래퍼).
+ */
+export class CitationRegistry {
+  /** N → CitationRef. 외부(resolveText/resolveCitations)가 최종 매핑으로 소비. */
+  readonly mapping = new Map<number, CitationRef>();
+  private readonly numberByKey = new Map<string, number>();
+  private nextNum = 1;
+
+  /**
+   * 한 배치의 컨텍스트를 등록하고, 그 배치 본문에 [N]을 주입한 markdown을 반환.
+   * 번호는 인스턴스에 누적 — 여러 배치에 걸쳐 동일 source(`wiki|page`)는 동일 [N]을 받는다.
+   */
+  add(contexts: AgentContext[], opts: { showSourceId?: boolean } = {}): string {
+    // showSourceId=true면 본문 헤더에 회차/문서ID를 식별용으로 남김(오인용 예방 — 강화 A).
+    //   LLM이 '쓰는 시점'에 어느 회의/문서인지 보고 올바른 [N]을 고르도록. 인용은 여전히 [N].
+    const { showSourceId = false } = opts;
+
+    // 1a) 헤더에서 title 사전 추출 (sid 제거되기 전에) — 이 배치 범위
+    //     "## [type]? title (sid) | ..." 패턴에서 title 캡쳐
+    const titleByKey = new Map<string, string>();
+    // id는 헤더의 "title (id) | meta" 구조에서 ' | ' 또는 줄끝 직전의 (...)에 위치.
+    // 비탐욕 title + 경계(\| 또는 줄끝) 단언으로, 제목/메타에 괄호가 있어도 진짜 id만 캡쳐.
+    const titleExtractPattern = /^##\s+(?:\[(?:source|fact|stance|overview|entity)\]\s+)?(.*?)\(([^()\n]+)\)(?:\s*\||\s*$)/gm;
+    for (const ctx of contexts) {
+      for (const m of ctx.relevantData.matchAll(titleExtractPattern)) {
+        const title = m[1].trim();
+        const sid = m[2].trim();
+        const key = `${ctx.agentName}|${sid}`;
+        if (title && !titleByKey.has(key)) titleByKey.set(key, title);
+      }
+    }
+
+    // 1b) unique source 식별 + 번호 부여 (title 포함) — 누적
+    for (const ctx of contexts) {
+      for (const src of ctx.sources) {
+        const key = `${src.wiki}|${src.page}`;
+        if (!this.numberByKey.has(key)) {
+          this.numberByKey.set(key, this.nextNum);
+          this.mapping.set(this.nextNum, {
+            wiki: src.wiki,
+            page: src.page,
+            topic: src.topic,
+            title: titleByKey.get(key),
+          });
+          this.nextNum++;
+        }
+      }
+    }
+
+    // 2) 각 컨텍스트 본문의 source 헤더에 [N] 주입 + sid 제거
+    //    LLM이 source ID 자체를 못 보게 하여 답변에 [N] 만 사용하도록 강제.
+    //    헤더 패턴: "## ... (sourceId) | ..." 또는 "## [type] ... (sourceId) | ..."
+    // H-5 수정: id를 ' | meta'(또는 줄끝) 직전의 마지막 (...)에 앵커링.
+    // 기존 `([^(\n]*?)\(([^)]+)\)`는 첫 괄호를 id로 캡쳐 → 제목에 괄호가 있으면(약 8.7%) id 매핑 실패 + sid 노출.
+    const headerPattern = /^(##\s+)(\[(?:source|fact|stance|overview|entity)\]\s+)?(.*?)\(([^()\n]+)\)(\s*\|[^\n]*|\s*)$/gm;
+
+    const contextBlocks = contexts.map(ctx => {
+      const numbered = ctx.relevantData.replace(
+        headerPattern,
+        (_full, hashPrefix, typeTag, title, sourceId, rest) => {
+          const key = `${ctx.agentName}|${sourceId.trim()}`;
+          const n = this.numberByKey.get(key);
+          const tagPart = typeTag ?? '';
+          if (!n) {
+            // entity 등 매칭 안 되는 케이스 — 인용 대상 아니므로 sid도 보이지 않게 제거
+            return `${hashPrefix}${tagPart}${title.trim()}${rest}`;
+          }
+          // [N] 주입. showSourceId면 식별용으로 sid(회차) 유지(예방), 아니면 제거(현행)
+          const idPart = showSourceId && !/\.(stance|fact|overview)$/.test(sourceId.trim()) ? ` (${sourceId.trim()})` : '';
+          return `${hashPrefix}${tagPart}[${n}] ${title.trim()}${idPart}${rest}`;
+        },
+      );
+      return `### ${ctx.agentName} 관련 자료\n\n${numbered}`;
+    });
+
+    return contextBlocks.join('\n\n---\n\n');
+  }
+
+  /**
+   * add()와 동일하되, **이미 등록된 source 섹션은 본문에서 제외**하고 *새 source*만 반환.
+   *   도구 기반 검색(search_wiki)에서 seed·이전 호출과 겹치는 자료를 재전송하지 않게 함 → 입력토큰 폭증·과검색 차단.
+   *   새 source가 하나도 없으면 **빈 문자열**(호출측이 "추가 자료 없음"으로 처리 → 모델이 재검색 멈추고 web/답변으로).
+   *   ## 헤더 단위로 섹션 분할 후, sid가 numberByKey에 이미 있으면 그 섹션을 버린다. sid 없는 섹션(선두 entity 등)은 유지.
+   */
+  addOnlyNew(contexts: AgentContext[], opts: { showSourceId?: boolean } = {}): string {
+    // 섹션 헤더에서 sid 추출(title의 괄호와 구분 — ' | ' 또는 줄끝 직전 마지막 (...)).
+    const sidPattern = /^##\s+(?:\[(?:source|fact|stance|overview|entity)\]\s+)?.*?\(([^()\n]+)\)(?:\s*\||\s*$)/m;
+    const filtered: AgentContext[] = [];
+    for (const ctx of contexts) {
+      const sections = ctx.relevantData.split(/\n(?=## )/);
+      const kept = sections.filter(sec => {
+        const m = sec.match(sidPattern);
+        if (!m) return true;   // sid 없는 섹션(선두 entity/preamble)은 유지
+        return !this.numberByKey.has(`${ctx.agentName}|${m[1].trim()}`);   // 미등록(새) source만
+      });
+      const keptText = kept.join('\n').trim();
+      if (!keptText) continue;   // 전부 기존 source → 이 컨텍스트 통째 제외
+      filtered.push({
+        ...ctx,
+        relevantData: keptText,
+        sources: ctx.sources.filter(s => !this.numberByKey.has(`${s.wiki}|${s.page}`)),
+      });
+    }
+    if (filtered.length === 0) return '';
+    return this.add(filtered, opts);
+  }
+
+  /**
+   * LLM이 빠르게 참조할 수 있는 매핑 요약 — sid 노출 안 함.
+   *   title 포함하여 LLM이 [N]을 정확히 식별. wrong-attribution 방지.
+   *   예: "[3] 대학운영계획: 실행과제 10 — 지식공유와 정책대안 — 2026년"
+   */
+  get summary(): string {
+    return Array.from(this.mapping.entries())
+      .map(([n, ref]) => {
+        const titlePart = ref.title ? `: ${ref.title}` : '';
+        // 회차/문서ID를 식별자로 노출 — 같은 위키의 여러 회의록을 LLM이 구분해 올바른 [N] 인용하도록.
+        //   (인용은 여전히 [N]으로만 — 본문은 sid 숨김 유지. 여기 page는 식별용 라벨)
+        const idPart = ref.page && !/\.(stance|fact|overview)$/.test(ref.page) ? ` (${ref.page})` : '';
+        const topicPart = ref.topic ? ` — ${ref.topic}` : '';
+        return `[${n}] ${ref.wiki}${titlePart}${idPart}${topicPart}`;
+      })
+      .join('\n');
+  }
+}
+
+/**
+ * 컨텍스트들의 unique source에 번호 부여하고, 컨텍스트 본문 헤더에 [N] 마킹.
+ * (CitationRegistry의 단일-배치 래퍼 — 기존 일회성 호출부와 byte-identical.)
+ *
+ * @returns
+ *   - contextMarkdown: LLM에게 줄 본문 (각 source 헤더에 [N] 마커 포함)
+ *   - mapping: N → CitationRef 매핑
+ *   - summary: "[1] [평의원회] 19기-7차" 같은 매핑 요약 (LLM 빠른 참조용)
+ */
 export function buildNumberedContexts(contexts: AgentContext[], opts: { showSourceId?: boolean } = {}): {
   contextMarkdown: string;
   mapping: Map<number, CitationRef>;
   summary: string;
 } {
-  // showSourceId=true면 본문 헤더에 회차/문서ID를 식별용으로 남김(오인용 예방 — 강화 A).
-  //   LLM이 '쓰는 시점'에 어느 회의/문서인지 보고 올바른 [N]을 고르도록. 인용은 여전히 [N].
-  const { showSourceId = false } = opts;
-  const mapping = new Map<number, CitationRef>();
-  const numberByKey = new Map<string, number>();
-  let nextNum = 1;
-
-  // 1a) 헤더에서 title 사전 추출 (sid 제거되기 전에)
-  //     "## [type]? title (sid) | ..." 패턴에서 title 캡쳐
-  const titleByKey = new Map<string, string>();
-  // id는 헤더의 "title (id) | meta" 구조에서 ' | ' 또는 줄끝 직전의 (...)에 위치.
-  // 비탐욕 title + 경계(\| 또는 줄끝) 단언으로, 제목/메타에 괄호가 있어도 진짜 id만 캡쳐.
-  const titleExtractPattern = /^##\s+(?:\[(?:source|fact|stance|overview|entity)\]\s+)?(.*?)\(([^()\n]+)\)(?:\s*\||\s*$)/gm;
-  for (const ctx of contexts) {
-    for (const m of ctx.relevantData.matchAll(titleExtractPattern)) {
-      const title = m[1].trim();
-      const sid = m[2].trim();
-      const key = `${ctx.agentName}|${sid}`;
-      if (title && !titleByKey.has(key)) titleByKey.set(key, title);
-    }
-  }
-
-  // 1b) unique source 식별 + 번호 부여 (title 포함)
-  for (const ctx of contexts) {
-    for (const src of ctx.sources) {
-      const key = `${src.wiki}|${src.page}`;
-      if (!numberByKey.has(key)) {
-        numberByKey.set(key, nextNum);
-        mapping.set(nextNum, {
-          wiki: src.wiki,
-          page: src.page,
-          topic: src.topic,
-          title: titleByKey.get(key),
-        });
-        nextNum++;
-      }
-    }
-  }
-
-  // 2) 각 컨텍스트 본문의 source 헤더에 [N] 주입 + sid 제거
-  //    LLM이 source ID 자체를 못 보게 하여 답변에 [N] 만 사용하도록 강제.
-  //    헤더 패턴: "## ... (sourceId) | ..." 또는 "## [type] ... (sourceId) | ..."
-  // H-5 수정: id를 ' | meta'(또는 줄끝) 직전의 마지막 (...)에 앵커링.
-  // 기존 `([^(\n]*?)\(([^)]+)\)`는 첫 괄호를 id로 캡쳐 → 제목에 괄호가 있으면(약 8.7%) id 매핑 실패 + sid 노출.
-  const headerPattern = /^(##\s+)(\[(?:source|fact|stance|overview|entity)\]\s+)?(.*?)\(([^()\n]+)\)(\s*\|[^\n]*|\s*)$/gm;
-
-  const contextBlocks = contexts.map(ctx => {
-    const numbered = ctx.relevantData.replace(
-      headerPattern,
-      (_full, hashPrefix, typeTag, title, sourceId, rest) => {
-        const key = `${ctx.agentName}|${sourceId.trim()}`;
-        const n = numberByKey.get(key);
-        const tagPart = typeTag ?? '';
-        if (!n) {
-          // entity 등 매칭 안 되는 케이스 — 인용 대상 아니므로 sid도 보이지 않게 제거
-          return `${hashPrefix}${tagPart}${title.trim()}${rest}`;
-        }
-        // [N] 주입. showSourceId면 식별용으로 sid(회차) 유지(예방), 아니면 제거(현행)
-        const idPart = showSourceId && !/\.(stance|fact|overview)$/.test(sourceId.trim()) ? ` (${sourceId.trim()})` : '';
-        return `${hashPrefix}${tagPart}[${n}] ${title.trim()}${idPart}${rest}`;
-      },
-    );
-    return `### ${ctx.agentName} 관련 자료\n\n${numbered}`;
-  });
-
-  // 3) LLM이 빠르게 참조할 수 있는 매핑 요약 — sid 노출 안 함
-  //    title 포함하여 LLM이 [N]을 정확히 식별. wrong-attribution 방지.
-  //    예: "[3] 대학운영계획: 실행과제 10 — 지식공유와 정책대안 — 2026년"
-  const summary = Array.from(mapping.entries())
-    .map(([n, ref]) => {
-      const titlePart = ref.title ? `: ${ref.title}` : '';
-      // 회차/문서ID를 식별자로 노출 — 같은 위키의 여러 회의록을 LLM이 구분해 올바른 [N] 인용하도록.
-      //   (인용은 여전히 [N]으로만 — 본문은 sid 숨김 유지. 여기 page는 식별용 라벨)
-      const idPart = ref.page && !/\.(stance|fact|overview)$/.test(ref.page) ? ` (${ref.page})` : '';
-      const topicPart = ref.topic ? ` — ${ref.topic}` : '';
-      return `[${n}] ${ref.wiki}${titlePart}${idPart}${topicPart}`;
-    })
-    .join('\n');
-
-  return {
-    contextMarkdown: contextBlocks.join('\n\n---\n\n'),
-    mapping,
-    summary,
-  };
+  const reg = new CitationRegistry();
+  const contextMarkdown = reg.add(contexts, opts);
+  return { contextMarkdown, mapping: reg.mapping, summary: reg.summary };
 }
 
 // 위키명 → agent ID 매핑. agents.config에서 동적 구성 → 거버넌스 9 + 단과대/대학원 전부 커버.

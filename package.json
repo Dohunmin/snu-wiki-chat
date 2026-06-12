@@ -15,7 +15,9 @@
     "knowledge:map": "npx tsx --env-file=.env.local scripts/generate-knowledge-map.ts",
     "knowledge:questions": "npx tsx --env-file=.env.local scripts/embed-questions.ts",
     "crawl:colleges": "npx tsx --env-file=.env.local scripts/crawl/index.ts",
-    "test:governance": "npx tsx scripts/test/governance-regression.ts"
+    "test:governance": "npx tsx scripts/test/governance-regression.ts",
+    "test:citations": "npx tsx scripts/test/citation-registry.ts",
+    "test:loop": "npx tsx --env-file=.env.local scripts/test/agent-loop-smoke.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",
