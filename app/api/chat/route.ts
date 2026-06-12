@@ -58,6 +58,16 @@ const WEB_SEARCH_GUIDANCE_POLICY = `\n\n[웹 검색 — 인사이트 전용]\n` 
   `- 출처 기준: 정부·서울대 공식 공시·법령·판결·확립된 언론 보도 등 *1차·공신력 출처만* 사용한다. 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템이 차단). 특정 실명 인물에 대한 미검증 주장은 인용하지 않는다. 공신력 출처로 확인되지 않으면 단정하지 말고 생략하거나 "확인되지 않음"으로 표시한다.\n` +
   `- 검색 내용은 (외부지식)으로 표시, 출처 URL은 시스템이 자동 첨부.`;
 
+// C안(가드된 agentic): fact(normal) 답변에도 모델이 *직접* 외부 reach를 판단하게 하는 가이드.
+//   policy(분석)와 달리 **사실 보고** 톤 유지 + 외부사실 귀속표시 + 실명 교차확인 강제(거버넌스 신뢰 floor).
+//   admin·tier1에만 부착(webEnabled) — tier2·pending fact는 미부착(내부 KB 전용, 권한·신뢰 격리).
+const WEB_SEARCH_GUIDANCE_FACT = `\n\n[웹 검색 — 사실 보강(가드)]\n` +
+  `- 우선순위: 제공된 내부 자료([N])로 질문 핵심이 답되면 **검색하지 않는다**(내부가 1차 권위). 핵심의 일부가 내부에 없을 때만 web_search로 그 부분을 보강(최대 1회). 거절하거나 "검색해 드릴까요" 되묻지 말고 직접 검색하되, 내부로 충분하면 쓰지 마라.\n` +
+  `- 표기: 외부에서 가져온 사실은 문장에 (외부) 로 표시하고 내부 자료와 **동급 권위로 단정하지 않는다**(출처 URL은 시스템이 자동 첨부). 내부·외부를 뭉뚱그리지 마라.\n` +
+  `- 실명 인물·민감 사실: 정부·학교 공식·확립된 언론 등 **복수 1차·공신력 출처로 교차확인**되지 않으면 단정하지 말고 "공신력 출처로 확인되지 않음"으로 표시한다. **동명이인 혼동 주의**(이름 같아도 소속·경력 다르면 배제). 미검증 주장 인용 금지.\n` +
+  `- 출처 가드: 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템 차단).\n` +
+  `- 답변 방식은 그대로 *사실 보고* — 해석·평가·전망은 추가하지 않는다(그건 insight 영역).`;
+
 /** web_search 출처를 본문 끝 "🌐 외부 출처" 블록으로 렌더 — 메타데이터 직접(모델 인라인 의존 X). URL+제목 중복제거 + 상위 6개. */
 function renderWebSources(cites: { url: string; title: string }[]): string {
   const seenUrl = new Set<string>(), seenTitle = new Set<string>();
@@ -126,6 +136,21 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: '사용자 정보를 준비하지 못했습니다.' }, { status: 500 });
   }
 
+  // ── 후속질문 맥락 해소: 직전 턴 1회 로드(분류·검색·이력 일관 구동). ──────────────────────
+  //   현재 user 메시지는 아직 미저장(아래 line ~260) → slice 불필요. 첫 턴(convId 없음)은 skip.
+  //   이 한 번의 로드를 planQuery(맥락 해소)·답변 LLM 이력이 공유 → DB 중복쿼리·휴리스틱 제거.
+  let recentTurns: ChatTurn[] = [];
+  if (conversationId) {
+    const prev = await db
+      .select({ role: messages.role, content: messages.content })
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(asc(messages.createdAt));
+    recentTurns = prev.filter(
+      (m): m is ChatTurn => m.role === 'user' || m.role === 'assistant',
+    );
+  }
+
   // ── 상위 라우터 (multi-agent §5 Phase 3): 질문 의도 분류 → effective mode 결정 ──────────
   //   UI 토글 없음 → 클라는 항상 mode='normal' 전송. Haiku 라우터가 질문을 fact/insight로
   //   분류해 'normal'일 때만 실질 모드를 정한다. lens·명시적 policy는 사용자가 직접 고른 것 → 우회.
@@ -140,7 +165,7 @@ export async function POST(req: NextRequest) {
   if (requestedMode === 'normal') {
     const canInsight = role === 'admin' || role === 'tier1';
     if (usePlan) {
-      queryPlan = await planQuery(message);
+      queryPlan = await planQuery(message, recentTurns.slice(-6));   // 직전 3교환으로 맥락 해소
       routerIntent = queryPlan.intent;
       if (queryPlan.intent === 'insight' && canInsight) mode = 'policy';
       console.log(
@@ -159,6 +184,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // C안(가드된 agentic): 웹 도달 = insight(policy) + admin/tier1의 fact까지. tier2·lens·pending fact는 미도달(신뢰·격리 floor).
+  //   fact 웹은 "내부로 답 안 될 때만" 모델이 자기판단 — 외부 reach를 상단 분류기가 아닌 답변 agent가 결정.
+  const webEnabled = mode === 'policy' || (mode === 'normal' && (role === 'admin' || role === 'tier1'));
+
   let routing;
   let systemPrompt: string | Anthropic.TextBlockParam[];
   let userMessage;
@@ -166,9 +195,12 @@ export async function POST(req: NextRequest) {
   let citationSummary: string;
   let lensPersonaInfo: { id: string; displayName: string; insufficient: boolean } | undefined;
   let convId = conversationId;
+  // 후속질문이면 라우터가 푼 독립형 질문으로 검색·예산 산정(맥락 정조준). 독립질문이면 원문과 동일.
+  //   사용자에게 보이는 질문·DB 저장·답변 LLM 입력은 원문(message) 유지 — resolvedQuery는 내부 검색/분류용.
+  const effectiveQuery = queryPlan?.resolvedQuery || message;
 
   try {
-    routing = await routeQuery(message, role, usePlan ? (queryPlan ?? undefined) : undefined);
+    routing = await routeQuery(effectiveQuery, role, usePlan ? (queryPlan ?? undefined) : undefined);
 
     // Design Ref: §4.1 I-9 — AnswerClass 3/4 직답 분기 (college-grad-wiki).
     //   governance 쿼리는 routing.answerClass === undefined → 이 블록 통째로 skip → 아래 일반 RAG와 byte-identical.
@@ -202,7 +234,7 @@ export async function POST(req: NextRequest) {
     const budgetChars = process.env.CONTEXT_BUDGET_CHARS
       ? Number(process.env.CONTEXT_BUDGET_CHARS)
       : (usePlan && queryPlan ? budgetForComplexity(queryPlan.complexity) : complexityBudget(message));
-    const budgetedContexts = await enforceContextBudget(message, routing.contexts, budgetChars);
+    const budgetedContexts = await enforceContextBudget(effectiveQuery, routing.contexts, budgetChars);
 
     // 번호 인용 매핑 구축 — LLM이 [N]만 사용하도록
     const numbered = buildNumberedContexts(budgetedContexts);
@@ -241,7 +273,8 @@ export async function POST(req: NextRequest) {
       const parts = buildSystemPromptParts(budgetedContexts, role);
       systemPrompt = [
         { type: 'text', text: parts.stable, cache_control: { type: 'ephemeral' } },
-        { type: 'text', text: parts.tail },   // fact 파이프 — 웹 가이드 없음(내부 KB 전용)
+        // admin/tier1 fact: 가드된 웹 자기판단 부착(C안). tier2 fact: 내부 KB 전용(웹 가이드 없음).
+        { type: 'text', text: webEnabled ? parts.tail + WEB_SEARCH_GUIDANCE_FACT : parts.tail },
       ];
       userMessage = buildUserMessage(message, numbered.contextMarkdown, numbered.summary);
     }
@@ -301,30 +334,24 @@ export async function POST(req: NextRequest) {
 
         const client = getAnthropicClient();
 
-        // 직전 5회 교환(user + assistant 쌍 5개 = 최대 10개 메시지) 전문 포함.
-        // 단, **연속 대화로 판단될 때만** 로드 — 개별 독립 질문은 이력 생략(토큰 절감).
-        //   신호: 매우 짧은 질문(맥락 의존) 또는 지시어·접속·후속 표현.
+        // 직전 5교환(최대 10개 메시지) 전문 포함 — **plan.isFollowup일 때만**(독립 질문은 생략, 토큰 절감).
+        //   후속 판정은 라우터(planQuery)가 직전 맥락을 보고 내림 → followupRe/매직넘버 휴리스틱 폐기.
+        //   recentTurns는 상단에서 1회 로드(현재 user 메시지 미저장 시점) → slice(0,-1) 불필요. DB 재쿼리 제거.
         type AnthropicMessage = { role: 'user' | 'assistant'; content: string };
         const history: AnthropicMessage[] = [];
-        const followupRe = /그럼|그러면|그리고|그래서|또 |추가로|그 외|이것 외|이 외|위에서|위 질문|방금|아까|앞서|앞에|지금까지|이어서|계속|왜냐|이거|그거|저거|이건|그건|그렇다면|이를 |위 내용|방금 답변|정리해|요약해|다시 |더 |그것/;
-        const isContinuation = [...message.trim()].length <= 12 || followupRe.test(message);
+        const isFollowup = queryPlan
+          ? queryPlan.isFollowup
+          : recentTurns.length > 0 && [...message.trim()].length <= 20;   // !usePlan 롤백 경로 보수적 fallback
         // 공약설계(policy)는 토론 모드 → 후속 여부와 무관하게 항상 직전 맥락 로드 (Design: memory.ts/FR6).
         const isPolicyDebate = mode === 'policy';
-        if (convId && (isContinuation || isPolicyDebate)) {
-          const allPrev = await db
-            .select({ role: messages.role, content: messages.content })
-            .from(messages)
-            .where(eq(messages.conversationId, convId))
-            .orderBy(asc(messages.createdAt));
-
-          // 현재 저장된 user 메시지 제외 (마지막 1개) 후 user/assistant만
-          const prevTurns = allPrev.slice(0, -1)
-            .filter((m): m is { role: 'user' | 'assistant'; content: string } => m.role === 'user' || m.role === 'assistant') as ChatTurn[];
-          // policy: 넓은 창(8교환)+char 예산(12k)으로 토론 연속성. normal/lens: 기존 직전 5교환.
+        if ((isFollowup || isPolicyDebate) && recentTurns.length > 0) {
+          // policy: 넓은 창(8교환)+char 예산(12k)으로 토론 연속성. normal/lens: 직전 5교환.
           const selected = isPolicyDebate
-            ? selectRecentHistory(prevTurns, { maxMessages: 16, maxChars: 12000 })
-            : prevTurns.slice(-10);
-          for (const m of selected) history.push({ role: m.role, content: m.content });
+            ? selectRecentHistory(recentTurns, { maxMessages: 16, maxChars: 12000 })
+            : recentTurns.slice(-10);
+          const turns = selected.slice();
+          while (turns.length && turns[0].role !== 'user') turns.shift();   // 선두 assistant 제거(Anthropic: 첫 메시지 user)
+          for (const m of turns) history.push({ role: m.role, content: m.content });
         }
 
         // web_search: insight(policy) 전용 — fact(normal)·lens는 내부 KB만(출처 리스크 차단, 비용 0).
@@ -333,8 +360,8 @@ export async function POST(req: NextRequest) {
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
           messages: [...history, { role: 'user', content: userMessage }],
-          // 웹 도구는 insight(policy) 전용 — fact(normal)·lens는 미부착(내부 KB만).
-          ...(mode === 'policy'
+          // 웹 도구: policy + admin/tier1 fact(webEnabled). tier2 fact·lens·pending은 미부착(내부 KB만).
+          ...(webEnabled
             ? { tools: [WEB_SEARCH_TOOL_POLICY] as unknown as never }
             : {}),
         });
