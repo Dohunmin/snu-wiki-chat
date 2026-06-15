@@ -94,11 +94,13 @@ async function runLoop(
     if (lb) { lb.cache_control = { type: 'ephemeral' }; prevRoll = lb; }
   };
   let answer = '', inT = 0, outT = 0, web = 0, iters = 0, searchWikiCount = 0, cacheR = 0, cacheW = 0;
-  const MAX_ITERS = 4, MAX_SEARCH_WIKI = 3;
+  const MAX_ITERS = 4, MAX_SEARCH_WIKI = 3, SEARCH_PHASE_USD = 0.08;
   for (let iter = 0; iter < MAX_ITERS; iter++) {
     iters = iter + 1;
     const isLast = iter === MAX_ITERS - 1;
-    const allowSearch = !isLast && searchWikiCount < MAX_SEARCH_WIKI;
+    const runUsd = usd(inT, outT, web, cacheR, cacheW);   // 직전까지 누적비용
+    const allowSearch = !isLast && searchWikiCount < MAX_SEARCH_WIKI && runUsd < SEARCH_PHASE_USD;
+    if (!allowSearch && runUsd >= SEARCH_PHASE_USD && searchWikiCount > 0) console.log(`  ⚠️ 비용예산 도달(est $${runUsd.toFixed(3)}) → search_wiki 중단`);
     const tools = (allowSearch ? [SEARCH_WIKI_TOOL, WEB_SEARCH_TOOL] : [WEB_SEARCH_TOOL]) as unknown as never;
     markRolling();
     const resp = await client.messages.create({ model: LLM_MODEL, max_tokens: MAX_TOKENS, system, messages: convo, tools });
