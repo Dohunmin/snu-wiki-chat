@@ -31,7 +31,15 @@ export interface PersonaContext {
   }>;
   /** LLM 시스템 프롬프트에 삽입할 stance 텍스트 블록 */
   stanceBlock: string;
-  /** 매칭된 stance 자료가 0개일 때 true → 답변에 한계 명시 */
+  /**
+   * Canonical 레이어(L0) — `layer: canonical` source(예: 공약). 질의와 무관하게 *항상* 로드되어
+   *   답변의 1차 조직 프레임으로 pin된다. (필터가 아니라 렌즈 — prompts.ts buildLensSystemPrompt 참조)
+   */
+  canonical: Array<{ id: string; title: string; content: string }>;
+  /**
+   * 매칭 stance 0개 **그리고** canonical도 0개일 때만 true → 답변에 한계 명시.
+   *   canonical(공약)이 있으면 그것이 1차 grounding이므로 insufficient 아님.
+   */
   insufficient: boolean;
 }
 
@@ -64,6 +72,12 @@ export async function loadPersonaContext(
 
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/[\s,]+/).filter(w => w.length >= 2);
+
+  // L0 — Canonical source(공약 등): 질의와 무관하게 항상 로드해 1차 프레임으로 pin.
+  //   권한 가드: sensitive canonical은 비-sensitive 권한이면 제외(현실적으론 공약=공개라 거의 통과).
+  const canonical = (data.sources ?? [])
+    .filter(s => s.layer === 'canonical' && (isSensitiveAllowed || !s.sensitive))
+    .map(s => ({ id: s.id, title: s.title, content: s.content }));
 
   const allowedStances = (data.stances ?? []).filter(
     s => isSensitiveAllowed || !s.sensitive,
@@ -155,7 +169,8 @@ export async function loadPersonaContext(
       score,
     })),
     stanceBlock,
-    insufficient: scored.length === 0,
+    canonical,
+    insufficient: scored.length === 0 && canonical.length === 0,
   };
 }
 
@@ -179,5 +194,25 @@ export function personaToContext(persona: PersonaContext): AgentContext | null {
     relevantData,
     sources: persona.stances.map((s) => ({ wiki: persona.name, page: s.id, topic: s.topic })),
     confidence: 0.9,
+  };
+}
+
+/**
+ * Canonical(L0) source를 [N] 번호 인용에 태울 AgentContext로 변환.
+ *   `## [source] ...` 라벨 → buildNumberedContexts가 [N] 부여(헤더패턴이 source 태그 인식).
+ *   route.ts에서 이 컨텍스트를 budgetedContexts·stance보다 **앞**에 두어 컨텍스트 상단에 pin → 1차 프레임.
+ *   canonical 0개면 null.
+ */
+export function canonicalToContext(persona: PersonaContext): AgentContext | null {
+  if (persona.canonical.length === 0) return null;
+  const relevantData = persona.canonical
+    .map((c) => `## [source] ${c.title} (${c.id})\n${c.content}`)
+    .join('\n\n---\n\n');
+  return {
+    agentId: persona.id,
+    agentName: persona.name,
+    relevantData,
+    sources: persona.canonical.map((c) => ({ wiki: persona.name, page: c.id })),
+    confidence: 0.95,
   };
 }

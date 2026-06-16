@@ -8,7 +8,7 @@ import { routeToAgent, planQuery, type AgentIntent, type QueryPlan } from '@/lib
 import { enforceContextBudget } from '@/lib/agents/context-budget';
 import { complexityBudget, budgetForComplexity } from '@/lib/agents/complexity';
 import { getStructuredFact, getLiveBoard, type DirectAnswer } from '@/lib/agents/structured';
-import { loadPersonaContext, personaToContext } from '@/lib/agents/lens';
+import { loadPersonaContext, personaToContext, canonicalToContext } from '@/lib/agents/lens';
 import { SEARCH_WIKI_TOOL, runSearchWiki } from '@/lib/agents/tools';
 import {
   buildSystemPromptParts,
@@ -271,9 +271,18 @@ export async function POST(req: NextRequest) {
         return Response.json({ error: '존재하지 않는 페르소나입니다.' }, { status: 400 });
       }
       // stance도 [N] 번호 인용 네임스페이스에 포함 → 입장 인용이 클릭 가능한 출처가 됨(budgetedContexts와 동일 처리).
+      // Canonical 레이어(L0): 공약 등 canonical source를 컨텍스트 *최상단*에 pin → 답변의 1차 조직 프레임.
+      //   순서 = [canonical(L0), ...중립위키, persona stance(L1)]. canonical이 먼저라 낮은 [N]+상단 배치.
+      //   ⚠️ 프레임이지 필터 아님 — 비매칭 축 stance도 그대로 활용(buildLensSystemPrompt 지침).
+      const canonicalCtx = canonicalToContext(persona);
       const stanceCtx = personaToContext(persona);
-      const lensNumbered = stanceCtx
-        ? buildNumberedContexts([...budgetedContexts, stanceCtx])
+      const lensContexts = [
+        ...(canonicalCtx ? [canonicalCtx] : []),
+        ...budgetedContexts,
+        ...(stanceCtx ? [stanceCtx] : []),
+      ];
+      const lensNumbered = (canonicalCtx || stanceCtx)
+        ? buildNumberedContexts(lensContexts)
         : numbered;
       citationMapping = lensNumbered.mapping;
       citationSummary = lensNumbered.summary;

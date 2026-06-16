@@ -11,7 +11,7 @@ try { if (typeof process.loadEnvFile === 'function') process.loadEnvFile('.env.l
 import { routeQuery } from '@/lib/agents/router';
 import { enforceContextBudget } from '@/lib/agents/context-budget';
 import { complexityBudget } from '@/lib/agents/complexity';
-import { loadPersonaContext, personaToContext } from '@/lib/agents/lens';
+import { loadPersonaContext, personaToContext, canonicalToContext } from '@/lib/agents/lens';
 import { buildNumberedContexts, resolveText, extractCitedNumbers } from '@/lib/llm/citations';
 import { buildLensSystemPrompt, buildLensUserMessage } from '@/lib/llm/prompts';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
@@ -32,12 +32,19 @@ async function main() {
   const budgeted = await enforceContextBudget(query, routing.contexts, complexityBudget(query));
   const persona = await loadPersonaContext('leesj', query, role);
   if (!persona) { console.error('persona 로드 실패(admin 아님? leesj 없음?)'); process.exit(1); }
-  console.log(`routed=${routing.selectedAgentIds.join('+') || '-'} | stance 매칭=${persona.stances.length}개 (insufficient=${persona.insufficient})`);
+  console.log(`routed=${routing.selectedAgentIds.join('+') || '-'} | stance 매칭=${persona.stances.length}개 (insufficient=${persona.insufficient}) | canonical(L0)=${persona.canonical.length}개`);
   console.log(`매칭 stance: ${persona.stances.map(s => `${s.topic}(${s.score.toFixed(2)})`).join(', ')}`);
 
   const numbered = buildNumberedContexts(budgeted);
+  // route.ts와 동일: canonical(L0) → 중립위키 → persona stance(L1) 순. canonical 최상단 pin.
+  const canonicalCtx = canonicalToContext(persona);
   const stanceCtx = personaToContext(persona);
-  const lensNumbered = stanceCtx ? buildNumberedContexts([...budgeted, stanceCtx]) : numbered;
+  const lensContexts = [
+    ...(canonicalCtx ? [canonicalCtx] : []),
+    ...budgeted,
+    ...(stanceCtx ? [stanceCtx] : []),
+  ];
+  const lensNumbered = (canonicalCtx || stanceCtx) ? buildNumberedContexts(lensContexts) : numbered;
   const system = buildLensSystemPrompt(budgeted, persona, role);
   const user = buildLensUserMessage(query, lensNumbered.contextMarkdown, lensNumbered.summary, persona);
 

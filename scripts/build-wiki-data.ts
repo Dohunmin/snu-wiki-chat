@@ -312,6 +312,9 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
       body.includes(st)
     );
 
+    const layerRaw = meta.layer as string | undefined;
+    const layer = layerRaw === 'canonical' || layerRaw === 'evidence' ? layerRaw : undefined;
+
     sources.push({
       id: sourceId,
       title,
@@ -321,6 +324,7 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
       entities: derivedEntities,
       content: body,
       sensitive: isSensitive,
+      layer,
     });
   }
 

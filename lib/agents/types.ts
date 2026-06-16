@@ -76,6 +76,11 @@ export interface WikiSource {
   entities: string[];
   content: string;
   sensitive: boolean;
+  /**
+   * Canonical 레이어 모델 (현재 lensPersona 위키 전용). frontmatter `layer` 보존.
+   *   canonical = 1차 프레임(예: 공약), evidence = 뒷받침 근거(대담·기고). 미지정 = 일반 source.
+   */
+  layer?: 'canonical' | 'evidence';
 }
 
 export interface WikiTopic {

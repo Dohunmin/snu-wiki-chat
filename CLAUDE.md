@@ -141,18 +141,23 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 
 ---
 
-## 5. Lens 모드 — 인물 시각 분석 (관리자 전용)
+## 5. Lens 모드 — 인물 시각 분석 (admin + tier1, `canUseLens`)
 
-**파일**: [lib/agents/lens.ts](lib/agents/lens.ts) (108 lines)
+> 권한: 2026-06-15 admin 전용 → **admin+tier1**로 확대 (tier2·pending 차단). 가드 = `canUseLens` (roles.ts) — route.ts lens 분기 / `loadPersonaContext` #1 / 프론트 게이트 3중.
+
+**파일**: [lib/agents/lens.ts](lib/agents/lens.ts)
 
 | 항목 | 위치 |
 |------|------|
-| `PersonaContext` 인터페이스 | [lens.ts:15-32](lib/agents/lens.ts#L15-L32) |
-| 상수: `STANCE_LIMIT = 8`, `MIN_SCORE = 1` | [lens.ts:34-35](lib/agents/lens.ts#L34-L35) |
-| `getPersonaConfig` — `lensPersona && personaId` 매칭 | [lens.ts:37-42](lib/agents/lens.ts#L37-L42) |
-| `loadPersonaContext` — 다층 가드(#1 admin 체크), stance 스코어링 | [lens.ts:44-108](lib/agents/lens.ts#L44-L108) |
-| stance 스코어링: 빈도 + topic 매칭 +5 + title 매칭 +3 | [lens.ts:69-83](lib/agents/lens.ts#L69-L83) |
-| `insufficient: true` — 매칭 stance 0개일 때 → 답변에 한계 명시 | [lens.ts:106](lib/agents/lens.ts#L106) |
+| `PersonaContext` 인터페이스 (`canonical` 필드 포함) | [lens.ts](lib/agents/lens.ts) |
+| 상수: `STANCE_LIMIT = 8`, `MIN_SCORE = 1` | [lens.ts:38-39](lib/agents/lens.ts#L38-L39) |
+| `getPersonaConfig` — `lensPersona && personaId` 매칭 | [lens.ts](lib/agents/lens.ts) |
+| `loadPersonaContext` — 다층 가드(#1 `canUseLens`), canonical(L0) 상시 로드 + stance 스코어링 | [lens.ts](lib/agents/lens.ts) |
+| stance 스코어링: 빈도 + topic 매칭 +5 + title 매칭 +3 | [lens.ts](lib/agents/lens.ts) |
+| `personaToContext` / `canonicalToContext` — stance(L1)·canonical(L0)을 [N] 인용 컨텍스트로 | [lens.ts](lib/agents/lens.ts) |
+| `insufficient: true` — 매칭 stance 0개 **AND** canonical 0개일 때만 → 한계 명시 | [lens.ts](lib/agents/lens.ts) |
+
+**Canonical 레이어 모델 (L0 프레임, *필터 아님*)**: `data/{persona}.json`의 `layer: canonical` source(예: leesj 공약 "미래대학 3대 축")를 질의와 무관하게 **항상 컨텍스트 최상단에 pin**(`canonicalToContext`) → 답변의 1차 조직 프레임. route.ts lens 순서 = `[canonical(L0), 중립위키, stance(L1)]`. ⚠️ **프레임이지 필터가 아님** — 3대 축에 안 맞는 주제(국제화·캠퍼스·인권 등)도 회수된 stance를 그대로 충실히 활용하고, 공약은 닿는 곳만 연결([prompts.ts](lib/llm/prompts.ts) `buildLensSystemPrompt`의 "공약 프레임" 섹션). frontmatter `layer`는 빌드가 [WikiSource.layer](lib/agents/types.ts)로 보존. Obsidian source-of-truth = `SNU_후보 철학_LLM_Wiki/CLAUDE.md` §1.5/§7.1.
 
 **호출 흐름**: `POST /api/chat` body의 `mode: 'lens:leesj'` → [api/chat/route.ts:66-78](app/api/chat/route.ts#L66-L78)
 
