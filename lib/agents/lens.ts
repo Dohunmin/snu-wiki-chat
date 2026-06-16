@@ -2,14 +2,14 @@
  * Candidate Lens — 인물 시각 기반 분석 모드
  *
  * 일반 라우팅에서 분리된 lensPersona 위키를 lens 모드 전용으로 로드한다.
- * admin 외 호출 시 항상 null 반환 (서버 가드 다층 방어).
+ * lens 권한(admin+tier1) 외 호출 시 항상 null 반환 (서버 가드 다층 방어).
  */
 
 import path from 'path';
 import fs from 'fs';
 import type { WikiData, AgentConfig, AgentContext } from './types';
 import type { Role } from '@/lib/auth/roles';
-import { canAccessSensitive } from '@/lib/auth/roles';
+import { canAccessSensitive, canUseLens } from '@/lib/auth/roles';
 import agentsConfig from '@/data/agents.config.json';
 // Phase C — Lens RAG: 의미 매칭으로 stance 회수 (키워드만으론 동의어/은유 놓침)
 import { searchVector } from '@/lib/embed/search';
@@ -50,8 +50,8 @@ export async function loadPersonaContext(
   query: string,
   userRole: Role,
 ): Promise<PersonaContext | null> {
-  // 다층 가드 #1: admin이 아니면 무조건 차단
-  if (userRole !== 'admin') return null;
+  // 다층 가드 #1: lens 권한(admin+tier1)이 없으면 무조건 차단. tier2·pending → null.
+  if (!canUseLens(userRole)) return null;
 
   const config = getPersonaConfig(personaId);
   if (!config) return null;

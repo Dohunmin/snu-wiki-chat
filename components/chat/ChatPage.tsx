@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Role } from '@/lib/auth/roles';
-import { canUpload, canAccessAdmin, canAccessSensitive, ROLE_LABELS } from '@/lib/auth/roles';
+import { canUpload, canAccessAdmin, canAccessSensitive, canUseLens, ROLE_LABELS } from '@/lib/auth/roles';
 import type { SourceRef } from '@/lib/agents/types';
 import Link from 'next/link';
 import { ConversationsListModal } from './ConversationsListModal';
@@ -100,6 +100,7 @@ export default function ChatPage({ user }: { user: User }) {
   const [lensInsufficient, setLensInsufficient] = useState<string | null>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const isAdmin = canAccessAdmin(user.role);
+  const canLens = canUseLens(user.role);
 
   const CONV_PREVIEW = 12;
   const PUBLIC_PREVIEW = 30;
@@ -209,7 +210,7 @@ export default function ChatPage({ user }: { user: User }) {
     // 내 대화일 때만 lens 모드 이어받음 (isOwn 기준)
     if (!effectiveReadOnly && isOwn) {
       const conv = conversations.find(c => c.id === convId);
-      if (conv?.mode?.startsWith('lens:') && isAdmin) {
+      if (conv?.mode?.startsWith('lens:') && canLens) {
         setChatMode(conv.mode);
       } else {
         setChatMode('normal');
@@ -707,8 +708,8 @@ export default function ChatPage({ user }: { user: User }) {
                         <button
                           key={persona.id}
                           onClick={() => {
-                            if (!isAdmin) {
-                              setNotice('관리자 전용 기능입니다.');
+                            if (!canLens) {
+                              setNotice('1차 접근 이상 사용 가능한 기능입니다.');
                               setTimeout(() => setNotice(''), 3000);
                               setModeMenuOpen(false);
                               return;
@@ -716,9 +717,9 @@ export default function ChatPage({ user }: { user: User }) {
                             setChatMode(personaMode);
                             setModeMenuOpen(false);
                           }}
-                          disabled={!isAdmin}
+                          disabled={!canLens}
                           className={`w-full text-left px-3 py-2.5 flex items-start gap-2.5 ${
-                            isAdmin ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                            canLens ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
                           }`}
                         >
                           <span className="text-base">🎯</span>
@@ -726,8 +727,8 @@ export default function ChatPage({ user }: { user: User }) {
                             <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
                               {isActive && <span className="text-emerald-600">✓</span>}
                               후보 lens 모드 ({persona.displayName})
-                              {!isAdmin && (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">관리자 전용</span>
+                              {!canLens && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">1차 접근 이상</span>
                               )}
                             </div>
                             <p className="text-xs text-gray-500 mt-0.5">{persona.displayName} 시각으로 자료 분석</p>

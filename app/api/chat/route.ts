@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import type Anthropic from '@anthropic-ai/sdk';
 import { auth } from '@/lib/auth/config';
-import { canChat } from '@/lib/auth/roles';
+import { canChat, canUseLens } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
 import { routeToAgent, planQuery, type AgentIntent, type QueryPlan } from '@/lib/agents/agent-router';
@@ -108,9 +108,9 @@ export async function POST(req: NextRequest) {
   const { message, conversationId, mode: requestedMode } = parsed.data;
   const userId = session.user.id;
 
-  // lens 모드 — admin 전용 (사용자가 명시적으로 고른 모드 → 라우터 우회)
-  if (requestedMode.startsWith('lens:') && role !== 'admin') {
-    return Response.json({ error: '관리자 전용 모드입니다.' }, { status: 403 });
+  // lens 모드 — admin + tier1 (사용자가 명시적으로 고른 모드 → 라우터 우회). tier2·pending 차단.
+  if (requestedMode.startsWith('lens:') && !canUseLens(role)) {
+    return Response.json({ error: '접근 권한이 없습니다.' }, { status: 403 });
   }
   // 명시적 policy 요청 — admin + tier1만. (라우터 자동승급은 아래에서 role을 다시 확인하므로 무관)
   if (requestedMode === 'policy' && role !== 'admin' && role !== 'tier1') {

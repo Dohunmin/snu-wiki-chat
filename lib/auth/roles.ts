@@ -29,3 +29,8 @@ export function canAccessAdmin(role: Role): boolean {
 export function canAccessSensitive(role: Role): boolean {
   return role === 'admin' || role === 'tier1';
 }
+
+/** 후보 lens 모드(인물 시각 분석) 사용 권한 — admin + tier1. tier2·pending 차단. */
+export function canUseLens(role: Role): boolean {
+  return role === 'admin' || role === 'tier1';
+}
