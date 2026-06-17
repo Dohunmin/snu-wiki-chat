@@ -66,15 +66,15 @@
 - **AnswerClass 3/4** (`lib/agents/structured.ts`, 앱 DB): 3=`structured_facts`(연락처·통계, TTL 90일), 4=`live_cache`(최신공지, TTL 6h). chat route가 `routing.answerClass===3|4 && routing.college`일 때 직답(`streamDirectAnswer`, LLM 0토큰). 미스/만료→AnswerClass 1 degrade.
 - Phase 1 active: `eng`·`humanities`·`social`·`science`. Phase 2~4는 yaml `active` 전환으로 확장.
 
-### 2.2 웹검색 — insight(policy) 전용 (2026-06 설계 변경)
+### 2.2 웹검색 — `webEnabled` 기반 (policy + admin·tier1의 fact·lens). C안=모델 자기판단
 
-> ⚠️ **변경**: 과거엔 normal(fact) 모드도 `web_search`를 썼으나, **fact 답변이 웹發 사실을 권위 있게 단정하는 리스크**(특히 교수·총장후보가 쓰는 거버넌스 도구) 때문에 **fact 파이프에서 웹 완전 제거**. 웹은 **insight(policy) 파이프 전용**으로 이전. → fact는 내부 KB로만 답하고, 없으면 "내부 자료 범위 밖"으로 정직하게 답함(웹發 리스크 0). 상위 라우터(§3.0)가 fact/insight를 가르므로, 외부 reach가 필요할 수 있는 애매한 질문은 "애매하면 insight" 비대칭으로 insight에 배정 → 웹 도달 보장.
+> ⚠️ **이력**: ①최초 fact도 웹 사용 → ②웹發 단정 리스크로 **policy 전용**으로 축소(2026-06) → ③**C안(가드된 agentic, 현행)**: 외부 reach를 *상단 분류기*가 아니라 *답변 agent*가 "내부로 답되느냐"로 자기판단. policy는 항상, **fact·lens는 admin·tier1일 때** 웹 도구를 부착하되 모델이 내부 부족 시에만 발동. tier2·pending은 어떤 모드든 웹 **절대 미도달**(신뢰·격리 floor).
 
-- **위치**: [app/api/chat/route.ts](app/api/chat/route.ts) — `mode === 'policy'`일 때만 메인 스트림에 `WEB_SEARCH_TOOL_POLICY` + `WEB_SEARCH_GUIDANCE_POLICY` 부착. fact(normal)·lens는 도구 미부착.
-- **발동 원칙(하나)**: 주제 분류(외부/비교/최신)가 아니라 **"내부 자료([N])로 핵심이 답되느냐"** 만으로 판단. 답되면 검색 안 함, 핵심 일부가 내부에 없으면 떠넘기지 말고 보강(max_uses:1).
-- **출처 가드**: `blocked_domains`로 나무위키·더위키·개인 블로그 **하드 차단** + 프롬프트로 1차·공신력 출처만, 실명 미검증 주장 인용 금지, 미확인은 생략/표시.
-- **권한·격리**: insight 자체가 admin·tier1 전용(§7) → 웹 노출이 그 경로로만 좁혀짐. tier2·pending은 fact만 → 웹 절대 미도달. lens 미적용.
-- **비용**: fact·lens **$0**(웹 없음). insight 발동 시 **~$0.18~0.36**(웹 페이지 본문이 입력토큰). `[chat-usage] web=N` 로깅.
+- **게이트**: `webEnabled = mode==='policy' || ((mode==='normal'||lens) && (admin||tier1))` ([route.ts](app/api/chat/route.ts)). 스트림에 `WEB_SEARCH_TOOL_POLICY`(max_uses:1, `blocked_domains`) 부착 + 모드별 가이드: `WEB_SEARCH_GUIDANCE_POLICY`(insight) / `WEB_SEARCH_GUIDANCE_FACT`(사실보고 톤·외부귀속표시) / `webSearchGuidanceLens(name)`(**오귀속 가드** — 웹은 중립 외부맥락으로만, 절대 인물 입장으로 둔갑 금지, 그의 입장은 `[stance][N]`만).
+- **발동 원칙(하나)**: 주제 분류(외부/비교/최신)가 아니라 **"내부 자료([N])로 핵심이 답되느냐"** 만으로 판단. 답되면 검색 안 함, 핵심 일부가 내부에 없으면 보강(max_uses:1).
+- **출처 가드**: `blocked_domains`로 나무위키·더위키·개인 블로그 **하드 차단** + 프롬프트로 1차·공신력 출처만, 실명 미검증 주장 인용 금지. 인용 메타는 본문 끝 `🌐 외부 출처` 블록으로 렌더(`renderWebSources`, 모드 공통).
+- **lens+웹(2026-06-17)**: lens도 외부 동향과 합성 가능(예: "해외 거버넌스 사례 비춰 이석재 캠프라면?"). **오귀속 가드**(`webSearchGuidanceLens`)가 웹↔그의 입장 분리를 강제.
+- **비용**: 웹 안 뜨면 **$0**(대부분의 fact·lens). 발동 시 **~$0.18~0.36**(웹 본문이 입력토큰). `[chat-usage] 🌐 web_search N회` 로깅.
 
 ---
 

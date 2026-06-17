@@ -73,6 +73,15 @@ const WEB_SEARCH_GUIDANCE_FACT = `\n\n[웹 검색 — 사실 보강(가드)]\n` 
   `- 출처 가드: 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템 차단).\n` +
   `- 답변 방식은 그대로 *사실 보고* — 해석·평가·전망은 추가하지 않는다(그건 insight 영역).`;
 
+// lens(실명 인물 시각) 전용 웹 가이드. 발동·출처 원칙은 동급이되, **오귀속 가드가 최우선**.
+//   lens는 실명 총장후보(이석재) 도구라, 웹에서 가져온 외부 사실을 그의 입장·발언으로 둔갑시키면 치명적.
+//   → 웹 = 중립 외부 맥락으로만. 그의 실제 입장은 여전히 [stance][N]에서만. (admin·tier1 lens일 때만 부착)
+const webSearchGuidanceLens = (personaName: string) => `\n\n[웹 검색 — lens 보강(오귀속 가드)]\n` +
+  `- 발동 원칙: 내부 자료([N])와 ${personaName}의 입장([stance][N])으로 질문 핵심이 답되면 **검색하지 않는다**. 핵심 일부(예: 해외 대학 동향·최신 외부 사실)가 내부에 없을 때만 web_search로 그 부분을 보강(최대 1회). 거절·되묻기 금지, 필요하면 직접 검색.\n` +
+  `- ⚠️ 오귀속 절대 금지 (최우선): 웹에서 가져온 내용은 **중립적 외부 맥락·사실**일 뿐이다. 그것을 ${personaName}의 입장·발언·주장으로 옮기거나 암시하지 마라. 그의 실제 입장은 오직 \`[stance]\` [N] 자료에서만 온다. 웹 사실을 근거로 "그라면 이렇게 볼 것"이라는 *해석*은 가능하되, 어조로 해석임을 분명히 하고(단정 금지) 웹과 그의 입장을 뒤섞지 마라.\n` +
+  `- 표기: 웹 내용은 (외부) 로 표시하고 \`[제목](URL)\`로 인용(URL은 시스템이 자동 첨부). 내부 [N]·그의 입장 [stance][N]·외부 (외부) 세 층을 뭉뚱그리지 마라.\n` +
+  `- 출처 기준: 정부·서울대 공식·법령·확립된 언론 등 1차·공신력 출처만(이용자 편집 위키·블로그는 시스템 차단).`;
+
 /** web_search 출처를 본문 끝 "🌐 외부 출처" 블록으로 렌더 — 메타데이터 직접(모델 인라인 의존 X). URL+제목 중복제거 + 상위 6개. */
 function renderWebSources(cites: { url: string; title: string }[]): string {
   const seenUrl = new Set<string>(), seenTitle = new Set<string>();
@@ -196,7 +205,11 @@ export async function POST(req: NextRequest) {
 
   // C안(가드된 agentic): 웹 도달 = insight(policy) + admin/tier1의 fact까지. tier2·lens·pending fact는 미도달(신뢰·격리 floor).
   //   fact 웹은 "내부로 답 안 될 때만" 모델이 자기판단 — 외부 reach를 상단 분류기가 아닌 답변 agent가 결정.
-  const webEnabled = mode === 'policy' || (mode === 'normal' && (role === 'admin' || role === 'tier1'));
+  //   lens도 포함: 실명 인물 시각이 외부 동향(해외 사례 등)과 합성될 수 있게 — 단 오귀속 가드(webSearchGuidanceLens) 필수.
+  //   lens는 이미 admin·tier1 게이트(canUseLens)라 role 조건 자동 충족. tier2·pending은 애초 lens 미도달.
+  const webEnabled =
+    mode === 'policy' ||
+    ((mode === 'normal' || mode.startsWith('lens:')) && (role === 'admin' || role === 'tier1'));
 
   let routing;
   let systemPrompt: string | Anthropic.TextBlockParam[];
@@ -286,7 +299,9 @@ export async function POST(req: NextRequest) {
         : numbered;
       citationMapping = lensNumbered.mapping;
       citationSummary = lensNumbered.summary;
-      systemPrompt = buildLensSystemPrompt(budgetedContexts, persona, role);
+      // webEnabled(admin·tier1)면 lens도 외부 보강 가능 — 단 오귀속 가드 부착(웹≠그의 입장).
+      systemPrompt = buildLensSystemPrompt(budgetedContexts, persona, role)
+        + (webEnabled ? webSearchGuidanceLens(persona.name) : '');
       userMessage = buildLensUserMessage(message, lensNumbered.contextMarkdown, lensNumbered.summary, persona);
       lensPersonaInfo = {
         id: persona.id,
@@ -617,7 +632,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // 공약설계: web_search 인용 메타를 본문 끝 "🌐 외부 출처"로 첨부 (모델 인라인 의존 X, 메타데이터 직접 렌더).
+        // web_search 인용 메타를 본문 끝 "🌐 외부 출처"로 첨부 (policy·fact·lens 공통 — 모델 인라인 의존 X, 메타데이터 직접 렌더).
         if (webCitations.length > 0) {
           const block = renderWebSources(webCitations);
           if (block) {
