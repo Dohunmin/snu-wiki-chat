@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/config';
-import { canAccessSensitive } from '@/lib/auth/roles';
+import { canAccessSensitive, canUseLens } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import path from 'path';
 import fs from 'fs';
@@ -20,9 +20,13 @@ export async function GET(
   const { agentId } = await params;
   const role = (session.user as { role: Role }).role;
 
-  // adminOnly 위키는 비admin에게 존재 자체를 부정 (404)
+  // 접근 게이트: lensPersona 위키(leesj 등)는 lens 접근권(admin+tier1)으로, 그 외 adminOnly는 admin만.
+  //   비허용자에겐 존재 자체를 부정(404). tier2·pending은 lens 위키 미도달 유지.
   const agentMeta = agentsConfig.agents.find(a => a.id === agentId);
-  if (agentMeta?.adminOnly && role !== 'admin') {
+  const blocked = (agentMeta as { lensPersona?: boolean } | undefined)?.lensPersona
+    ? !canUseLens(role)
+    : (agentMeta?.adminOnly && role !== 'admin');
+  if (blocked) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 

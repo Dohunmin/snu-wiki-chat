@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import type { WikiData } from '@/lib/agents/types';
 import type { Role } from '@/lib/auth/roles';
+import { canUseLens } from '@/lib/auth/roles';
 import agentsConfig from '@/data/agents.config.json';
 
 export async function GET() {
@@ -15,7 +16,12 @@ export async function GET() {
 
   const wikis = agentsConfig.agents
     .filter(a => a.enabled)
-    .filter(a => !a.adminOnly || isAdmin)
+    // lensPersona 위키(leesj 등) → lens 접근권(admin+tier1)으로 노출. 그 외 adminOnly → admin만. tier2·pending 차단 유지.
+    .filter(a =>
+      (a as { lensPersona?: boolean }).lensPersona
+        ? canUseLens(role)
+        : (!a.adminOnly || isAdmin),
+    )
     .map(a => {
       const filePath = path.join(process.cwd(), 'data', a.dataFile);
       if (!fs.existsSync(filePath)) return null;
