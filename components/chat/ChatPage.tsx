@@ -124,6 +124,7 @@ export default function ChatPage({ user }: { user: User }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const [chatMode, setChatMode] = useState<string>('normal');
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
@@ -289,11 +290,15 @@ export default function ChatPage({ user }: { user: User }) {
       { id: assistantId, role: 'assistant', content: '', streaming: true },
     ]);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: trimmed, conversationId: currentConvId, mode: chatMode }),
+        signal: controller.signal,
       });
 
       if (!res.ok || !res.body) {
@@ -384,16 +389,30 @@ export default function ChatPage({ user }: { user: User }) {
         }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : '오류가 발생했습니다.';
-      setMessages(prev => prev.map(m =>
-        m.id === assistantId
-          ? { ...m, content: message, streaming: false, error: true }
-          : m
-      ));
+      if (controller.signal.aborted || (err instanceof DOMException && err.name === 'AbortError')) {
+        // 사용자가 중지 — 부분 답변은 그대로 유지(에러 아님). 비어 있으면 안내만.
+        setMessages(prev => prev.map(m =>
+          m.id === assistantId
+            ? { ...m, streaming: false, content: m.content || '_(생성을 중지했습니다.)_' }
+            : m
+        ));
+      } else {
+        const message = err instanceof Error ? err.message : '오류가 발생했습니다.';
+        setMessages(prev => prev.map(m =>
+          m.id === assistantId
+            ? { ...m, content: message, streaming: false, error: true }
+            : m
+        ));
+      }
     } finally {
+      abortRef.current = null;
       setLoading(false);
       inputRef.current?.focus();
     }
+  }
+
+  function stopGeneration() {
+    abortRef.current?.abort();
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -798,13 +817,13 @@ export default function ChatPage({ user }: { user: User }) {
                 />
               </div>
               <button
-                onClick={() => sendMessage()}
-                disabled={loading || !input.trim()}
+                onClick={() => (loading ? stopGeneration() : sendMessage())}
+                disabled={!loading && !input.trim()}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed"
-                title="전송"
-                aria-label="전송"
+                title={loading ? '중지' : '전송'}
+                aria-label={loading ? '생성 중지' : '전송'}
               >
-                {loading ? <SpinnerIcon /> : <ArrowUpIcon />}
+                {loading ? <StopIcon /> : <ArrowUpIcon />}
               </button>
             </div>
             <p className="mt-2 text-center text-[11px] text-gray-400">
@@ -1236,6 +1255,14 @@ function ArrowUpIcon() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
     </svg>
   );
 }
