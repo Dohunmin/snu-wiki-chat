@@ -34,6 +34,27 @@ function linkifyCitations(content: string): string {
   });
 }
 
+/**
+ * 복사용 — 답변 본문에서 인용 토큰을 제거하고 실제 내용만 남긴다.
+ * 두 형태 모두 처리:
+ *   1) stance/fact/overview: `[라벨](/wiki?...)` 마크다운 링크
+ *   2) source: `[위키명] 문서ID` 평문 인용
+ * 외부 출처 링크(http...)는 보존한다.
+ */
+function stripCitationsForCopy(content: string): string {
+  return content
+    // 1) /wiki 로 향하는 마크다운 링크(=인용 pill) 제거 (앞 공백도 함께 흡수)
+    .replace(/[ \t]?\[[^\]]+\]\(\/wiki[^)]*\)/g, '')
+    // 2) [위키명] 문서ID 평문 인용 제거 (위키명은 한글로 시작 → [N] 숫자 인용과 구분)
+    .replace(/[ \t]?\[([가-힣][가-힣\w·\-]*)\]\s+[\w가-힣·\-]+(?:\.(?:fact|stance|overview))?/g, '')
+    // 잔여 공백/구두점 정리
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/[ \t]+([.,)\]」』】])/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -1020,7 +1041,7 @@ function SynthesisSaveButton({ message, userQuery }: { message: Message; userQue
   }
 
   if (saved) return (
-    <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3.5 py-1.5 text-sm text-green-600">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3.5 py-1.5 text-sm text-green-600">
       위키에 저장됨
     </span>
   );
@@ -1028,9 +1049,47 @@ function SynthesisSaveButton({ message, userQuery }: { message: Message; userQue
     <button
       onClick={save}
       disabled={saving}
-      className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-sm text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-sm text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-colors"
     >
       {saving ? '저장 중...' : '위키에 저장'}
+    </button>
+  );
+}
+
+function CopyAnswerButton({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    const text = stripCitationsForCopy(content);
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // 클립보드 API 미지원/비보안 컨텍스트 fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* ignore */ }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      onClick={copy}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors ${
+        copied
+          ? 'border-green-200 bg-green-50 text-green-600'
+          : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600'
+      }`}
+      title="인용 표시를 제외한 답변 본문을 복사합니다"
+    >
+      <CopyIcon />
+      {copied ? '복사됨' : '복사하기'}
     </button>
   );
 }
@@ -1110,7 +1169,10 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
           )}
         </div>
         {!message.streaming && !message.error && message.content && (
-          <SynthesisSaveButton message={message} userQuery={userQuery} />
+          <div className="mt-3 flex items-center gap-2">
+            <CopyAnswerButton content={message.content} />
+            <SynthesisSaveButton message={message} userQuery={userQuery} />
+          </div>
         )}
       </div>
     </div>
@@ -1121,6 +1183,15 @@ function TrashIcon() {
   return (
     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="9" y="9" width="11" height="11" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
