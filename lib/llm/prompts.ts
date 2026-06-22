@@ -302,7 +302,9 @@ export function buildLensUserMessage(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _persona: PersonaContext,
 ): string {
-  return buildUserMessage(query, contextMarkdown, citationSummary);
+  // recency 레버 — 메시지 말미 지침이 첫 스트리밍 패스의 인라인 인용을 끌어올림(post-hoc 재생성 가드 제거 대체).
+  return buildUserMessage(query, contextMarkdown, citationSummary)
+    + `\n\n[작성 지침] 위 자료의 사실·수치·날짜·고유명사는 **문장을 쓰는 즉시 그 자리에 [N]**을 붙이세요(인라인). 인용을 마지막 문단·표에 몰아서 달지 말 것. [N] 없는 위키 사실 서술 금지.`;
 }
 
 /**
