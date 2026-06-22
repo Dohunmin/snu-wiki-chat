@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import AuthExpiryGuard from '@/components/AuthExpiryGuard';
 
 export const metadata: Metadata = {
   title: 'SNU 거버넌스 위키',
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-50 text-gray-900 antialiased">{children}</body>
+      <body className="bg-gray-50 text-gray-900 antialiased">
+        <AuthExpiryGuard />
+        {children}
+      </body>
     </html>
   );
 }

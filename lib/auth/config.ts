@@ -5,11 +5,12 @@ import { db } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import type { Role } from './roles';
+import { parseDeviceId } from './device';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: 'jwt',
-    maxAge: 60 * 60 * 8, // JWT 최대 8시간
+    maxAge: 60 * 60 * 24, // JWT 최대 24시간 (하루 1회 로그인)
   },
   cookies: {
     sessionToken: {
@@ -18,7 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         sameSite: 'lax' as const,
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        // maxAge 없음 → 브라우저 종료 시 쿠키 자동 삭제
+        maxAge: 60 * 60 * 24, // 24시간 — 브라우저를 닫아도 24시간 동안 로그인 유지
       },
     },
   },
@@ -31,8 +32,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) return null;
+
+        // 로그인 시점의 기기 식별자(device-id 쿠키)를 토큰에 고정 → 다른 기기에서의 재사용 차단.
+        // (쿠키는 미들웨어가 모든 페이지 응답에서 미리 발급하므로 로그인 시점엔 이미 존재)
+        const deviceId = parseDeviceId(new Headers(request?.headers).get('cookie'));
 
         const masterEmail = process.env.MASTER_ADMIN_EMAIL;
         const masterPassword = process.env.MASTER_ADMIN_PASSWORD;
@@ -66,6 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: masterEmail,
             name: '관리자',
             role: 'admin' satisfies Role,
+            deviceId,
           };
         }
 
@@ -88,6 +94,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role as Role,
+          deviceId,
         };
       },
     }),
@@ -95,8 +102,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // 최초 로그인 — authorize()가 준 role 사용
+        // 최초 로그인 — authorize()가 준 role/deviceId 사용
         token.role = user.role;
+        token.did = user.deviceId ?? null;
         token.roleSyncedAt = Date.now();
         return token;
       }
@@ -125,6 +133,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token) {
         session.user.id = token.sub as string;
         session.user.role = token.role as Role;
+        session.user.deviceId = (token.did as string | null | undefined) ?? null;
       }
       return session;
     },
