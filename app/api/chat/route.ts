@@ -29,6 +29,7 @@ import {
   safeFlushPoint,
   detectOldFormatCitations,
   buildOldFormatRetryPrompt,
+  buildMissingCitationRetryPrompt,
 } from '@/lib/llm/citations';
 import { validateTables, buildTableFixPrompt } from '@/lib/llm/table-audit';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
@@ -595,6 +596,43 @@ export async function POST(req: NextRequest) {
           } catch (err) {
             console.error('[citation] retry failed:', err);
             // 실패 시 원본 그대로 진행
+          }
+        }
+
+        // ─── 인용 누락 검출 + retry ──────────────────────────────────
+        // 위키 컨텍스트가 있는데 [N]이 0개(또는 긴 답변에 2개 미만)면 P2 위반 → 1회 재요청.
+        // old-format 가드(잘못된 형식만 검출)의 사각 보완 — 특히 lens 모드의 무인용 에세이.
+        if (!closed && citationMapping.size > 0) {
+          const citedNow = extractCitedNumbers(fullContentRaw);
+          const compactLen = fullContentRaw.replace(/\s/g, '').length;
+          const underCited = citedNow.size === 0 || (compactLen > 1500 && citedNow.size < 3);
+          if (underCited) {
+            console.log(`[citation] under-cited (cited=${citedNow.size}, len=${compactLen}), retrying once...`);
+            try {
+              const retryPrompt = buildMissingCitationRetryPrompt(citationSummary);
+              const retryResp = await client.messages.create({
+                model: LLM_MODEL,
+                max_tokens: MAX_TOKENS,
+                system: systemPrompt,
+                messages: [
+                  ...history,
+                  { role: 'user', content: userMessage },
+                  { role: 'assistant', content: fullContentRaw },
+                  { role: 'user', content: retryPrompt },
+                ],
+              });
+              const retryRaw = retryResp.content[0]?.type === 'text' ? retryResp.content[0].text : '';
+              const retryCited = extractCitedNumbers(retryRaw);
+              // 인용이 실제로 늘었을 때만 채택(악화·내용손실 방지)
+              if (retryRaw && retryCited.size > citedNow.size) {
+                fullContentRaw = retryRaw;
+                send({ type: 'replace', content: resolveText(retryRaw, citationMapping) });
+              } else {
+                console.error(`[citation] missing-citation retry did not improve (was ${citedNow.size}, now ${retryCited.size}), keeping original`);
+              }
+            } catch (err) {
+              console.error('[citation] missing-citation retry failed:', err);
+            }
           }
         }
 
