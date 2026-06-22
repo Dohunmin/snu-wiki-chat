@@ -9,10 +9,15 @@ import { canUpload, canAccessAdmin, canAccessSensitive, canUseLens, ROLE_LABELS 
 import type { SourceRef } from '@/lib/agents/types';
 import Link from 'next/link';
 import { ConversationsListModal } from './ConversationsListModal';
+import agentsConfig from '@/data/agents.config.json';
 
+// 위키명 → agentId. agents.config에서 동적 구성 → 거버넌스 9 + 단과대/대학원 + leesj 전부 커버.
+//   (하드코딩 시 leesj '이석재 후보'·단과대 source 인용이 raw `[이석재 후보] sid`로 노출되던 버그 — 서버 resolveText는 source를 `[위키명] sid` 평문으로 내려보내고, 이 맵에 없으면 pill 변환 실패.)
 const WIKI_ID_MAP: Record<string, string> = {
-  '평의원회': 'senate', '이사회': 'board', '대학운영계획': 'plan', '중장기발전계획': 'vision', '중장기': 'vision',
-  '70년역사': 'history', '대학현황': 'status', '유홍림총장연설': 'yhl-speeches', '재무정보공시': 'finance',
+  ...Object.fromEntries(
+    (agentsConfig.agents as { id: string; name: string }[]).map(a => [a.name, a.id]),
+  ),
+  '중장기': 'vision',  // 별칭 보존
 };
 
 function getPageType(id: string): string {
@@ -23,7 +28,11 @@ function getPageType(id: string): string {
 }
 
 function linkifyCitations(content: string): string {
-  const wikiNames = Object.keys(WIKI_ID_MAP).join('|');
+  // 긴 이름 우선(중장기 vs 중장기발전계획) + 정규식 특수문자 이스케이프(예: '경영전문대학원(MBA)'의 괄호).
+  const wikiNames = Object.keys(WIKI_ID_MAP)
+    .sort((a, b) => b.length - a.length)
+    .map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
   const pattern = new RegExp(`\\[(${wikiNames})\\]\\s+([\\w가-힣·\\-]+(?:\\.(?:fact|stance|overview))?)`, 'g');
   return content.replace(pattern, (_, wikiName: string, docId: string) => {
     const agentId = WIKI_ID_MAP[wikiName];
