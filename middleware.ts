@@ -13,7 +13,7 @@ function clearSession<T extends NextResponse>(res: T): T {
   return res;
 }
 
-export default auth((req: NextRequest & { auth: { user?: { role?: Role; deviceId?: string | null } } | null }) => {
+export default auth((req: NextRequest & { auth: { user?: { role?: Role; deviceId?: string | null; loginAt?: number } } | null }) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
   const role = session?.user?.role as Role | undefined;
@@ -23,7 +23,13 @@ export default auth((req: NextRequest & { auth: { user?: { role?: Role; deviceId
   const boundDevice = session?.user?.deviceId;
   const currentDevice = req.cookies.get(DEVICE_COOKIE)?.value;
   const deviceMismatch = !!session && !!boundDevice && currentDevice !== boundDevice;
-  const authed = !!session && !deviceMismatch;
+
+  // 절대 만료: 로그인 후 24h 경과면 (활동 여부와 무관하게) 세션 만료. NextAuth rolling 무력화.
+  // loginAt이 없는 구(舊)세션(이 기능 배포 전 로그인)도 만료로 간주 → 1회 재로그인 후 정책 적용.
+  const ABS_SESSION_MS = 24 * 60 * 60 * 1000;
+  const loginAt = session?.user?.loginAt;
+  const expired = !!session && (typeof loginAt !== 'number' || Date.now() - loginAt > ABS_SESSION_MS);
+  const authed = !!session && !deviceMismatch && !expired;
 
   // 모든 응답에 device-id 쿠키가 없으면 새로 발급 (로그인보다 먼저 존재하도록).
   const ensureDevice = <T extends NextResponse>(res: T): T => {
@@ -45,8 +51,8 @@ export default auth((req: NextRequest & { auth: { user?: { role?: Role; deviceId
 
   if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
     if (authed) return NextResponse.redirect(new URL('/', req.url));
-    // 다른 기기의 잔존 세션이 남아 있으면 쿠키를 비워 깨끗하게 재로그인하도록.
-    return ensureDevice(deviceMismatch ? clearSession(NextResponse.next()) : NextResponse.next());
+    // 다른 기기의 잔존 세션·만료된 세션이 남아 있으면 쿠키를 비워 깨끗하게 재로그인하도록.
+    return ensureDevice(deviceMismatch || expired ? clearSession(NextResponse.next()) : NextResponse.next());
   }
 
   if (!authed) {

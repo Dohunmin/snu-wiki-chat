@@ -106,6 +106,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         token.did = user.deviceId ?? null;
         token.roleSyncedAt = Date.now();
+        // 절대 만료 기준: 로그인 시각 고정. NextAuth의 rolling 갱신과 무관하게
+        // 미들웨어가 (now - loginAt > 24h)면 세션 만료 처리 → "하루 1회 로그인" 강제.
+        token.loginAt = Date.now();
         return token;
       }
       // 후속 요청 — DB role 재동기화 (TTL throttle).
@@ -134,6 +137,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub as string;
         session.user.role = token.role as Role;
         session.user.deviceId = (token.did as string | null | undefined) ?? null;
+        session.user.loginAt = token.loginAt as number | undefined;
       }
       return session;
     },
