@@ -85,6 +85,27 @@ export default function AdminDashboard() {
     setActionLoading(null);
   }
 
+  async function handleResetPassword(userId: string, name: string) {
+    if (!confirm(`'${name}' 회원의 비밀번호를 임시 비밀번호로 초기화하시겠습니까?`)) return;
+    setActionLoading(userId + 'reset');
+    const res = await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, action: 'reset-password' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.tempPassword) {
+      alert(
+        `'${name}'의 임시 비밀번호:\n\n${data.tempPassword}\n\n` +
+        `이 비밀번호를 사용자에게 전달하세요.\n로그인 후 [비밀번호 변경]에서 바꾸도록 안내하세요.\n` +
+        `(이 화면을 닫으면 다시 볼 수 없습니다.)`
+      );
+    } else {
+      alert(data.error ?? '초기화에 실패했습니다');
+    }
+    setActionLoading(null);
+  }
+
   const pendingUsers = users.filter(u => u.role === 'pending');
   const activeUsers = users.filter(u => u.role !== 'pending');
 
@@ -263,13 +284,22 @@ export default function AdminDashboard() {
                           <option value="tier2">2순위</option>
                         </select>
                         {u.id !== 'master-admin' && (
-                          <button
-                            onClick={() => handleDelete(u.id, u.name)}
-                            disabled={actionLoading === u.id + 'delete'}
-                            className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-lg hover:bg-red-50 disabled:opacity-50 whitespace-nowrap"
-                          >
-                            삭제
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleResetPassword(u.id, u.name)}
+                              disabled={actionLoading === u.id + 'reset'}
+                              className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs rounded-lg hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              비번 초기화
+                            </button>
+                            <button
+                              onClick={() => handleDelete(u.id, u.name)}
+                              disabled={actionLoading === u.id + 'delete'}
+                              className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-lg hover:bg-red-50 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              삭제
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
