@@ -69,6 +69,22 @@ export default function AdminDashboard() {
     setActionLoading(null);
   }
 
+  async function handleDelete(userId: string, name: string) {
+    if (!confirm(`'${name}' 회원을 완전히 삭제하시겠습니까? 되돌릴 수 없습니다.`)) return;
+    setActionLoading(userId + 'delete');
+    const res = await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, action: 'delete' }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? '삭제에 실패했습니다');
+    }
+    await fetchUsers();
+    setActionLoading(null);
+  }
+
   const pendingUsers = users.filter(u => u.role === 'pending');
   const activeUsers = users.filter(u => u.role !== 'pending');
 
@@ -234,17 +250,28 @@ export default function AdminDashboard() {
                       {u.approvedAt ? new Date(u.approvedAt).toLocaleDateString('ko-KR') : '-'}
                     </td>
                     <td className="px-4 py-3">
-                      <select
-                        defaultValue={u.role}
-                        onChange={async e => {
-                          await handleApprove(u.id, e.target.value as 'admin' | 'tier1' | 'tier2');
-                        }}
-                        className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
-                      >
-                        <option value="admin">관리자</option>
-                        <option value="tier1">1순위</option>
-                        <option value="tier2">2순위</option>
-                      </select>
+                      <div className="flex items-center gap-2 justify-end">
+                        <select
+                          defaultValue={u.role}
+                          onChange={async e => {
+                            await handleApprove(u.id, e.target.value as 'admin' | 'tier1' | 'tier2');
+                          }}
+                          className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
+                        >
+                          <option value="admin">관리자</option>
+                          <option value="tier1">1순위</option>
+                          <option value="tier2">2순위</option>
+                        </select>
+                        {u.id !== 'master-admin' && (
+                          <button
+                            onClick={() => handleDelete(u.id, u.name)}
+                            disabled={actionLoading === u.id + 'delete'}
+                            className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-lg hover:bg-red-50 disabled:opacity-50 whitespace-nowrap"
+                          >
+                            삭제
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

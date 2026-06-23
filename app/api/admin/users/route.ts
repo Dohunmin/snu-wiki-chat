@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
 const approveSchema = z.object({
   userId: z.string(),
-  action: z.enum(['approve', 'reject']),
+  action: z.enum(['approve', 'reject', 'delete']),
   role: z.enum(['admin', 'tier1', 'tier2']).optional(),
 });
 
@@ -59,6 +59,18 @@ export async function PATCH(req: NextRequest) {
   if (action === 'reject') {
     await db.delete(users).where(eq(users.id, userId));
     return NextResponse.json({ message: '거부되었습니다' });
+  }
+
+  // 승인된(활성) 회원 삭제 — 자기 자신·마스터 관리자는 보호(로그인 잠김 방지).
+  if (action === 'delete') {
+    if (userId === approverId) {
+      return NextResponse.json({ error: '본인 계정은 삭제할 수 없습니다' }, { status: 400 });
+    }
+    if (userId === 'master-admin') {
+      return NextResponse.json({ error: '마스터 관리자 계정은 삭제할 수 없습니다' }, { status: 400 });
+    }
+    await db.delete(users).where(eq(users.id, userId));
+    return NextResponse.json({ message: '삭제되었습니다' });
   }
 
   return NextResponse.json({ error: '잘못된 요청입니다' }, { status: 400 });
