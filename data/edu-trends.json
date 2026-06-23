@@ -1,0 +1,168 @@
+{
+  "id": "edu-trends",
+  "name": "AI 시대 교육 담론과 동향",
+  "sources": [
+    {
+      "id": "educause-2026-캠퍼스연결성인프라",
+      "title": "The Essential Infrastructure No One Is Planning For",
+      "date": "2026-04",
+      "tags": [
+        "고등교육",
+        "인프라",
+        "캠퍼스연결성",
+        "네트워크",
+        "거버넌스",
+        "IT전략",
+        "사이버보안"
+      ],
+      "topics": [
+        "교육 인프라와 연결성"
+      ],
+      "entities": [],
+      "content": "# EDUCAUSE Review (협찬) — 아무도 계획하지 않는 필수 인프라: 캠퍼스 연결성\n\n## 메타\n- 매체: **EDUCAUSE Review** · ⚠️ **SPONSORED(협찬) 콘텐츠** · 2026-04\n- 저자: **David Hinson, Campus CIO at Boldyn Networks** — 캠퍼스 네트워크 관리형 서비스를 파는 **벤더 임원**. 본문도 \"That vantage point admittedly shapes my perspective\"라고 이해상충을 자인. → **수치·주장은 상업적 동기 감안, 독립 출처 교차확인 필수**\n- 원문: https://er.educause.edu/articles/sponsored/2026/4/the-essential-infrastructure-no-one-is-planning-for · 스냅샷: [[../../raw/src/educause-2026-캠퍼스연결성인프라.txt]] · HTML: [[../../raw/html/educause-2026-캠퍼스연결성인프라.html]]\n\n## 요약\n캠퍼스 **연결성(네트워크·Wi-Fi·유선 백본)**이 입학·유지·학생성공·연구·안전 등 모든 상위 성과를 떠받치는 \"connective tissue\"인데도, 전략계획에 명시되지 않는 사각지대라는 주장. 네트워크 문제는 수익·생산성·안전 등 **서로 다른 이름표로 다른 부서에 도착**해 근본 원인이 가려진다. 저자는 운영(break-fix)을 넘어 **예측 가능한 생애주기 계획**과 **기관 거버넌스** 안으로 연결성을 끌어와야 하며, 진짜 기회는 \"거버넌스\"에 있다고 주장한다. (단, 저자가 해당 서비스 벤더이므로 협찬 맥락 유지.)\n\n## 핵심 논점\n- **전략적 부재**: EDUCAUSE Top 10 목록 4년 연속(2023–2026) 연결성이 독립 항목으로 등장한 적 없음\n- **문제의 비가시성**: 네트워크 이슈가 수익·생산성·안전 문제로 변장해 서로 다른 부서에 도착\n- **break-fix → 생애주기 전략**: 백본 5–7년, 무선 AP 2–3년 주기로 캠퍼스 전역 단일 표준화\n- **거버넌스가 핵심**: \"전략적 연결성은 기관 거버넌스 안에\" — 시설계획·자본예산·입학/유지 전략과 교차기능 감독\n- **구조적 격차**: 건물별·세대별 패치워크 네트워크, IT·시설 부서의 다른 계획 주기\n- **사이버보안과 결합**: 노후·패치워크 인프라가 방어를 어렵게 함\n\n## 주요 인용 (verbatim, 협찬 맥락)\n> \"Connectivity shows up in every strategic plan implicitly but in almost none of them explicitly.\"\n> — David Hinson, EDUCAUSE Review (sponsored)\n\n> \"Truly strategic connectivity lives inside institutional governance frameworks. There, it gets the cross-functional oversight it deserves, with connections to facilities planning, the capital budget, and enrollment and retention strategy.\"\n> — David Hinson, EDUCAUSE Review (sponsored)\n\n> \"When the disagreement is about whether or not connectivity is even present, we're well past a quality issue.\"\n> — David Hinson, EDUCAUSE Review (sponsored)\n\n## 핵심 데이터 (⚠️ 협찬 기사 내 인용 — 교차확인 권장)\n- **이연 투자**: EDUCAUSE QuickPoll — 네트워크 장비가 가장 흔히 이연되는 기술 투자, 기관 **46%가 \"quick fixes\"** 인정\n- **거버넌스 공백**: IT 거버넌스 기구 중 **35%만** 권고가 아닌 실제 결정 권한 보유\n- **옥외 Wi-Fi 인식차(COVID 이후)**: 관리자 42% \"somewhat reliable\" vs 같은 학교 학생 57% \"아예 없다\"\n- **사이버보안**: 2024년 고등교육 기관 **66%가 랜섬웨어 피해**, 평균 복구비 **$4.02M** / 대학 **48%가 알려진 취약점 보유 SW 사용**, 상위 500개 중 **70%**\n- **학생 우선순위**: 캠퍼스 경험을 가장 높일 기술로 학생 **54%가 \"reliable Wi-Fi\"** 선택(AI·신기기·SW 아님)\n- **수익 연결**: 주요 athletics 경기일 단일 행사에 **5만+ 기기** 연결(모바일 티켓·스폰서)\n- 사례: 개강 첫 주 다중 캠퍼스 인터넷 장애 시 일정·이메일·LMS·학자금이 수만 명에게 마비\n\n## 시사점 (쟁점 연결)\n- \"디지털 인프라\"를 IT 운영 사안이 아니라 **교육 전략·거버넌스 의제**로 보는 관점 → [[교육인프라와연결성]]\n- 대학 운영계획·중장기 인프라·자본예산 논의와 접점\n- ⚠️ **협찬(벤더 작성)** 콘텐츠 — 수치·결론은 비상업 출처로 검증 후 인용\n\n## 출처\n- 원문: https://er.educause.edu/articles/sponsored/2026/4/the-essential-infrastructure-no-one-is-planning-for\n- raw: [[../../raw/src/educause-2026-캠퍼스연결성인프라.txt]] · [[../../raw/html/educause-2026-캠퍼스연결성인프라.html]]",
+      "sensitive": false
+    },
+    {
+      "id": "futurism-2026-AI압박과학생경험",
+      "title": "College Students Consumed by 'Resignation and Despair' as They're Relentlessly Pressured to Use AI",
+      "date": "2026-06-20",
+      "tags": [
+        "AI",
+        "학생경험",
+        "정신건강",
+        "고등교육",
+        "AI압박",
+        "학습윤리",
+        "비판적사고"
+      ],
+      "topics": [
+        "AI 교육 정책과 거버넌스 (가드레일)",
+        "AI 시대 학생 경험 (압박·체념·정신건강)"
+      ],
+      "entities": [],
+      "content": "# Futurism — 대학생들의 'AI 사용 압박'과 체념·절망\n\n## 메타\n- 매체: **Futurism** (테크 저널리즘) · 기자: Frank Landymore · 2026-06-20\n- 1차 취재원: Dartmouth College 글쓰기 교수 **Jeff Sharlet**가 자기 학생들에게 받은 **익명 의견**을 Bluesky 스레드로 공유한 것을 인용·해설\n- 원문: https://futurism.com/artificial-intelligence/college-students-resignation-despair · 스냅샷: [[../../raw/src/futurism-2026-AI압박과학생경험.txt]] · HTML: [[../../raw/html/futurism-2026-AI압박과학생경험.html]]\n\n## 요약\n\"대학생은 AI를 반긴다\"는 지배적 서사를 정면으로 반박하는 기사. Dartmouth 글쓰기 교수 Jeff Sharlet이 학생들에게 AI에 대한 익명 소감을 받았는데, **누구도 AI가 자기 교육을 개선했다고 말하지 않았다**. 학생들은 또래·교수·기관의 전방위 압박 속에서 \"체념(resignation)\"과 \"절망(despair)\"을 느끼고, AI 도입을 일종의 \"arms race(군비경쟁)\"로 경험한다. 잘해야 양가적이며, 끊으려다 다시 돌아오는 패턴은 챗봇의 의도적 중독 설계를 드러낸다. 기사는 AI 도입이 제도 불신을 낳고, 결함의 책임을 기업·행정에서 **학생 개인에게 전가**한다고 비판한다.\n\n## 핵심 논점\n- **자발적 수용이 아니라 강요된 선택**: \"submit or fail(제출 아니면 낙제)\"라는 분위기, \"빠져나갈 수 없다\"는 체념\n- **양가성·중독성**: 끊으려 해도 되돌아옴 → 챗봇의 \"deliberately addictive design\" 방증. 일부 응답은 \"약물 중독 고백\"처럼 읽힘\n- **제도적 위선과 책임 전가**: 대학이 AI를 권장하면서 \"부정행위 말라\"고 하지만 부정을 매우 쉽게 만듦 → 정유사가 \"carbon footprint\" 개념으로 책임을 개인에게 떠넘긴 방식에 비유\n- **압박의 출처가 다층적**: 일부 교수는 AI 사용을 요구, 기관은 기업과 제휴해 장려(예: Dartmouth 총장–Anthropic 계약)\n- **또래 갈등**: 과제 전체를 AI로 처리하는 친구에 대한 반감, \"나는 요약/리서치에만 쓴다\"는 자기 구별\n- **인지적 부작용**: 신생 연구가 보여주는 비판적 사고 저해 등 \"less tangible but more nefarious cognitive effects\"\n\n## 주요 인용 (verbatim)\n> \"Many say they hate it, don't want to use it, but they feel like now it's submit or fail.\"\n> — Jeff Sharlet (Bluesky), in Futurism\n\n> \"They feel like there's no escaping it. … And they don't like it.\"\n> — Jeff Sharlet, in Futurism\n\n> \"I wish I could tell you the responses thrummed with defiance. Instead, some read like substance abuse testimonies.\"\n> — Jeff Sharlet, in Futurism\n\n> (한 학생) \"got caught. Crushed by shame. Swore it off. But it's creeping back, and they don't know how to stop.\"\n> — student survey response, in Futurism\n\n> \"Several students wrote of the moral confusion implicit in a college that promotes AI and says don't cheat but makes it really, really easy to cheat.\"\n> — Jeff Sharlet, in Futurism\n\n> (Dartmouth 총장이 계약한) Anthropic, \"a company that 'stole the books of 133 faculty' without consulting the school's educators.\"\n> — Futurism (paraphrasing Sharlet)\n\n- AI를 윤리적으로 거부하는 학생들은 \"feel abandoned\"; 한 학생은 \"deep fury about AI taking over their education and wrecking mental health\"를 표현.\n- 기사 결론: 학생들이 \"unwitting test subjects who will also be the ones to take the fall\"가 되고, AI 기업·행정은 \"최첨단 도구를 제공한다\"고 자랑한다.\n\n## 시사점 (쟁점 연결)\n- AI 시대 정책 설계에서 빠지기 쉬운 변수 = **학생의 주체성·정신건강·신뢰**\n- \"허용 vs 금지\"가 아니라 **누가 책임지는가(거버넌스)**의 문제로 연결 → [[AI교육정책과거버넌스]]\n- 한계: Dartmouth **단일 강좌·익명 자기보고** 기반의 정성적 관찰 → 표본·일반화 한계. 정량 근거는 다른 source(예: CDT 설문 [[the74-2026-AI교육정책가드레일]])와 교차해야\n\n## 출처\n- 원문: https://futurism.com/artificial-intelligence/college-students-resignation-despair\n- raw: [[../../raw/src/futurism-2026-AI압박과학생경험.txt]] · [[../../raw/html/futurism-2026-AI압박과학생경험.html]]",
+      "sensitive": false
+    },
+    {
+      "id": "the74-2026-AI교육정책가드레일",
+      "title": "As AI Use in Schools Grows, Lawmakers and Districts Scramble to Set Up Guardrails",
+      "date": "2026-06-12",
+      "tags": [
+        "AI",
+        "교육정책",
+        "거버넌스",
+        "가드레일",
+        "K-12",
+        "AI리터러시",
+        "입법",
+        "비판적사고"
+      ],
+      "topics": [
+        "AI 교육 정책과 거버넌스 (가드레일)",
+        "AI 시대 학생 경험 (압박·체념·정신건강)"
+      ],
+      "entities": [],
+      "content": "# The 74 — 학교 AI 확산과 입법·교육청의 가드레일 정비\n\n## 메타\n- 매체: **The 74** (미국 교육 비영리 매체) · Stateline/States Newsroom 제휴 보도 · 기자: Robbie Sequeira · 2026-06-12\n- 성격: 정책 현황 뉴스(미국 K-12 중심), 다수 전문가·의원 인터뷰\n- 원문: https://www.the74million.org/article/as-ai-use-in-schools-grows-lawmakers-and-districts-scramble-to-set-up-guardrails/ · 스냅샷: [[../../raw/src/the74-2026-AI교육정책가드레일.txt]] · HTML: [[../../raw/html/the74-2026-AI교육정책가드레일.html]]\n\n## 요약\n학생·교사가 이미 AI를 광범위하게 쓰는데도 정책이 \"제각각(all over the map)\"인 상황에서, 미국 주 의회·교육청이 뒤늦게 가드레일을 만드는 현황 보도. 올해만 **31개 주에서 134건+** 법안이 발의됐고, 공통 출발점은 **AI 리터러시**와 절차적 가드레일(코디네이터·연수·검토·벤더계약·학부모 옵트아웃)이다. 즉흥적 전면 금지(뉴욕시 2022 ChatGPT 금지)보다, **연령 제한·감독·\"인간 교사 대체 금지\"** 중심으로 수렴 중. 동시에 전문가들은 \"지금은 무엇이 최선인지 모른다는 점을 솔직히 인정해야 한다\"고 경고한다.\n\n## 핵심 논점\n- **지침 공백**: 교사들이 \"AI를 전적으로 혼자 헤쳐나가야 한다\"고 느낌\n- **입법 급증**: 31개 주 134건+ (데이터 프라이버시·교실 사용 제한·리터러시·연수 중심) [MultiState]\n- **금지보다 가드레일로 수렴**: 연령 제한, 학부모 옵트아웃, 감독, **AI의 교사 대체 금지**\n- **\"AI 정책\"을 따로 두지 말고 기술 정책의 일부로** 보자는 시각 vs **K-8 기초학력 보호**를 위한 부분 금지 시각의 긴장\n- **AI 리터러시의 재정의**: 사용법이 아니라 \"어떻게 만들어졌나, 누가 이득을 보나\"를 이해하는 것\n- **불확실성의 정직한 인정**: 근거보다 추정에 의존하는 현 단계 → 과잉 규제·조기 best practice 선언 경계\n\n## 주요 인용 (verbatim)\n> \"What we heard repeatedly is that the teachers were feeling like they had to navigate artificial intelligence entirely on their own.\"\n> — Sen. Katie Fry Hester (Maryland), in The 74\n\n> \"AI was something that could not be gatekept. It was in the classroom the minute students were able to access it.\" … \"I don't have a calculator policy. Why would I have an AI policy? I have a technology policy.\"\n> — Noelle Ellerson Ng (School Superintendents Association), in The 74\n\n> \"When I talk about AI literacy, it's not how to use AI. It's understanding how AI is built. Why is it being created? Who's profiting off of this?\"\n> — Sue Thotz (Common Sense Media), in The 74\n\n> \"The better question is what kinds of AI use are supervised, age appropriate, transparent, and tied to real learning.\" (schools need guardrails but also permission to \"experiment responsibly\")\n> — Jason Coley (Maria College), in The 74\n\n> \"Writing a guide for AI in 2026 is like writing a guide for aviation in 1905.\" … \"Lawmakers will need to be honest that what they propose now could be completely outdated in two years.\"\n> — Justin Reich (MIT), in The 74\n\n> \"It is imperative that all children gain strong foundational skills, especially in literacy and numeracy, and it seems that AI is uniquely positioned to possibly undermine that.\"\n> — Assemblymember Robert Carroll (New York), in The 74\n\n## 핵심 데이터 / 사실\n- **CDT 설문(2024-25)**: 교사 85%·학생 86% AI 사용 / 약 절반만 학교에서 교육받음(위험 교육은 드묾) / 학생 절반 \"교사와 덜 연결된 느낌\" / 교사 70% \"중요한 능력 학습 방해\" 우려\n- **College Board(Sophia Romee)**: AI 허용 학군 중 **약 1/5만** 공식 사용 정책 보유. \"Students are far more self-aware about AI's risks than headlines suggest.\"\n- **주별 입법**:\n  - Maryland(5월 법): 학군별 AI 코디네이터, 주 교사 연수, 진로·CS 표준에 AI 리터러시\n  - Ohio: 7/1까지 전 학군 AI 사용 정책 채택(모델 정책: 사용·프라이버시·윤리·교사용·벤더계약·평가)\n  - Idaho(3월): 학군 정책·주 리터러시 표준 의무, AI가 \"replaces or eliminates a human teacher\" 금지\n  - Oklahoma(지난달): 연령 적합·교사 사전검토·학부모 옵트아웃, 2027-28학년도 전 정책 수립\n  - Florida \"AI Bill of Rights\": 6학년 전 AI 교구 접근 제한안 → 상원 **37-1 통과했으나 하원에서 폐기**\n  - Connecticut: CS(AI·신기술 포함) 필수 교육과정 추가; 2025년 'AI의 교육자 대체 금지' 법안은 불발\n  - New York(Carroll): 진단검사·장애학생 지원 예외로 **K-8 대부분 AI 금지** 법안 발의\n- **시장**: K-12 AI 제품 **$391.2M(2024) → $9B+(2034 전망)** [market.us] (튜터링·개인화·자동채점·수업계획·행정)\n- Ellerson Ng: 기기 차단은 가능하나 \"you're only one personal device away from social media and AI being in your schools.\"\n\n## 시사점 (쟁점 연결)\n- 대학·기관의 **AI 거버넌스 설계**(사전 금지 vs 허용+가드레일+책임 있는 실험)에 직접 시사 → [[AI교육정책과거버넌스]]\n- \"인간 교사/교수자 대체 불가\" 원칙은 교수자 역할 재정의 논쟁과 연결\n- CDT의 \"학생이 교사와 덜 연결된 느낌\"은 학생 경험 쟁점과 교차 → [[AI시대학생경험]]\n- 한계: **미국 K-12** 맥락 → 한국 고등교육 적용 시 학제·법제 차이 유의\n\n## 출처\n- 원문: https://www.the74million.org/article/as-ai-use-in-schools-grows-lawmakers-and-districts-scramble-to-set-up-guardrails/\n- raw: [[../../raw/src/the74-2026-AI교육정책가드레일.txt]] · [[../../raw/html/the74-2026-AI교육정책가드레일.html]]",
+      "sensitive": false
+    },
+    {
+      "id": "the74-2026-사회적자본교육",
+      "title": "Schools Must Make Social Capital an Essential Part of Students' Education",
+      "date": "2026-06-22",
+      "tags": [
+        "사회적자본",
+        "경험교육",
+        "직접경험",
+        "멘토십",
+        "불평등",
+        "교육의목적",
+        "인턴십"
+      ],
+      "topics": [
+        "사회적 자본과 경험 교육"
+      ],
+      "entities": [],
+      "content": "# The 74 (Opinion) — 사회적 자본을 정규교육의 핵심으로\n\n## 메타\n- 매체: **The 74** — **오피니언(저자 견해)** · 저자: **Richard Stopol** (NYC Outward Bound Schools 명예회장, 비영리 교육기관 CEO 35년) · 2026-06-22\n- ⚠️ 사실 보도가 아닌 **의견글** → 모든 제언·평가는 저자 입장으로 귀속\n- 원문: https://www.the74million.org/article/schools-must-make-social-capital-an-essential-part-of-students-education/ · 스냅샷: [[../../raw/src/the74-2026-사회적자본교육.txt]] · HTML: [[../../raw/html/the74-2026-사회적자본교육.html]]\n\n## 요약\n불평등 완화 논의가 부·기회 격차에 집중하지만, 저자는 그 못지않게 중요한 **\"사회적 자본 격차(social capital gap)\"** — 삶을 헤쳐나가는 데 핵심인 관계·네트워크·기관에 대한 접근의 빈부 차 — 에 주목해야 한다고 주장한다. Harvard 경제학자 Raj Chetty의 2022년 연구를 근거로, 사회적 자본의 한 형태인 \"경제적 연결성\"이 빈곤 탈출의 **가장 강력한 단일 예측 변수**임을 든다. 해법은 **학교 경험의 재구상** — 사회적 자본 구축을 정규교육의 필수 요소로 삼고, 인턴십·대학 방문·멘토십과 교실 밖 직접 경험을 보장하는 것. AI·화면 의존이 커지는 지금 **\"직접 경험을 대체할 것은 없다\"**는 점이 특히 절실하다고 본다.\n\n## 핵심 논점\n- **사회적 자본 격차 = 계층 이동의 핵심 장벽** (Chetty 2022: \"economic connectedness\"가 최강 예측 변수)\n- **\"사회적 자본 사막(social capital deserts)\"**: 더 넓은 세계와 접할 기회가 극도로 제한된 수백만 청소년의 현실\n- **학교를 책임 주체로**: 다양한 사람·자원·경험에 대한 접근 보장을 학교 책무로\n- **구체 방안**: (고교생) 인턴십·대학 방문·멘토십 / (전 연령) 문화기관·공원·지역사회 자산을 학습 원천으로 하는 교실 밖 실경험\n- **\"직접 경험에는 대체물이 없다\"**: 화면·가상(VR)의 한계 — 단, 격차를 완전히 없애진 못해도 좁힐 수 있다\n\n## 주요 인용 (verbatim)\n> \"It's the social capital gap — the yawning differences between rich and poor in access to the relationships, networks and institutions that are key to successfully navigating through life.\"\n> — Richard Stopol, in The 74\n\n> a form of social capital — what he called \"economic connectedness\" — is \"the single strongest predictor of a child's ability to rise out of poverty.\"\n> — (Raj Chetty 2022 연구 인용) in The 74\n\n> \"There is no substitute for direct experience. This feels especially relevant right now, when so much of young people's time is spent engaged with their phones or computer screens, divorced from real life.\"\n> — Richard Stopol, in The 74\n\n> (사립학교 고대 이집트 VR 시연에 대한 동료의 반응) \"It was really well done, but it would be so much better if the students were actually able to go to Egypt.\"\n> — quoted by Richard Stopol, in The 74\n\n## 핵심 사실 / 일화\n- **Bronx 고교 수석 졸업생** 일화: 장학 면담을 위해 지하철로 Manhattan에 오지 못함 → Manhattan에 가본 적도, 웨이터에게 주문하는 식당에 가본 적도 없었음. \"경험 결핍\"의 구체적 상징\n- 부유층 학생은 깊은 \"social capital 저수지\"를 보유 → 구조적 이점\n- 저자 결론: 경험 풍부한 교육이 격차를 완전히 없애진 못해도, \"사다리\"에 자리를 찾게 해 \"American dream\"에 기여\n\n## 시사점 (쟁점 연결)\n- \"공감·인간관계·공동체 경험\"을 **교육 성과**로 보는 관점과 직접 호응 → [[사회적자본과경험교육]]\n- AI·화면 의존 비판 → 대면·경험 중심 교육 설계의 논거 ([[AI시대학생경험]]의 \"교사와 덜 연결된 느낌\"과 보완 관계)\n- 한계: 미국 K-12 빈곤층 맥락의 **오피니언** → 대학·타 사회 적용 시 일반화 유의\n\n## 출처\n- 원문: https://www.the74million.org/article/schools-must-make-social-capital-an-essential-part-of-students-education/\n- raw: [[../../raw/src/the74-2026-사회적자본교육.txt]] · [[../../raw/html/the74-2026-사회적자본교육.html]]",
+      "sensitive": false
+    }
+  ],
+  "topics": [
+    {
+      "id": "AI교육정책과거버넌스",
+      "name": "AI 교육 정책과 거버넌스 (가드레일)",
+      "category": "정책",
+      "tags": [
+        "AI",
+        "교육정책",
+        "거버넌스",
+        "가드레일",
+        "AI리터러시",
+        "입법",
+        "책임"
+      ],
+      "sources": [
+        "the74-2026-AI교육정책가드레일",
+        "futurism-2026-AI압박과학생경험"
+      ],
+      "content": "# AI 교육 정책과 거버넌스 (가드레일)\n\n## 주제 개요\n학교·기관이 AI 사용을 어떻게 규율할 것인가. 전면 금지(즉흥적 반응)에서 **체계적 가드레일**(리터러시·연수·감독·검토·벤더계약·학부모 옵트아웃)로 전환하는 흐름. 핵심 긴장은 ① \"허용 vs 금지\"를 넘어 **\"어떤 사용을 허용하고 누가 책임지는가\"**, ② **기초학력 보호(K-8 제한)** vs **책임 있는 실험**, ③ **불확실성 속 조기 규제의 위험**이다. Futurism은 정책이 실패할 때 학생이 떠안는 비용(책임 전가)을 보여줘 거버넌스의 당위를 뒷받침한다.\n\n## 핵심 쟁점\n- 전면 금지 vs **허용+가드레일+책임 있는 실험**(\"experiment responsibly\")\n- \"AI 정책\"을 따로 둘까 vs **기술 정책의 일부**로 둘까(\"I have a technology policy\")\n- **인간 교사/교수자 대체 금지** 원칙\n- **AI 리터러시 = 작동·이해**(\"how AI is built, who's profiting\"), 단순 사용법 아님\n- **조기 규제의 위험**: \"guide for AI in 2026 = guide for aviation in 1905\"\n- **책임 소재**: 제도가 AI를 권장하며 결함 책임은 학생에게 전가(제도적 위선)\n\n## 핵심 데이터 / 사실\n- 올해 **31개 주 134건+** AI 교육 법안 [MultiState]\n- AI 허용 학군 중 **약 1/5만** 공식 정책 보유(College Board)\n- 주별: Maryland(코디네이터·연수·리터러시), Ohio(7/1 정책 의무), Idaho/Connecticut(\"교사 대체 금지\"), Oklahoma(연령·교사검토·옵트아웃), Florida(6학년 전 제한안 상원 37-1 통과→하원 폐기), New York(K-8 대부분 금지 발의)\n- 시장 $391.2M(2024) → $9B+(2034)\n\n## 관련 자료\n- [[the74-2026-AI교육정책가드레일]] — 입법 현황·전문가 견해·가드레일 모델(주 사례)\n- [[futurism-2026-AI압박과학생경험]] — 거버넌스 실패 시 책임 전가·제도적 위선 (정책 당위의 이면)\n\n## 출처\n- [[the74-2026-AI교육정책가드레일]] (The 74, 2026-06-12)\n- [[futurism-2026-AI압박과학생경험]] (Futurism, 2026-06-20)"
+    },
+    {
+      "id": "AI시대학생경험",
+      "name": "AI 시대 학생 경험 (압박·체념·정신건강)",
+      "category": "담론",
+      "tags": [
+        "AI",
+        "학생경험",
+        "정신건강",
+        "학습윤리",
+        "비판적사고"
+      ],
+      "sources": [
+        "futurism-2026-AI압박과학생경험",
+        "the74-2026-AI교육정책가드레일"
+      ],
+      "content": "# AI 시대 학생 경험 (압박·체념·정신건강)\n\n## 주제 개요\nAI 도구 확산이 학생의 학습 동기·심리·또래 관계·교사와의 관계에 미치는 영향. \"학생은 AI를 환영한다\"는 통념과 달리, 제도·또래·도구 설계의 압박 속에서 **체념·절망·중독적 패턴·도덕적 혼란**이 보고된다. 정성적 증언(Futurism/Sharlet)과 정량 설문(CDT)이 같은 방향을 가리킨다는 점이 핵심.\n\n## 핵심 쟁점\n- **자발적 수용 vs 강요된 선택**(\"submit or fail\", \"there's no escaping it\")\n- **정신건강·중독성**: \"substance abuse testimonies\", 끊으려다 되돌아오는 패턴\n- **관계 단절**: 학생 절반이 \"AI로 교사와 덜 연결된 느낌\"(CDT)\n- **책임의 개인 전가**: 결함의 책임이 기업·행정 → 학습자에게\n- **학생의 자기 인식**: \"students are far more self-aware about AI's risks than headlines suggest\"(College Board)\n\n## 핵심 데이터 / 증언\n- (Futurism) Dartmouth Jeff Sharlet 익명 설문: 누구도 \"AI가 교육을 개선했다\"고 답하지 않음; \"submit or fail\"\n- (CDT 설문 2024-25) 학생 86% AI 사용 / **학생 절반 \"교사와 덜 연결된 느낌\"** / 교사 70% \"중요한 능력 학습 방해\" 우려\n- (College Board) 학생들이 AI 과의존을 스스로 걱정; 윤리 경계에 대한 명확한 지침 부재\n\n## 관련 자료\n- [[futurism-2026-AI압박과학생경험]] — 학생 당사자 증언(체념·절망·중독·도덕적 혼란)\n- [[the74-2026-AI교육정책가드레일]] — CDT 설문의 관계 단절·우려 데이터, 학생 자기인식(College Board)\n\n## 출처\n- [[futurism-2026-AI압박과학생경험]] (Futurism, 2026-06-20)\n- [[the74-2026-AI교육정책가드레일]] (The 74, 2026-06-12)"
+    },
+    {
+      "id": "교육인프라와연결성",
+      "name": "교육 인프라와 연결성",
+      "category": "인프라",
+      "tags": [
+        "고등교육",
+        "인프라",
+        "캠퍼스연결성",
+        "네트워크",
+        "IT전략",
+        "거버넌스",
+        "사이버보안"
+      ],
+      "sources": [
+        "educause-2026-캠퍼스연결성인프라"
+      ],
+      "content": "# 교육 인프라와 연결성\n\n## 주제 개요\n캠퍼스 **연결성(네트워크·Wi-Fi·백본)**을 교육 성과의 기반으로 보고, 운영(break-fix)을 넘어 **전략·거버넌스 의제**로 다뤄야 한다는 담론. 네트워크 문제가 수익·생산성·안전·사이버보안 등 다른 이름표로 분산돼 근본 원인이 가려진다는 진단. (⚠️ 유일 근거 자료가 **벤더 작성 협찬 콘텐츠** — 수치는 교차확인 전제)\n\n## 핵심 쟁점\n- 연결성의 **전략계획 부재**(EDUCAUSE Top 10 2023–2026 독립 항목 0회)\n- 네트워크 문제의 **수익·생산성·안전 파급**과 비가시성\n- **임시방편 vs 생애주기 계획**(백본 5–7년, AP 2–3년)\n- **\"전략적 연결성은 거버넌스 안에\"** — 시설·자본예산·입학전략과 교차\n- 사이버보안과 노후·패치워크 인프라의 결합 위험\n\n## 핵심 데이터 (⚠️ 협찬 기사 인용 — 교차확인 권장)\n- 기관 **46% \"quick fixes\"** 인정 / IT 거버넌스 기구 **35%만** 실제 결정권 보유\n- COVID 후 옥외 Wi-Fi: 관리자 42% \"somewhat reliable\" vs 학생 57% \"아예 없다\"\n- 랜섬웨어: 2024년 고등교육 **66% 피해**, 평균 복구비 **$4.02M**; 대학 48%가 알려진 취약점 SW 사용(상위 500 중 70%)\n- 학생 **54%가 \"reliable Wi-Fi\"**를 가장 원하는 기술로 선택\n- athletics 경기일 단일 행사 **5만+ 기기** 연결\n\n## 관련 자료\n- [[educause-2026-캠퍼스연결성인프라]] — EDUCAUSE Review(**협찬**, David Hinson/Boldyn Networks): 연결성의 전략·거버넌스화\n\n## 출처\n- [[educause-2026-캠퍼스연결성인프라]] (EDUCAUSE Review, sponsored, 2026-04)"
+    },
+    {
+      "id": "사회적자본과경험교육",
+      "name": "사회적 자본과 경험 교육",
+      "category": "담론",
+      "tags": [
+        "사회적자본",
+        "경험교육",
+        "직접경험",
+        "멘토십",
+        "교육의목적",
+        "불평등"
+      ],
+      "sources": [
+        "the74-2026-사회적자본교육"
+      ],
+      "content": "# 사회적 자본과 경험 교육\n\n## 주제 개요\n관계·네트워크·기관 접근으로서의 **사회적 자본**을 정규교육의 핵심 성과로 보아야 한다는 담론. AI·화면 의존이 커질수록 **교실 밖 직접 경험**(인턴십·대학 방문·멘토십·문화기관 활용)의 교육적 가치가 강조된다. 불평등·계층 이동 의제와 교육의 목적(무엇을 길러낼 것인가) 의제를 잇는 다리.\n\n## 핵심 쟁점\n- **사회적 자본 격차 = 계층 이동의 핵심 장벽** (Raj Chetty 2022: \"economic connectedness\"가 빈곤 탈출 최강 예측 변수)\n- **\"사회적 자본 사막\"**: 더 넓은 세계와 접할 기회의 구조적 결핍\n- **학교의 책무화**: 사람·자원·경험 접근 보장을 정규교육의 필수 요소로\n- **\"직접 경험을 대체할 것은 없다\"** — 가상(VR)·화면의 한계\n- 경험 풍부한 교육이 격차를 완전히 없애진 못해도 **좁힐 수 있다**\n\n## 핵심 사실 / 일화\n- Bronx 고교 수석 졸업생이 Manhattan에 가본 적이 없어 면담 장소에 오지 못함 → 경험 결핍의 상징\n- 제언: (고교) 인턴십·대학 방문·멘토십 / (전 연령) 문화기관·공원·지역사회 자산 활용\n- VR 고대 이집트 시연 → \"students were actually able to go to Egypt\"가 더 낫다\n\n## 관련 자료\n- [[the74-2026-사회적자본교육]] — Richard Stopol(오피니언): 사회적 자본 격차·직접 경험의 교육적 가치\n\n## 출처\n- [[the74-2026-사회적자본교육]] (The 74 Opinion, 2026-06-22)"
+    }
+  ],
+  "entities": [],
+  "syntheses": [],
+  "facts": [],
+  "stances": [],
+  "overviews": [],
+  "index": "---\ntype: overview\ntags: [index]\nsources: [futurism-2026-AI압박과학생경험, the74-2026-AI교육정책가드레일, the74-2026-사회적자본교육, educause-2026-캠퍼스연결성인프라]\nfirst_seen: 2026-06-23\nlast_updated: 2026-06-23\nstatus: active\n---\n\n# Index — AI 시대 교육 담론과 동향\n\n> **외부 레퍼런스 wiki.** AI 시대 대학·학교 교육의 전환과 쟁점을 다루는 해외 기사·담론 모음.\n> 인물 stance도 SNU 내부 문서도 아닌 **외부 2차 자료(news/opinion/analysis)**. 페이지 타입은 `source`(기사) + `topic`(쟁점).\n\n## 🏷 Topics\n- [[AI시대학생경험]] — AI 압박·체념·정신건강 (학생 당사자 관점)\n- [[AI교육정책과거버넌스]] — 가드레일·리터러시·\"인간 교사 대체 금지\"\n- [[사회적자본과경험교육]] — 관계·네트워크·직접 경험의 교육적 가치\n- [[교육인프라와연결성]] — 캠퍼스 연결성의 전략·거버넌스화 (⚠️ 협찬 근거)\n\n## 📰 Sources (4)\n- [[futurism-2026-AI압박과학생경험]] — Futurism, 2026-06-20 (Frank Landymore) — Dartmouth Jeff Sharlet 설문\n- [[the74-2026-AI교육정책가드레일]] — The 74, 2026-06-12 (Robbie Sequeira) — 미국 K-12 AI 입법 현황\n- [[the74-2026-사회적자본교육]] — The 74 **Opinion**, 2026-06-22 (Richard Stopol) — 사회적 자본 격차\n- [[educause-2026-캠퍼스연결성인프라]] — EDUCAUSE Review **(협찬)**, 2026-04 — 캠퍼스 연결성\n\n## 🧭 출처 신뢰도 메모\n- Futurism = 테크 저널리즘(정성적 관찰) / The 74 = 교육 비영리 매체(1편 뉴스, 1편 오피니언) / EDUCAUSE = **협찬 콘텐츠**\n- 지역·학제 혼재(미국 K-12 + 고등교육). 한국 대학 적용 시 맥락 차이 유의.\n\n## ⏳ 보류(예정)\n- WonKHE — *\"Are we designing graduates for performance or personal transformation?\"* (성과 vs 인격적 변화). 사이트 점검 중이라 복구 후 ingest 예정. → topic 후보: `교육의목적과인격적변화`\n\n## 🔗 주제 호응 (참고)\n본 wiki의 쟁점은 SNU 후보 철학 wiki의 '대담-교육혁신'(AI 압박·flourishing·공감/인간관계·AI 거버넌스)과 호응. 단, **위키 간 직접 위키링크는 사용하지 않음**(교차 분석은 Main syntheses에서).\n"
+}

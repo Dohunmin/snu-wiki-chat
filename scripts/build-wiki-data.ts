@@ -169,6 +169,12 @@ const WIKI_MAP = [
     folder: 'SNU_후보 철학_LLM_Wiki',
     sensitiveTopics: [],
   },
+  {
+    id: 'edu-trends',
+    name: 'AI 시대 교육 담론과 동향',
+    folder: 'SNU_AI시대교육담론과동향_LLM_Wiki',
+    sensitiveTopics: [],
+  },
 ];
 
 function parseFrontmatter(raw: string): { meta: Record<string, unknown>; body: string } {
