@@ -175,6 +175,12 @@ const WIKI_MAP = [
     folder: 'SNU_AI시대교육담론과동향_LLM_Wiki',
     sensitiveTopics: [],
   },
+  {
+    id: 'stat-yearbook',
+    name: '통계 연보',
+    folder: 'SNU_통계 연보_LLM_Wiki',
+    sensitiveTopics: [],
+  },
 ];
 
 function parseFrontmatter(raw: string): { meta: Record<string, unknown>; body: string } {
