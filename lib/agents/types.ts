@@ -34,6 +34,13 @@ export interface AgentConfig {
    * PoC: finance만 true. Phase B에서 9개로 확장.
    */
   ragEnabled?: boolean;
+  /**
+   * 배경 소스 위키 — 일반 라우팅(키워드·semantic·globalTopK)에서 항상 제외.
+   * 대신 insight/공약 등에서 "외부 담론 배경"으로 의미유사도 게이트(lib/agents/background.ts)를
+   * 통과할 때만 주입된다. 직접 질문 대상이 아니라 너(답변 모델)의 배경지식·벤치마크용.
+   * (edu-trends = AI 시대 교육 담론 등 외부 2차 자료)
+   */
+  backgroundSource?: boolean;
 }
 
 export interface GetContextOptions {

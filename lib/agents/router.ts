@@ -135,6 +135,9 @@ function getRoutableAgents(userRole: Role, query: string, plan?: QueryPlan) {
     : detectGroupBreadth(query);
   return registry.getAll().filter(a => {
     if (a.config.lensPersona) return false;
+    // 배경 소스(edu-trends 등)는 일반 라우팅 전 경로에서 제외 — background.ts 게이트로만 주입.
+    //   routableIds 필터(아래 forcedWikis) + globalTopK allowlist + 키워드 풀 모두 자동 배제됨.
+    if (a.config.backgroundSource) return false;
     if (a.config.adminOnly && userRole !== 'admin') return false;
     if (isCollegeGroup(a.config)) {
       const grp = a.config.group as '단과대' | '대학원';

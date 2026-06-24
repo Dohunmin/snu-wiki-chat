@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth/config';
 import { canChat, canUseLens } from '@/lib/auth/roles';
 import type { Role } from '@/lib/auth/roles';
 import { routeQuery } from '@/lib/agents/router';
+import { getBackgroundContexts } from '@/lib/agents/background';
 import { routeToAgent, planQuery, type AgentIntent, type QueryPlan } from '@/lib/agents/agent-router';
 import { enforceContextBudget } from '@/lib/agents/context-budget';
 import { complexityBudget, budgetForComplexity } from '@/lib/agents/complexity';
@@ -252,6 +253,15 @@ export async function POST(req: NextRequest) {
           role,
         });
       }
+    }
+
+    // 외부 담론 배경(edu-trends 등) — 의미유사도 게이트 통과 시에만 주입.
+    //   routeQuery는 배경 소스를 제외하므로(getRoutableAgents), 여기서만 들어온다.
+    //   실측: keyword 라우팅은 on-topic을 자주 놓침(4중 1) → 임베딩 게이트가 신뢰 가능한 발동 판단.
+    //   외부 라벨·만능 아님 가드는 background.ts가 본문 상단 마커로 부착. 토큰은 chunkCap으로 고정.
+    const backgroundContexts = await getBackgroundContexts(effectiveQuery, role);
+    if (backgroundContexts.length > 0) {
+      routing.contexts = [...routing.contexts, ...backgroundContexts];
     }
 
     // 보편 컨텍스트 예산 — 모든 경로 합류점에서 총량 캡(비용 꼬리 차단) + 질문 복잡도별 예산.

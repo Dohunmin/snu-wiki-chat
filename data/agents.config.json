@@ -1010,6 +1010,7 @@
       "dataFile": "edu-trends.json",
       "enabled": true,
       "ragEnabled": true,
+      "backgroundSource": true,
       "keywords": [
         "AI교육정책과거버넌스",
         "AI 교육 정책과 거버넌스 (가드레일)",
