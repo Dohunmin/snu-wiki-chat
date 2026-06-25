@@ -360,6 +360,20 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: '대화를 저장하거나 자료를 찾는 중 오류가 발생했습니다.' }, { status: 500 });
   }
 
+  // ── 중지(abort) 전파 ─────────────────────────────────────────────────────
+  //   문제: 클라가 fetch를 abort해도 req.signal은 *스트리밍 응답 도중* 신뢰성 있게 발동하지 않음
+  //   (특히 dev/Vercel). 그래서 기존 `req.signal?.aborted` break 체크가 한 번도 안 걸려
+  //   서버가 끝까지 생성 → 전체 답변 DB 저장 → output 토큰 풀 청구(=중지가 무의미)였음.
+  //   해결: ReadableStream.cancel()(소비자=HTTP 파이프 절단 시 확실히 호출)을 1차 트리거로,
+  //   req.signal을 2차로 두고, 통합 신호(abortController)를 **Anthropic SDK 요청에 직접 전파**한다.
+  //   → 클라 중지 시 Anthropic 생성이 실제로 끊겨 output 청구가 그 지점에서 멈춘다.
+  //   ⚠️ input 토큰은 요청 송신 시점에 이미 확정(환불 불가) — 절감 대상은 미생성 output뿐.
+  const abortController = new AbortController();
+  if (req.signal) {
+    if (req.signal.aborted) abortController.abort();
+    else req.signal.addEventListener('abort', () => abortController.abort());
+  }
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -441,7 +455,7 @@ export async function POST(req: NextRequest) {
         };
 
         for (let iter = 0; iter < MAX_ITERS; iter++) {
-          if (closed || req.signal?.aborted) break;
+          if (closed || abortController.signal.aborted) break;
           const isLastIter = iter === MAX_ITERS - 1;
           // search_wiki는 loopMode·중간iter·캡 미달일 때만 부착. 캡 도달/마지막iter/레거시는 웹만(또는 미부착) → 답변 강제.
           const allowSearch = loopMode && !isLastIter && searchWikiCount < MAX_SEARCH_WIKI;
@@ -454,7 +468,7 @@ export async function POST(req: NextRequest) {
             system: systemPrompt,
             messages: convo,
             ...(iterTools.length ? { tools: iterTools as unknown as never } : {}),
-          });
+          }, { signal: abortController.signal });   // 중지 시 Anthropic 생성까지 실제 중단(output 청구 정지)
 
           // 세그먼트 단위 usage(누적) + 텍스트 처리.
           //   loopMode: 텍스트를 segText에 모았다가 *세그먼트 끝*에 판정 — search_wiki를 호출한 세그먼트면
@@ -465,7 +479,7 @@ export async function POST(req: NextRequest) {
           let segText = '';
           let segHadSearchWiki = false;
           for await (const chunk of anthropicStream) {
-            if (closed || req.signal?.aborted) break;
+            if (closed || abortController.signal.aborted) break;
             if (chunk.type === 'message_start') {
               const u = chunk.message.usage;
               streamUsage.input = (streamUsage.input ?? 0) + u.input_tokens;
@@ -527,7 +541,7 @@ export async function POST(req: NextRequest) {
             buffer = '';
           }
 
-          if (closed || req.signal?.aborted) break;
+          if (closed || abortController.signal.aborted) break;
           if (!loopMode) break;
 
           // client tool(search_wiki) 호출 여부 판정 → 있으면 실행·주입·재스트림.
@@ -576,7 +590,7 @@ export async function POST(req: NextRequest) {
         // LLM이 P2 무시하고 옛 형식 직접 출력 시 1회 재요청.
         // 발견되면 비-스트리밍 retry → 'replace' 이벤트로 답변 영역 교체.
         const oldFormats = detectOldFormatCitations(fullContentRaw);
-        if (!closed && oldFormats.length > 0) {
+        if (!closed && !abortController.signal.aborted && oldFormats.length > 0) {
           console.log(`[citation] ${oldFormats.length} old-format detected, retrying once...`);
           try {
             const retryPrompt = buildOldFormatRetryPrompt(oldFormats, citationSummary);
@@ -611,7 +625,7 @@ export async function POST(req: NextRequest) {
         // ─── 표 산수 검산 + 자동 교정 ──────────────────────────────────
         // 표의 비중 합·항목 합이 안 맞으면(LLM 첫 계산 오류) 정확한 불일치를 콕 집어 1회 재요청.
         // 사용자에겐 경고가 아니라 '맞는 답'만 보임. 틀린 표가 있을 때만 호출(평소 비용 영향 0).
-        if (!closed) {
+        if (!closed && !abortController.signal.aborted) {
           const tableIssues = validateTables(resolveText(fullContentRaw, citationMapping));
           if (tableIssues.length > 0) {
             console.log(`[table-audit] ${tableIssues.length} arithmetic issue(s), fixing once...`);
@@ -684,20 +698,34 @@ export async function POST(req: NextRequest) {
 
         send({ type: 'done', conversationId: convId });
       } catch (err) {
-        console.error('Chat stream failed', err);
+        // 사용자 중지(abort)는 정상 흐름 — 에러 로그·에러 이벤트 없이 부분답변만 '중지됨'으로 저장.
+        const aborted = abortController.signal.aborted;
+        if (!aborted) console.error('Chat stream failed', err);
         const errMsg = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
         // 부분 응답이라도 저장 — user 메시지 고아화 방지(다음 턴 user-user 연속 → Anthropic 거부 차단)
         //               + 사용자가 읽던 부분 답변 보존
         try {
           const partial = resolveText(fullContentRaw, citationMapping).trim();
-          if (partial) {
+          const sources = resolveCitations(extractCitedNumbers(fullContentRaw), citationMapping);
+          if (aborted) {
+            // 중지: 빈 답이어도 placeholder 저장(user 메시지 고아화/연속 user 차단). 클라는 이미 끊겨 send는 no-op.
+            await db.insert(messages).values({
+              id: crypto.randomUUID(),
+              conversationId: convId!,
+              role: 'assistant',
+              content: partial ? `${partial}\n\n---\n\n_(생성을 중지했습니다.)_` : '_(생성을 중지했습니다.)_',
+              routedAgents: routing.selectedAgentIds,
+              sources,
+              mode,
+            });
+          } else if (partial) {
             await db.insert(messages).values({
               id: crypto.randomUUID(),
               conversationId: convId!,
               role: 'assistant',
               content: `${partial}\n\n---\n\n⚠️ 응답 생성 중 오류가 발생해 일부만 저장되었습니다.`,
               routedAgents: routing.selectedAgentIds,
-              sources: resolveCitations(extractCitedNumbers(fullContentRaw), citationMapping),
+              sources,
               mode,
             });
             send({ type: 'error', message: errMsg, keepContent: true });
@@ -706,7 +734,7 @@ export async function POST(req: NextRequest) {
           }
         } catch (persistErr) {
           console.error('Failed to persist partial answer', persistErr);
-          send({ type: 'error', message: errMsg });
+          if (!aborted) send({ type: 'error', message: errMsg });
         }
       } finally {
         try {
@@ -715,6 +743,11 @@ export async function POST(req: NextRequest) {
           // 이미 닫힘(클라 disconnect) — 무시
         }
       }
+    },
+    cancel() {
+      // 소비자(HTTP 응답 파이프) 절단 = 클라 중지/이탈. req.signal보다 확실히 발동 →
+      //   Anthropic 요청까지 abort 전파해 output 생성·청구를 즉시 멈춘다.
+      abortController.abort();
     },
   });
 
