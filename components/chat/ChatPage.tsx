@@ -284,6 +284,18 @@ export default function ChatPage({ user }: { user: User }) {
     setInput('');
     setLoading(true);
 
+    // 후속질문이면 부모 대화를 목록 맨 위로 (서버 updatedAt 정렬과 일치 → 새로고침해도 유지).
+    //   신규 대화(currentConvId 없음)는 routing 이벤트에서 prepend되므로 여기선 skip.
+    if (currentConvId) {
+      setConversations(prev => {
+        const idx = prev.findIndex(c => c.id === currentConvId);
+        if (idx <= 0) return prev;   // 못 찾거나 이미 맨 위면 그대로
+        const next = [...prev];
+        const [c] = next.splice(idx, 1);
+        return [c, ...next];
+      });
+    }
+
     const assistantId = crypto.randomUUID();
     setMessages(prev => [
       ...prev,

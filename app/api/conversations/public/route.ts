@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     })
     .from(conversations)
     .where(ne(conversations.userId, userId))
-    .orderBy(desc(conversations.createdAt))
+    .orderBy(desc(conversations.updatedAt))   // 마지막 활동순 — 후속질문 반영(생성순 아님)
     .limit(limit)
     .offset(offset);
 

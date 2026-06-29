@@ -355,6 +355,11 @@ export async function POST(req: NextRequest) {
       mode,
     });
 
+    // 대화 목록 정렬키 = 마지막 활동(updatedAt). 후속질문도 부모 대화를 상위로 올리려면
+    //   매 턴 시작(user 메시지) 시 bump해야 함 — 안 그러면 생성시각에 고정돼 활동중 대화가 안 올라옴.
+    //   신규 대화는 방금 생성한 defaultNow와 동일값(무해). 정렬 쿼리는 desc(updatedAt).
+    await db.update(conversations).set({ updatedAt: new Date() }).where(eq(conversations.id, convId));
+
   } catch (err) {
     console.error('Failed to prepare chat response', err);
     return Response.json({ error: '대화를 저장하거나 자료를 찾는 중 오류가 발생했습니다.' }, { status: 500 });
@@ -792,6 +797,9 @@ async function streamDirectAnswer(args: {
     sources: null,
     mode,
   });
+
+  // 직답 경로도 동일하게 부모 대화 활동시각 bump (목록 상위 정렬 일관성).
+  await db.update(conversations).set({ updatedAt: new Date() }).where(eq(conversations.id, convId));
 
   // assistant 메시지 저장 (LLM 없이 즉시 — 직답 출처 포함)
   await db.insert(messages).values({
