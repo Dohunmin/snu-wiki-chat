@@ -33,6 +33,13 @@ import {
 } from '@/lib/llm/citations';
 import { validateTables, buildTableFixPrompt } from '@/lib/llm/table-audit';
 import { getAnthropicClient, LLM_MODEL, MAX_TOKENS } from '@/lib/llm/client';
+import {
+  WEB_SEARCH_TOOL_POLICY,
+  WEB_SEARCH_GUIDANCE_POLICY,
+  WEB_SEARCH_GUIDANCE_FACT,
+  webSearchGuidanceLens,
+  renderWebSources,
+} from '@/lib/llm/web-search';
 import { logQuestionToSheet } from '@/lib/google-sheets';
 import { db } from '@/lib/db/client';
 import { conversations, messages, users } from '@/lib/db/schema';
@@ -45,58 +52,8 @@ const chatSchema = z.object({
   mode: z.string().regex(/^(normal|policy|lens:[a-z0-9-]+)$/).default('normal'),
 });
 
-// web_search는 insight(policy) 전용. fact(normal) 파이프는 웹 미사용 — 내부 KB 전용(출처 리스크 차단).
-//   blocked_domains: 이용자 편집 위키·블로그를 하드 차단(거버넌스 도구 신뢰성 — 교수·총장후보 사용).
-//   max_uses:1로 비용 캡(검색 결과 본문이 입력토큰).
-const WEB_SEARCH_TOOL_POLICY = {
-  type: 'web_search_20250305',
-  name: 'web_search',
-  max_uses: 1,
-  blocked_domains: [
-    'namu.wiki', 'm.namu.wiki', 'thewiki.kr', 'librewiki.net',
-    'blog.naver.com', 'm.blog.naver.com', 'tistory.com', 'brunch.co.kr', 'velog.io',
-  ],
-};
-const WEB_SEARCH_GUIDANCE_POLICY = `\n\n[웹 검색 — 인사이트 전용]\n` +
-  `- 발동 원칙(하나만): 제공된 내부 자료([N])로 질문의 핵심을 충실히 답할 수 있으면 검색하지 않는다. 핵심의 일부라도 내부 자료에 없어 "자료 밖·별도 확인 필요"라고 쓰게 되는 상황이면, 떠넘기지 말고 그 부분을 web_search로 보강한다(최대 1회). ⚠️ 외부/비교/최신 같은 *주제 분류*로 판단하지 말고, 오직 "내부 자료로 답되느냐"로만 판단한다.\n` +
-  `- 실행: 외부가 필요하다 판단되면 거절하거나 "검색해 드릴까요"라고 되묻지 말고, 네가 직접 검색해 답에 반영한다.\n` +
-  `- 출처 기준: 정부·서울대 공식 공시·법령·판결·확립된 언론 보도 등 *1차·공신력 출처만* 사용한다. 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템이 차단).\n` +
-  `- 실명 인물 평가(장단점·강점·약점 포함): insight의 본령이므로 회피·생략하지 말고, **공신력 출처로 교차확인된 범위 안에서 근거와 함께 서술한다**. 각 평가에 출처를 붙이고, 그것이 특정 출처의 주장·논평이면 "(○○의 평가)"처럼 누구의 판단인지 귀속한다. **동명이인 주의**(이름 같아도 소속·경력 다르면 배제). 공신력 출처로 뒷받침되지 않는 평가는 단정하지 말고 "확인되지 않음"으로 표시한다(없는 평가를 지어내지 말 것).\n` +
-  `- 검색 내용은 (외부지식)으로 표시, 출처 URL은 시스템이 자동 첨부.`;
-
-// C안(가드된 agentic): fact(normal) 답변에도 모델이 *직접* 외부 reach를 판단하게 하는 가이드.
-//   policy(분석)와 달리 **사실 보고** 톤 유지 + 외부사실 귀속표시 + 실명 교차확인 강제(거버넌스 신뢰 floor).
-//   admin·tier1에만 부착(webEnabled) — tier2·pending fact는 미부착(내부 KB 전용, 권한·신뢰 격리).
-const WEB_SEARCH_GUIDANCE_FACT = `\n\n[웹 검색 — 사실 보강(가드)]\n` +
-  `- 우선순위: 제공된 내부 자료([N])로 질문 핵심이 답되면 **검색하지 않는다**(내부가 1차 권위). 핵심의 일부가 내부에 없을 때만 web_search로 그 부분을 보강(최대 1회). 거절하거나 "검색해 드릴까요" 되묻지 말고 직접 검색하되, 내부로 충분하면 쓰지 마라.\n` +
-  `- 표기: 외부에서 가져온 사실은 문장에 (외부) 로 표시하고 내부 자료와 **동급 권위로 단정하지 않는다**(출처 URL은 시스템이 자동 첨부). 내부·외부를 뭉뚱그리지 마라.\n` +
-  `- 실명 인물·민감 사실: 정부·학교 공식·확립된 언론 등 **복수 1차·공신력 출처로 교차확인**되지 않으면 단정하지 말고 "공신력 출처로 확인되지 않음"으로 표시한다. **동명이인 혼동 주의**(이름 같아도 소속·경력 다르면 배제). 미검증 주장 인용 금지.\n` +
-  `- 출처 가드: 이용자 편집 위키(나무위키 등)·개인 블로그는 출처로 쓰지 않는다(시스템 차단).\n` +
-  `- 답변 방식은 그대로 *사실 보고* — 해석·평가·전망은 추가하지 않는다(그건 insight 영역).`;
-
-// lens(실명 인물 시각) 전용 웹 가이드. 발동·출처 원칙은 동급이되, **오귀속 가드가 최우선**.
-//   lens는 실명 총장후보(이석재) 도구라, 웹에서 가져온 외부 사실을 그의 입장·발언으로 둔갑시키면 치명적.
-//   → 웹 = 중립 외부 맥락으로만. 그의 실제 입장은 여전히 [stance][N]에서만. (admin·tier1 lens일 때만 부착)
-const webSearchGuidanceLens = (personaName: string) => `\n\n[웹 검색 — lens 보강(오귀속 가드)]\n` +
-  `- 발동 원칙: 내부 자료([N])와 ${personaName}의 입장([stance][N])으로 질문 핵심이 답되면 **검색하지 않는다**. 핵심 일부(예: 해외 대학 동향·최신 외부 사실)가 내부에 없을 때만 web_search로 그 부분을 보강(최대 1회). 거절·되묻기 금지, 필요하면 직접 검색.\n` +
-  `- ⚠️ 오귀속 절대 금지 (최우선): 웹에서 가져온 내용은 **중립적 외부 맥락·사실**일 뿐이다. 그것을 ${personaName}의 입장·발언·주장으로 옮기거나 암시하지 마라. 그의 실제 입장은 오직 \`[stance]\` [N] 자료에서만 온다. 웹 사실을 근거로 "그라면 이렇게 볼 것"이라는 *해석*은 가능하되, 어조로 해석임을 분명히 하고(단정 금지) 웹과 그의 입장을 뒤섞지 마라.\n` +
-  `- 표기: 웹 내용은 (외부) 로 표시하고 \`[제목](URL)\`로 인용(URL은 시스템이 자동 첨부). 내부 [N]·그의 입장 [stance][N]·외부 (외부) 세 층을 뭉뚱그리지 마라.\n` +
-  `- 출처 기준: 정부·서울대 공식·법령·확립된 언론 등 1차·공신력 출처만(이용자 편집 위키·블로그는 시스템 차단).`;
-
-/** web_search 출처를 본문 끝 "🌐 외부 출처" 블록으로 렌더 — 메타데이터 직접(모델 인라인 의존 X). URL+제목 중복제거 + 상위 6개. */
-function renderWebSources(cites: { url: string; title: string }[]): string {
-  const seenUrl = new Set<string>(), seenTitle = new Set<string>();
-  const uniq = cites.filter(c => {
-    if (!c.url || seenUrl.has(c.url)) return false;
-    const key = (c.title || '').slice(0, 24).trim();
-    if (key && seenTitle.has(key)) return false;
-    seenUrl.add(c.url); if (key) seenTitle.add(key);
-    return true;
-  }).slice(0, 6);
-  if (uniq.length === 0) return '';
-  const list = uniq.map(c => `- [${c.title || c.url}](${c.url})`).join('\n');
-  return `\n\n---\n\n### 🌐 외부 출처 (web_search)\n${list}`;
-}
+// web_search 도구·모드별 가이드·외부 출처 렌더는 lib/llm/web-search.ts로 추출(실측 하니스가 동일 프롬프트 import).
+//   Case B 수정(2026-06-29): admin/tier1 fact·policy에서 "내부에 없음 → 검색"(P5보다 우선) 강제 + 안티패턴 가드.
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -589,6 +546,14 @@ export async function POST(req: NextRequest) {
         }
         if (stopReason === 'max_tokens') {
           console.warn('[chat-usage] ⚠️ max_tokens 절단 발생 — 답변 말미(P5 한계마커/인용) 손실 가능');
+        }
+        // [missed-web] Case B 측정(비용 0): 웹 도구가 부착됐는데(webEnabled) 한 번도 안 쏘고(web=0)
+        //   답변이 한계/외부떠넘김으로 끝났다면 = 웹 회피 후보. 패치(web-search.ts) 효과 추적용.
+        if (webEnabled && !streamUsage.webSearches) {
+          const declined = /범위 밖|자료가? (없|부족)|외부.{0,8}확인.{0,4}필요|확인하시기 바랍|snu\.ac\.kr|📌 한계|분석의 한계|자료 한계/.test(fullContentRaw);
+          if (declined) {
+            console.warn(`[missed-web] ⚠️ webEnabled+web_search 0회+한계/외부떠넘김 — 웹 회피 후보(Case B). mode=${mode} q="${message.slice(0, 40)}"`);
+          }
         }
 
         // ─── 옛 형식 [위키] sid 검출 + retry ──────────────────────────
