@@ -27,6 +27,7 @@ interface UserRecord {
   role: Role;
   createdAt: string;
   approvedAt: string | null;
+  lastLoginAt: string | null;
 }
 
 export default function AdminDashboard() {
@@ -250,6 +251,7 @@ export default function AdminDashboard() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">이메일</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">역할</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">승인일</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">최근 접속</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -269,6 +271,9 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3 text-gray-400 text-xs">
                       {u.approvedAt ? new Date(u.approvedAt).toLocaleDateString('ko-KR') : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-400 text-xs">
+                      {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('ko-KR') : '-'}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 justify-end">

@@ -8,6 +8,7 @@ export const users = pgTable('users', {
   role:         text('role').notNull().default('pending'),  // admin | tier1 | tier2 | pending
   approvedBy:   text('approved_by'),
   approvedAt:   timestamp('approved_at'),
+  lastLoginAt:  timestamp('last_login_at'),  // 최근 로그인(접속) 시각 — authorize()에서 갱신
   createdAt:    timestamp('created_at').defaultNow().notNull(),
   updatedAt:    timestamp('updated_at').defaultNow().notNull(),
 });

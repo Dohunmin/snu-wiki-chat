@@ -63,7 +63,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               name: '관리자',
               role: 'admin',
               approvedAt: new Date(),
+              lastLoginAt: new Date(),
             });
+          } else {
+            await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, masterId));
           }
 
           return {
@@ -88,6 +91,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.passwordHash
         );
         if (!isValid) return null;
+
+        // 최근 접속(로그인) 시각 갱신 — admin 페이지 표시용
+        await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
         return {
           id: user.id,

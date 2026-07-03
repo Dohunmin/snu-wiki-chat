@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (result instanceof NextResponse) return result;
 
   const allUsers = await db
-    .select({ id: users.id, email: users.email, name: users.name, role: users.role, createdAt: users.createdAt, approvedAt: users.approvedAt })
+    .select({ id: users.id, email: users.email, name: users.name, role: users.role, createdAt: users.createdAt, approvedAt: users.approvedAt, lastLoginAt: users.lastLoginAt })
     .from(users)
     .orderBy(users.createdAt);
 
