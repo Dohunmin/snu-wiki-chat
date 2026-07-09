@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>snu-wiki-chat — 구조 & 확장 가능성</title>
+<style>
+  :root{
+    --bg:#0f1117; --card:#1a1d27; --card2:#222634; --ink:#e8eaf0;
+    --muted:#9aa3b2; --line:#2d3242; --accent:#6ea8fe; --green:#54d6a0; --amber:#f0b860;
+    --pink:#e07ab0; --purple:#b08ef0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f1117;color:#e8eaf0;font-family:"Segoe UI","Malgun Gothic",system-ui,sans-serif;line-height:1.65;font-size:15px}
+  .wrap{max-width:1060px;margin:0 auto;padding:32px 24px 80px}
+  h1{font-size:30px;margin:0 0 4px;letter-spacing:-.5px}
+  .sub{color:#9aa3b2;margin:0 0 28px;font-size:14px}
+  h2{font-size:21px;margin:38px 0 14px;padding-bottom:8px;border-bottom:2px solid #2d3242;display:flex;align-items:center;gap:10px}
+  h2 .n{background:#6ea8fe;color:#0f1117;font-size:13px;font-weight:700;border-radius:6px;padding:2px 9px}
+  h3{font-size:16px;margin:20px 0 8px;color:#cdd3df}
+  p{margin:8px 0}
+  .card{background:#1a1d27;border:1px solid #2d3242;border-radius:12px;padding:18px 20px;margin:14px 0}
+  .callout{border-left:4px solid var(--amber);background:#211f17;border-radius:8px;padding:14px 18px;margin:16px 0}
+  .callout.ok{border-color:var(--green);background:#16211c}
+  .callout.fix{border-color:var(--pink);background:#241823}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid #2d3242;padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#222634;color:#cdd3df;font-weight:600}
+  td code,p code,li code{background:#262b3a;color:#9ed0ff;padding:1px 6px;border-radius:5px;font-size:13px}
+  pre{background:#11141c;border:1px solid #2d3242;border-radius:10px;padding:16px;overflow-x:auto;font-size:12.5px;line-height:1.5;color:#cdd3df;font-family:"Cascadia Code",Consolas,monospace}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:5px;padding:2px 8px;margin-right:6px}
+  .t-blue{background:#1e2f4d;color:#9ec5ff} .t-green{background:#163a2c;color:#7ee5b6}
+  .t-amber{background:#3a2f14;color:#f5cd85} .t-pink{background:#3a1c2e;color:#f0a3cf}
+  .t-purple{background:#2c2247;color:#cbb3ff}
+  .flow{display:flex;flex-direction:column;gap:0;margin:18px 0}
+  .layer{border:1px solid #2d3242;border-radius:12px;padding:14px 18px;background:#1a1d27;position:relative}
+  .layer .lh{font-weight:700;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .layer.l1{border-top:3px solid var(--accent)} .layer.l2{border-top:3px solid var(--green)}
+  .layer.l3{border-top:3px solid var(--purple)}
+  .arrow{text-align:center;color:#6ea8fe;font-size:20px;margin:6px 0;font-weight:700}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:720px){.two{grid-template-columns:1fr}}
+  .mini{background:#222634;border:1px solid #2d3242;border-radius:9px;padding:12px 14px}
+  .mini b{color:#e8eaf0}
+  .key{color:#54d6a0;font-weight:700}
+  .bad{color:#f08a8a;text-decoration:line-through;opacity:.7}
+  .qa{border:1px solid #2d3242;border-radius:10px;padding:0;margin:12px 0;overflow:hidden}
+  .qa .q{background:#222634;padding:11px 16px;font-weight:600;color:#9ec5ff}
+  .qa .a{padding:12px 16px;font-size:14px}
+  .footer{margin-top:40px;padding:18px 20px;border:1px dashed #2d3242;border-radius:12px;background:#15171f;color:#cdd3df;font-size:14.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>snu-wiki-chat — 구조 &amp; 확장 가능성</h1>
+  <p class="sub">발표 + Q&amp;A 대비 · 코드 직접 검증 기반 · 2026-06-09</p>
+
+  <div class="callout fix">
+    <b>⚑ 정정(중요):</b> 단과대/대학원 <b>Tier1/2 콘텐츠도 Obsidian을 거친다.</b>
+    웹 크롤이 Obsidian에 <code>.md</code>를 <i>자동 생성</i>하고, 빌드가 거기서 읽어간다.
+    Obsidian은 <b>거버넌스 + 단과대 Tier1/2 공통 ingest 레이어</b>다.
+    <b>오직 Tier3(연락처·통계)·Tier4(공지·뉴스)만</b> Obsidian을 건너뛰고 앱 DB로 직행한다.
+  </div>
+
+  <!-- ===== 0 ===== -->
+  <h2><span class="n">0</span> 한 줄 정의 &amp; 멘탈모델 교정</h2>
+  <div class="card">
+    <p><b>한 줄:</b> 서울대 거버넌스 자료를 LLM으로 질의응답하는 <b>Next.js 풀스택 웹앱</b>. 다중 위키 자동 라우팅 + 하이브리드 검색(키워드+벡터) + 권한 관리.</p>
+    <table>
+      <tr><th>네가 알던 것</th><th>정확히는</th></tr>
+      <tr><td>"프론트 + 백엔드 + 에이전트 종합"</td><td><span class="tag t-green">맞음</span> Next.js = 풀스택(프론트 React + 백엔드 API가 한 프로젝트). "에이전트"는 백엔드 안의 <i>라우팅·검색 로직</i>, 별도 서버 아님.</td></tr>
+      <tr><td>"Obsidian raw에 넣은 걸 ingest해서 쓴다"</td><td><span class="tag t-green">맞음 ✓</span> 거버넌스(사람 수기) + 단과대 Tier1/2(크롤 자동) <b>둘 다 Obsidian에 .md로 들어가고</b>, 빌드가 거기서 읽어 JSON·임베딩 생성.</td></tr>
+      <tr><td>"Obsidian data 가져와 로직 씌워 배포"</td><td><span class="tag t-green">맞음</span> 단 <b>빌드타임</b>(Obsidian→JSON→벡터DB 가공)과 <b>런타임</b>(앱이 가공물을 검색·생성)이 분리. "배포되는 건 <i>앱</i>".</td></tr>
+    </table>
+    <div class="callout ok"><b>발표 한 문장:</b> "지식을 <span class="key">생산</span>(사람 큐레이션 + 웹 크롤, 둘 다 Obsidian에 축적)하고, 빌드 파이프라인이 <span class="key">검색 가능한 형태</span>(JSON+벡터+DB)로 가공하며, Next.js 앱이 <span class="key">서빙</span>(라우팅→검색→LLM)하는 3계층 구조입니다."</div>
+  </div>
+
+  <!-- ===== 1 ===== -->
+  <h2><span class="n">1</span> 큰 그림 — 3계층 아키텍처</h2>
+  <div class="flow">
+    <div class="layer l1">
+      <div class="lh"><span class="tag t-blue">①</span> 지식 생산 — 원천은 "넣는 주체"가 2개</div>
+      <div class="two">
+        <div class="mini"><b>사람 (수기 큐레이션)</b><br>거버넌스 9위키 회의록·계획·재무·연설 → Obsidian에 직접 작성</div>
+        <div class="mini"><b>웹 크롤 (자동 수집)</b><br>단과대/대학원 28조직 홈페이지 → <span class="key">크롤이 Obsidian에 .md 자동 생성</span> (Tier1/2)</div>
+      </div>
+    </div>
+    <div class="arrow">▼ &nbsp;둘 다 Obsidian 볼트에 .md로 축적 → <code>wiki:build</code> / <code>crawl:colleges</code></div>
+    <div class="layer l2">
+      <div class="lh"><span class="tag t-green">②</span> 빌드 파이프라인 (오프라인 가공)</div>
+      <p style="margin:4px 0"><code>data/*.json</code> (39개) <b>──embed:build──▶</b> <b>pgvector</b> 벡터DB</p>
+      <p style="margin:4px 0;color:#9aa3b2">＋ <span class="tag t-amber">예외</span> 단과대 Tier3(연락처·통계)→<code>structured_facts</code> · Tier4(공지·뉴스)→<code>live_cache</code> = <b>크롤이 DB에 직행</b>(Obsidian 안 거침)</p>
+    </div>
+    <div class="arrow">▼ &nbsp;앱이 가공물(JSON+DB)을 읽음</div>
+    <div class="layer l3">
+      <div class="lh"><span class="tag t-purple">③</span> 앱 — Next.js 풀스택 (Vercel 배포)</div>
+      <p style="margin:4px 0">프론트(React/Tailwind) <b>◀─SSE─</b> 백엔드 API <code>/api/chat</code> → 라우팅 → 검색(RAG) → LLM</p>
+      <p style="margin:4px 0;color:#9aa3b2">DB: Neon Postgres(+pgvector) · 인증: NextAuth · 게시판 갱신: GitHub Actions cron</p>
+    </div>
+  </div>
+  <div class="callout"><b>핵심:</b> 런타임엔 크롤·임베딩을 <b>안 한다</b> — 미리 만든 것만 읽어 검색·생성(→ 빠르고 저렴). 임베딩 비용은 <i>빌드 때</i> 한 번.</div>
+
+  <!-- ===== 2 ===== -->
+  <h2><span class="n">2</span> 폴더 구조 (핵심)</h2>
+  <pre>snu-wiki-chat/
+├─ app/                    ← Next.js (프론트 페이지 + 백엔드 API)
+│   ├─ page.tsx            · 채팅 메인
+│   ├─ wiki/ admin/ login/ · 위키 브라우저 · 관리자 · 인증
+│   └─ api/chat/route.ts   ★ 핵심 — 질문→라우팅→검색→LLM→응답 (백본)
+├─ lib/                    ← 두뇌 (비즈니스 로직)
+│   ├─ agents/             · 라우팅 + 컨텍스트 조립 (13파일) ★
+│   ├─ embed/              · 벡터검색 (Voyage 임베딩 + pgvector + RRF + rerank)
+│   ├─ llm/                · LLM 호출 + 프롬프트(P0~P9) + 인용
+│   ├─ crawl/              · 단과대 웹크롤 (8개 사이트엔진 어댑터) → Obsidian .md
+│   ├─ limitations/        · "한계 답변" 추적·클러스터링 (자기개선)
+│   └─ db/ auth/ config/   · DB스키마 · 권한 · 조직설정
+├─ data/                   ← 빌드 산출물: 위키 JSON 39 + 설정
+│   ├─ agents.config.json  · 위키 등록부(라우팅 키워드)
+│   └─ concept-index.json  · cross-wiki 개념 색인(3,951개)
+├─ components/             ← React UI (chat/ wiki/ admin/)
+├─ config/colleges.yaml    ← 단과대/대학원 28조직 명부(진실원)
+└─ scripts/                ← CLI (빌드·크롤·평가·진단)</pre>
+  <p style="color:#9aa3b2">외우기: <code>app</code>=화면+API · <code>lib/agents</code>=두뇌 · <code>lib/embed</code>=검색엔진 · <code>data</code>=가공된 지식 · <code>config/colleges.yaml</code>=조직 명부.</p>
+
+  <div class="card">
+    <h3 style="margin-top:4px">▸ 트리에서 진짜 핵심 5개</h3>
+    <table>
+      <tr><th>파일</th><th>역할</th><th>한 줄</th></tr>
+      <tr><td><code>app/api/chat/route.ts</code><br><span class="tag t-purple">백본</span></td><td>모든 질문이 지나는 지휘자. 인증→의도판정→위키선택→Tier직답→검색→예산컷→LLM→후처리 순서로 호출</td><td>여기만 읽으면 전체 흐름이 보임</td></tr>
+      <tr><td><code>lib/agents/agent-router.ts</code><br><span class="tag t-blue">의도</span></td><td>질문의 <b>답변 방식(fact/insight)</b>을 정하는 작은 LLM(Haiku) — 아래 🧭 박스 참조</td><td>웹·권한·스타일을 가르는 분기점</td></tr>
+      <tr><td><code>lib/agents/router.ts</code><br><span class="tag t-green">위키선택</span></td><td>9(+단과대28) 중 <b>어느 위키를 검색할지</b> 자동 선택(키워드+개념+벡터+갭)</td><td>전부 안 뒤지고 관련 위키만 → wiki_id 격리</td></tr>
+      <tr><td><code>lib/agents/wiki-agent.ts</code><br><span class="tag t-green">검색</span></td><td>위키별로 <b>키워드+벡터 → RRF 융합</b>을 실제 수행</td><td>하이브리드 검색이 일어나는 곳</td></tr>
+      <tr><td><code>lib/llm/prompts.ts</code><br><span class="tag t-pink">규칙</span></td><td>시스템 프롬프트 <b>P0~P9</b> = 답변 품질의 헌법(환각금지·[N]인용·단정금지)</td><td>거버넌스 신뢰성의 핵심</td></tr>
+    </table>
+    <p style="color:#9aa3b2">⚠️ <b>agent-router(의도) ⟂ router(위키선택)은 다른 라우터</b> — 하나는 <i>어떻게 답할까</i>(스타일), 하나는 <i>어디서 찾을까</i>(소스). 직교.</p>
+  </div>
+
+  <!-- ===== 3 ===== -->
+  <h2><span class="n">3</span> 데이터 생애주기 (정정본)</h2>
+  <div class="card">
+    <h3><span class="tag t-blue">경로 A</span> 거버넌스 — 사람이 Obsidian에 직접</h3>
+    <pre>사람 큐레이션 → Obsidian .md(+frontmatter)
+   ──wiki:build──▶ data/{senate,...}.json ──embed:build──▶ pgvector</pre>
+    <h3><span class="tag t-green">경로 B</span> 단과대/대학원 — 크롤이 Obsidian에 자동 생성</h3>
+    <pre>대학 홈페이지 ──crawl:colleges──▶ <b>(크롤이) Obsidian에 .md 작성</b>
+   ──buildCollegeWiki──▶ data/{eng,...}.json ──embed──▶ pgvector
+   └ 즉 A와 <b>같은 Obsidian→build 경로</b>. 차이는 "누가 .md를 만드냐"(사람 vs 크롤)</pre>
+    <h3><span class="tag t-amber">예외</span> 단과대 Tier3 / Tier4 — Obsidian 건너뛰고 DB 직행</h3>
+    <pre>크롤 ──▶ structured_facts DB  (Tier3: 연락처·교원수·통계, TTL 90일)
+크롤 ──▶ live_cache DB        (Tier4: 공지·뉴스, TTL 26h, 일 2회 cron)
+   └ 자주 바뀌고 정형적이라 Obsidian 안 거치고 앱 DB에 바로 (격리)</pre>
+    <p style="color:#9aa3b2">근거: <code>lib/crawl/emit.ts</code> 주석 "Tier1/2만 .md(=Obsidian). Tier3/4는 앱 DB" · <code>build-wiki-data.ts buildCollegeWiki</code>가 <code>OBSIDIAN_PATH</code>에서 읽음.</p>
+  </div>
+
+  <!-- ===== 4 ===== -->
+  <h2><span class="n">4</span> 질문 1건의 작동 프로세스 (런타임)</h2>
+  <pre>사용자 질문
+  │
+  1. 인증·권한 확인 (NextAuth)
+  2. 의도 분류  ── Haiku LLM 1콜 → fact(사실보고) / insight(분석·제안)
+  3. 위키 선택  ── routeQuery: 키워드점수 + 개념색인 + 의미(벡터) → 관련 위키 N개
+  4. (단과대면) Tier 판정 → T3/T4면 <b>DB 직답 (LLM 0토큰, 즉시 반환)</b>
+  5. 검색(RAG)  ── 위키별: 키워드검색 + 벡터검색 → RRF 융합 → rerank → 예산컷
+  6. 인용 번호화 ── 출처를 [1][2]… 번호로 매핑
+  7. LLM 생성   ── Claude Sonnet, SSE 스트리밍 (시스템프롬프트 P0~P9 원칙)
+  8. 후처리     ── [N]→출처 변환 · 표 산수 검산 · 저장 · 로깅
+  │
+응답 (스트리밍 + 출처)</pre>
+  <div class="two">
+    <div class="mini"><b>2번(스타일) ⟂ 3번(데이터소스)</b><br>무엇을 답하나(어느 위키)와 어떻게 답하나(보고/분석)를 따로 결정 — 직교.</div>
+    <div class="mini"><b>fact = 내부 자료만</b><br>insight만 web_search 허용(admin/tier1). 거버넌스 신뢰성 위해 사실 답변은 외부 단정 안 함.</div>
+  </div>
+
+  <div class="callout" style="border-color:#6ea8fe;background:#161c28">
+    <h3 style="margin-top:0">🧭 확대 — fact / insight 판단 에이전트 <span style="font-size:12px;color:#9aa3b2;font-weight:400">(§4의 2번 단계)</span></h3>
+    <p><b>무엇:</b> 질문을 받으면 <b>Claude Haiku(작고 빠른 LLM)가 "답변 방식"을 분류</b>한다. 도구 없는 단일 호출 = 에이전트라기보다 <b>분류기</b>. 비용 ~$0.001/질문.</p>
+    <table>
+      <tr><th>모드</th><th>뜻</th><th>예</th></tr>
+      <tr><td><b>fact</b></td><td>자료에 있는 사실을 찾아 <b>보고·나열·비교</b> (자료가 곧 답)</td><td>"2026 예산은?" · "이사회 안건 종류" · "역대 총장은?"</td></tr>
+      <tr><td><b>insight</b></td><td>사실을 넘어 <b>해석·진단·제안·전망·평가</b></td><td>"예산 늘릴 방안?" · "왜 채용이 어렵나?" · "이게 최선인가?"</td></tr>
+    </table>
+    <p><b>어떻게:</b> 키워드 매칭이 아니라 <b>LLM이 의도를 이해</b>. "무엇/얼마/패턴 보고 → fact" vs "왜/이유/의미/제안 → insight". ⭐ <b>"애매하면 insight"</b> (분석을 fact로 보내면 빈약=나쁜 실수, 반대는 풍부할 뿐=무해 → 안전 방향).</p>
+    <p><b>이 판정이 바꾸는 것:</b> ① <span class="key">웹</span> fact=내부전용 / insight=web_search &nbsp; ② <span class="key">권한</span> insight=admin·tier1만 &nbsp; ③ <span class="key">스타일</span> fact=사실보고 / insight=사실[N]+(해석)(제안)</p>
+    <p style="color:#9aa3b2"><b>최근 진화(이번 작업·발표 포인트):</b> 같은 Haiku 1콜이 이제 복잡도·최신성·단과대 신호까지 한꺼번에 출력("QueryPlan")하도록 확장 → <b>5개 파일에 흩어진 정규식 규칙을 LLM 하나로 통합</b>(새 질문유형마다 규칙 덧대던 유지보수 부채 제거). 실질의 121건 검증 후 배포.</p>
+  </div>
+
+  <!-- ===== 5 ===== -->
+  <h2><span class="n">5</span> 핵심 기술 4가지 (발표 포인트)</h2>
+  <div class="card">
+    <h3>① 하이브리드 RAG <span class="tag t-blue">검색의 핵심</span></h3>
+    <p><b>키워드</b>(정확 용어) + <b>벡터</b>(의미 유사) 병행 → <b>RRF</b> 순위 융합 → <b>rerank</b> 정밀 재정렬 → <b>예산컷</b>.
+    벡터=Voyage <code>voyage-4-large</code>(1024d)+<b>pgvector</b>, rerank=Voyage <code>rerank-2.5</code>.</p>
+    <p style="color:#9aa3b2"><b>top-K?</b> 각 검색은 top-K(≈30) 후보를 뽑지만, <b>최종 컷은 고정 top-K가 아니라 rerank + 컨텍스트 예산(글자수)</b> — 단일 top-K로 자르면 특정 위키가 통째로 누락돼 <b>다양성이 붕괴</b>하기 때문(실측 후 그 방식 폐기).</p>
+    <p style="color:#9aa3b2"><i>왜?</i> 키워드만으론 동의어("장학금"↔"학생경비")를 놓치고, 벡터만으론 고유명사·정확 수치를 놓침 → 합쳐서 recall+precision 동시 확보.</p>
+    <h3>② 다중 에이전트 자동 라우팅</h3>
+    <p>위키 9(+단과대 28)을 다 검색하지 않고 <b>관련 위키만 자동 선택</b>. 점수+개념색인+의미힌트+갭탐지로 cutoff. <b>wiki_id 격리</b>로 "공대 X"는 공대만 → 교차오염 0.</p>
+    <h3>③ Tier 시스템 <span class="tag t-amber">단과대 비용·신선도 최적화</span></h3>
+    <table>
+      <tr><th>Tier</th><th>콘텐츠</th><th>저장소</th><th>서빙</th></tr>
+      <tr><td>T1/T2</td><td>소개·연혁·규정</td><td>JSON+벡터(Obsidian 경유)</td><td>일반 RAG</td></tr>
+      <tr><td><b>T3</b></td><td>연락처·교원수·통계</td><td>structured_facts DB</td><td><span class="key">LLM 0토큰 직답</span></td></tr>
+      <tr><td><b>T4</b></td><td>공지·뉴스 게시판</td><td>live_cache DB(일2회 갱신)</td><td><span class="key">LLM 0토큰 직답</span></td></tr>
+    </table>
+    <h3>④ 권한 4단계 + 페르소나 Lens</h3>
+    <p><code>admin/tier1/tier2/pending</code> — 민감자료·업로드·관리자·insight(web) 차등. <b>Lens</b>: 특정 인물 입장(stance)으로 그 사람 시각 분석(admin 전용).</p>
+    <h3>⑤ 웹검색 — fact는 내부 전용, insight만 외부 <span class="tag t-pink">신뢰 설계</span></h3>
+    <table>
+      <tr><th>모드</th><th>웹검색</th><th>이유</th></tr>
+      <tr><td><b>fact</b> (사실 보고)</td><td><span class="bad">없음</span> 내부 KB만</td><td>거버넌스 도구가 웹發 사실을 권위 있게 단정하면 신뢰 붕괴 → 외부 필요해도 "범위 밖"으로 정직하게</td></tr>
+      <tr><td><b>insight</b> (분석·제안)</td><td><span class="key">web_search</span> + 가드</td><td>내부로 안 풀리면 직접 검색. 나무위키·블로그 하드 차단, 1차 출처만. 내부<code>[N]</code>+🌐외부 이중 인용</td></tr>
+    </table>
+    <p style="color:#9aa3b2"><b>권한 격리:</b> insight 자체가 admin/tier1 전용 → tier2·pending은 fact만 → <b>웹에 절대 도달 안 함.</b> &nbsp; <b>비용:</b> fact·lens=$0, insight 웹발동=~$0.18~0.36/질의(웹 본문이 입력토큰).</p>
+  </div>
+
+  <!-- ===== 6 ===== -->
+  <h2><span class="n">6</span> 데이터 모델</h2>
+  <div class="card">
+    <p><b>위키 페이지 타입 7종</b> (한 위키 = 이들의 묶음):
+    <span class="tag t-purple">source</span>회의록·문서
+    <span class="tag t-purple">topic</span>주제색인
+    <span class="tag t-purple">entity</span>인물·기구
+    <span class="tag t-purple">fact</span>정형통계
+    <span class="tag t-purple">stance</span>입장·발언
+    <span class="tag t-purple">overview</span>편 개요
+    <span class="tag t-purple">synthesis</span>저장된 Q&amp;A</p>
+    <p><b>DB 테이블 (Postgres + Drizzle):</b> <code>users</code> · <code>conversations</code> · <code>messages</code> · <code>uploads</code> · <code>syntheses</code> · <code>sensitive_topics</code> · <code>chunk_embeddings</code>(벡터) · <code>limitation_questions/clusters</code>(한계추적) · <code>structured_facts</code>(T3) · <code>live_cache</code>(T4)</p>
+  </div>
+
+  <!-- ===== 7 ===== -->
+  <h2><span class="n">7</span> 확장 가능성 ★ <span style="font-size:13px;color:#9aa3b2">(교수님이 가장 물을 부분)</span></h2>
+  <table>
+    <tr><th>확장 축</th><th>어떻게</th><th>난이도</th></tr>
+    <tr><td>새 거버넌스 위키</td><td>Obsidian 폴더 + agents.config 항목 → <code>wiki:build</code></td><td><span class="tag t-green">데이터 추가만</span></td></tr>
+    <tr><td>새 단과대/대학원</td><td><code>colleges.yaml</code> <code>active:true</code> 플래그 1개 → 자동 위키화</td><td><span class="tag t-green">O(1)</span></td></tr>
+    <tr><td>새 대학 사이트 유형</td><td>어댑터 1개 추가 (현재 8개 엔진)</td><td><span class="tag t-blue">모듈 1개</span></td></tr>
+    <tr><td>의도 분류 고도화</td><td>흩어진 정규식 → <b>Haiku LLM 통합 라우터</b>(방금 도입)</td><td><span class="tag t-blue">규칙 누적→일반화</span></td></tr>
+    <tr><td>새 인물 시각(Lens)</td><td>stance 자료 + 페르소나 설정</td><td><span class="tag t-green">데이터+설정</span></td></tr>
+    <tr><td>자기개선 루프</td><td>"한계 답변" 임베딩·클러스터링 → 보충 우선순위 자동 도출</td><td><span class="tag t-green">구현됨</span></td></tr>
+  </table>
+  <div class="callout ok"><b>확장성 핵심 메시지:</b> 조직·위키 추가가 <b>데이터/설정 변경 수준</b>(코드 재작성 X)이고 라우팅이 <b>자동</b>이라 위키가 늘어도 정확도·속도 유지. 의도 분류도 규칙 누적 대신 <b>LLM 일반화</b>로 전환해 유지보수 부채를 줄임.</div>
+
+  <!-- ===== 8 ===== -->
+  <h2><span class="n">8</span> 현재 상태 &amp; 한계 <span style="font-size:13px;color:#9aa3b2">(정직 — Q&amp;A 대비)</span></h2>
+  <ul>
+    <li>데이터 갱신 일부 <b>수동</b>(<code>wiki:build</code>→<code>embed:build</code>). 게시판은 cron 자동(일 2회).</li>
+    <li>동적 렌더 게시판 <b>2곳(gsct·gspa) 파싱 실패</b> → 해당 게시판만 일반자료로 degrade(안전).</li>
+    <li>모바일 UI 미최적화 · LLM 응답 캐싱 없음.</li>
+    <li>의도 통합 라우터 <b>방금 라이브 전환</b> → 모니터링 단계(문제 시 즉시 롤백).</li>
+    <li><b>거버넌스 동결 원칙</b>: 기능 추가해도 거버넌스 9위키 동작 byte-identical 유지(회귀 19/19 게이트).</li>
+  </ul>
+
+  <!-- ===== 9 ===== -->
+  <h2><span class="n">9</span> 기술 스택</h2>
+  <table>
+    <tr><th>분류</th><th>기술</th></tr>
+    <tr><td>Framework</td><td><b>Next.js 15</b> (App Router, 풀스택) · TypeScript</td></tr>
+    <tr><td>LLM</td><td><b>Claude</b> Sonnet 4.6(생성) / Haiku 4.5(라우팅) — <code>@anthropic-ai/sdk</code></td></tr>
+    <tr><td>임베딩/벡터</td><td><b>Voyage</b> <code>voyage-4-large</code>(1024d) + <code>rerank-2.5</code> + <b>pgvector</b></td></tr>
+    <tr><td>DB</td><td><b>Neon Postgres</b> + <b>Drizzle ORM</b></td></tr>
+    <tr><td>인증</td><td><b>NextAuth v5</b> (Credentials, JWT)</td></tr>
+    <tr><td>크롤</td><td>cheerio(정적) + playwright(동적) + robots-parser</td></tr>
+    <tr><td>UI</td><td>React 18 + <b>Tailwind v4</b> + react-markdown</td></tr>
+    <tr><td>배포</td><td><b>Vercel</b>(앱) + Neon(DB) + GitHub Actions(게시판 cron)</td></tr>
+  </table>
+
+  <!-- ===== 10 ===== -->
+  <h2><span class="n">10</span> 예상 질문 + 답변 (Q&amp;A 대비)</h2>
+  <div class="qa"><div class="q">Q. 그냥 ChatGPT에 자료 넣으면 되지 않나?</div><div class="a">① 자료가 방대 → <i>관련 부분만</i> 검색해 넣는 RAG 필요. ② 거버넌스는 <b>출처·정확성</b>이 생명 → 모든 사실에 [N] 인용 + 할루시네이션 가드(P0~P9). ③ <b>권한별</b> 자료 분리.</div></div>
+  <div class="qa"><div class="q">Q. 할루시네이션은 어떻게 막나?</div><div class="a">검색된 자료에만 근거 + 인라인 [N] 인용 강제 + 결론 단정 금지(P8) + 출처 메커니즘 단정 금지(P9). 못 찾으면 "자료 범위 밖"으로 정직하게.</div></div>
+  <div class="qa"><div class="q">Q. 위키가 늘면 느려지거나 부정확해지지 않나?</div><div class="a">전부 검색 안 하고 <b>라우팅으로 관련 위키만</b> 선택 + 컨텍스트 예산 캡 → 위키 수와 무관하게 비용·속도 일정. wiki_id 격리로 교차오염 방지.</div></div>
+  <div class="qa"><div class="q">Q. 데이터는 얼마나 최신인가?</div><div class="a">거버넌스 수기 갱신, 단과대 게시판은 <b>하루 2회 자동 크롤</b>(live_cache). 정형사실 TTL 90일. 답변에 "수집: 날짜 기준" 표시.</div></div>
+  <div class="qa"><div class="q">Q. 비용은?</div><div class="a">생성=Sonnet(~$0.05~0.15/질의), 라우팅=Haiku(~$0.001). 임베딩·rerank는 Voyage 무료 티어. 게시판 크롤·cron $0(공개 repo).</div></div>
+  <div class="qa"><div class="q">Q. 검색이 왜 키워드+벡터 둘 다인가?</div><div class="a">키워드=정확 용어·고유명사·수치에 강함, 벡터=동의어·의미 유사에 강함. RRF 융합 + rerank로 약점 상호 보완.</div></div>
+
+  <div class="footer">
+    <b>발표 30초 요약</b> — "사람 큐레이션과 웹 크롤로 지식을 <b>Obsidian에 축적</b>하고, 빌드 파이프라인이 <b>검색 가능한 형태</b>(JSON+벡터+DB)로 가공하며, Next.js 앱이 질문마다 <b>관련 위키만 자동 라우팅</b>해 하이브리드 검색(키워드+벡터+rerank) 후 Claude로 <b>출처 인용과 함께</b> 답합니다. 조직·위키 추가가 설정 수준이라 확장이 쉽고, 의도 분류를 LLM으로 통합해 유지보수 부채를 줄였습니다."
+  </div>
+
+</div>
+</body>
+</html>

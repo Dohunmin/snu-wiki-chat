@@ -52,7 +52,9 @@ export abstract class BaseAdapter implements SiteAdapter {
     for (const ap of org.about_pages ?? []) {
       if (have.has(ap.slug)) continue;
       have.add(ap.slug);
-      out.push({ category: 'about', url: toAbsUrl(org, ap.path), slug: ap.slug });
+      // slug 'facts' = 규모·현황 통계(학생/교원수·인원현황) → stats(fact pageType). 그 외 about_pages는 overview.
+      const cat: Category = ap.slug === 'facts' ? 'stats' : 'about';
+      out.push({ category: cat, url: toAbsUrl(org, ap.path), slug: ap.slug });
     }
     // Phase 2a: 학과·부속기관 entity 페이지(정적 Tier1). slug 네임스페이스가 about과 겹치지 않게 운용.
     for (const ep of org.entity_pages ?? []) {

@@ -3,7 +3,34 @@
     "allow": [
       "Read(//c/Users/USER/Desktop/Obsidian/**)",
       "Read(//c/Users/USER/**)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(node *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"tsc:$?\")",
+      "Bash(git checkout *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(sed -n '1,20p' \"wiki/sources/공약-미래대학3대축.md\")",
+      "Bash(sed -n '1,15p' \"wiki/sources/대담-1부.md\")",
+      "PowerShell(npx tsc --noEmit -p tsconfig.json 2>&1 | Select-Object -First 20)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git rev-list *)",
+      "Bash(bash *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "playwright"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path');const p=path.join(process.env.CLAUDE_PROJECT_DIR||'.','.claude','HANDOFF.md');if(fs.existsSync(p)){const t=fs.readFileSync(p,'utf8').trim();if(t)process.stdout.write('=== 이전 세션 인계 노트 (HANDOFF.md) — 다음 할 일부터 이어가세요 ===\\n'+t)}\""
+          }
+        ]
+      }
     ]
   }
 }

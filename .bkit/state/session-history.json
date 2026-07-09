@@ -1,8 +1,160 @@
 [
   {
-    "sessionId": "3145e290-221e-46a2-af77-b9568808b8dc",
+    "sessionId": "79329374-f7e4-4184-8489-c3fca557e871",
     "reason": "other",
-    "endedAt": "2026-05-04T04:11:19.168Z",
+    "endedAt": "2026-05-29T02:27:03.299Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "6f0afffe-e7b8-46f1-bf3c-b5441c6b719d",
+    "reason": "prompt_input_exit",
+    "endedAt": "2026-05-29T02:32:05.961Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "2ff7517b-e644-4b0c-a067-e22bdf7f5e7d",
+    "reason": "other",
+    "endedAt": "2026-05-29T02:32:51.237Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "6cc809fd-a037-476f-8f16-1127ce5cf3b7",
+    "reason": "other",
+    "endedAt": "2026-05-29T02:36:22.511Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "2a556df1-f44d-4400-a40b-19dd730b8755",
+    "reason": "other",
+    "endedAt": "2026-05-31T16:56:02.741Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "84d0259e-a1e8-4685-829b-52ecb38eb347",
+    "reason": "other",
+    "endedAt": "2026-05-31T16:56:02.917Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "5d4b047e-db64-4545-9004-cee465261674",
+    "reason": "other",
+    "endedAt": "2026-06-02T09:48:06.760Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "0f1c91c3-c536-4a85-b109-3e2336817c01",
+    "reason": "resume",
+    "endedAt": "2026-06-09T08:25:58.525Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "5bf45334-8016-47d1-9927-27a30da9a1d7",
+    "reason": "clear",
+    "endedAt": "2026-06-10T01:34:03.717Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "ac02e211-610e-4835-88ce-e9439829f283",
+    "reason": "clear",
+    "endedAt": "2026-06-10T03:41:04.792Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "4a40a05c-d4a5-431f-ad04-7b28b290e53f",
+    "reason": "clear",
+    "endedAt": "2026-06-12T01:18:53.385Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "289c90ff-74f0-4f02-8e72-a106d5549c2d",
+    "reason": "clear",
+    "endedAt": "2026-06-15T03:34:05.490Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "30e4c69d-d920-4995-9262-8abb8a526843",
+    "reason": "other",
+    "endedAt": "2026-06-15T04:50:26.815Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "12504153-cd0d-437e-862e-951bde36e973",
+    "reason": "prompt_input_exit",
+    "endedAt": "2026-06-22T01:25:44.981Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "46cc59bc-8f0f-4b20-9d80-feac26f5342a",
+    "reason": "clear",
+    "endedAt": "2026-06-22T08:44:48.977Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "5ae2d51e-c4c5-4003-a6f3-88da0d1c7670",
+    "reason": "clear",
+    "endedAt": "2026-06-24T04:12:42.653Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "d82dd9fb-5926-47a8-82cb-e2cbdca0b77e",
+    "reason": "other",
+    "endedAt": "2026-06-25T01:29:21.983Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "77a2a380-530a-4401-bc78-511f05dd4072",
+    "reason": "logout",
+    "endedAt": "2026-06-26T00:58:53.210Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "860e45cf-b855-49a8-8869-065f2a0e0f09",
+    "reason": "clear",
+    "endedAt": "2026-06-29T01:23:32.312Z",
+    "feature": null,
+    "phase": null,
+    "progress": null
+  },
+  {
+    "sessionId": "e94ee4fa-344a-4554-832d-267ba1e22309",
+    "reason": "clear",
+    "endedAt": "2026-06-30T01:23:52.304Z",
     "feature": null,
     "phase": null,
     "progress": null

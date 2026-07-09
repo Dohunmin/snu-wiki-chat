@@ -1,0 +1,5451 @@
+{
+  "timestamp": "2026-06-10T00:41:36.743Z",
+  "reason": "compaction",
+  "status": {
+    "version": "3.0",
+    "lastUpdated": "2026-06-09T10:09:16.639Z",
+    "activeFeatures": [
+      "llm",
+      "chat",
+      "conversations",
+      "[id]",
+      "agents",
+      "db",
+      "wiki",
+      "[agentId]",
+      "syntheses",
+      "auth",
+      "embed",
+      "scripts",
+      "admin",
+      "public",
+      "snu-wiki-chat",
+      "backfill-sheets",
+      "login",
+      "register",
+      "uploads",
+      "Startup",
+      "limitations",
+      "refresh",
+      "crawl"
+    ],
+    "primaryFeature": "llm",
+    "features": {
+      "llm": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:14:50.247Z",
+          "lastUpdated": "2026-06-09T10:08:32.083Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\llm\\prompts.ts"
+      },
+      "chat": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:15:01.664Z",
+          "lastUpdated": "2026-06-09T09:56:15.044Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\chat\\route.ts"
+      },
+      "conversations": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:32:56.586Z",
+          "lastUpdated": "2026-05-07T04:50:09.501Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\conversations\\route.ts"
+      },
+      "[id]": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:33:48.416Z",
+          "lastUpdated": "2026-05-29T07:06:38.009Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\conversations\\[id]\\route.ts"
+      },
+      "agents": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T07:41:01.828Z",
+          "lastUpdated": "2026-06-09T09:27:53.662Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\agents\\agent-router.ts"
+      },
+      "db": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T10:20:37.280Z",
+          "lastUpdated": "2026-05-27T16:22:26.555Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\db\\schema.ts"
+      },
+      "wiki": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T10:22:08.730Z",
+          "lastUpdated": "2026-06-08T07:50:20.931Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\components\\wiki\\WikiViewer.tsx"
+      },
+      "[agentId]": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T10:22:43.764Z",
+          "lastUpdated": "2026-05-07T04:48:56.825Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\wiki\\[agentId]\\route.ts"
+      },
+      "syntheses": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T10:22:53.932Z",
+          "lastUpdated": "2026-04-29T14:45:26.794Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\wiki\\syntheses\\route.ts"
+      },
+      "auth": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-29T10:28:34.351Z",
+          "lastUpdated": "2026-05-29T06:50:28.386Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\auth\\config.ts"
+      },
+      "embed": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-18T15:02:05.697Z",
+          "lastUpdated": "2026-06-03T10:38:00.500Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\embed\\chunker.ts"
+      },
+      "scripts": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-18T16:15:41.891Z",
+          "lastUpdated": "2026-06-09T09:28:42.020Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\scripts\\verify-plan.ts"
+      },
+      "admin": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-20T04:12:23.112Z",
+          "lastUpdated": "2026-05-28T03:35:53.193Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\components\\admin\\LimitationsView.tsx"
+      },
+      "public": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-20T05:06:48.883Z",
+          "lastUpdated": "2026-05-29T07:06:22.456Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\conversations\\public\\route.ts"
+      },
+      "snu-wiki-chat": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-20T11:54:31.055Z",
+          "lastUpdated": "2026-05-31T16:30:25.551Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\tmp-goldset2.ts"
+      },
+      "backfill-sheets": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-20T11:59:41.332Z",
+          "lastUpdated": "2026-05-20T12:00:38.467Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\admin\\backfill-sheets\\route.ts"
+      },
+      "login": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-20T14:45:21.146Z",
+          "lastUpdated": "2026-05-20T15:30:02.826Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\login\\page.tsx"
+      },
+      "register": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-20T14:45:31.798Z",
+          "lastUpdated": "2026-05-20T15:30:23.629Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\register\\page.tsx"
+      },
+      "uploads": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-22T00:49:49.859Z",
+          "lastUpdated": "2026-05-22T01:21:37.255Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\admin\\uploads\\route.ts"
+      },
+      "Startup": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-22T02:29:42.468Z",
+          "lastUpdated": "2026-05-22T02:29:42.468Z"
+        },
+        "lastFile": "c:\\Users\\USER\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\wiki-watch-pm2.bat"
+      },
+      "limitations": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-27T08:54:32.735Z",
+          "lastUpdated": "2026-05-29T01:00:45.988Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\limitations\\refresh.ts"
+      },
+      "refresh": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-05-27T09:39:13.522Z",
+          "lastUpdated": "2026-05-27T09:39:13.522Z"
+        },
+        "lastFile": "c:\\Users\\USER\\Desktop\\snu-wiki-chat\\app\\api\\admin\\limitations\\refresh\\route.ts"
+      },
+      "crawl": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-06-08T07:26:30.526Z",
+          "lastUpdated": "2026-06-09T10:09:16.632Z"
+        },
+        "lastFile": "C:\\Users\\USER\\Desktop\\snu-wiki-chat\\lib\\crawl\\board-refresh.ts"
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-04-29T07:07:54.909Z",
+      "onboardingCompleted": false,
+      "lastActivity": "2026-06-09T10:09:16.639Z"
+    },
+    "history": [
+      {
+        "timestamp": "2026-04-29T07:14:50.255Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:15:01.673Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:15:12.138Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:16:39.894Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:16:56.594Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:17:16.003Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:17:29.384Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:19:01.322Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:32:56.596Z",
+        "feature": "conversations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:33:48.423Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:33:56.073Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:34:15.133Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:34:45.614Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:35:15.093Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:36:02.025Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:41:01.835Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:43:16.484Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:44:44.129Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:22.840Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:30.014Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:38.004Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:46.867Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:50:54.150Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T07:51:01.966Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:08:07.246Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:15:47.745Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:17:54.933Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:17:59.795Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:25:52.932Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:26:10.696Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T08:36:45.069Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:20:30.034Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:20:37.287Z",
+        "feature": "db",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:22:08.738Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:22:43.775Z",
+        "feature": "[agentId]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:22:53.951Z",
+        "feature": "syntheses",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:23:13.605Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:23:34.049Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:23:39.922Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:23:50.266Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:24:18.896Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:24:30.781Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:24:41.974Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:25:00.955Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:25:07.916Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:25:34.983Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:25:43.256Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:28:34.361Z",
+        "feature": "auth",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:46:12.794Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:46:21.639Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:46:32.699Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:46:39.691Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:46:46.778Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:47:16.830Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T10:47:30.751Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:22:56.446Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:23:02.608Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:23:19.277Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:23:25.272Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:23:36.553Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:47:51.921Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:48:11.291Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:48:19.931Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:50:56.999Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:56:39.663Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:57:01.773Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:59:18.625Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T13:59:25.739Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:02:42.652Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:02:58.437Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:09:17.601Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:09:29.346Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:19:06.964Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:19:14.230Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:19:24.658Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:19:36.893Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:35:19.958Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:35:30.725Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:45:26.798Z",
+        "feature": "syntheses",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:46:06.296Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-29T14:51:22.015Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T01:07:10.683Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T02:21:34.834Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:38:36.910Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:48:50.805Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:50:23.975Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:55:06.958Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:55:19.446Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:55:34.672Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:55:46.960Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T03:59:58.830Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T04:00:23.086Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T04:03:16.724Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T04:03:34.301Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T04:03:48.000Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T04:03:59.755Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-30T04:04:12.340Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:48:01.774Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:56:53.613Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:57:16.128Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:57:39.668Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:58:08.862Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:58:31.580Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-03T12:58:45.224Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-04T08:29:14.472Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-04T08:29:31.514Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-04T08:29:39.109Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T11:06:41.581Z",
+        "feature": "auth",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T11:15:50.064Z",
+        "feature": "auth",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:03:35.599Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:07:48.209Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:08:31.316Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:08:44.358Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:09:18.329Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:15:15.596Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:20:50.158Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:22:54.462Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:28:04.720Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:28:40.991Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:28:49.093Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:28:55.141Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:29:01.628Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:29:07.941Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:36:21.238Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:36:27.761Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:38:50.072Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:38:56.849Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:39:02.043Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:39:07.888Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:43:40.797Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:43:49.021Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:06.076Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:13.941Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:21.836Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:27.870Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:36.467Z",
+        "feature": "[agentId]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:41.754Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:48.788Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:57:54.134Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:58:03.612Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T15:58:08.708Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:02:09.726Z",
+        "feature": "auth",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:02:15.588Z",
+        "feature": "auth",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:10:27.740Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:10:32.986Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:10:39.478Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:10:46.327Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-06T16:10:54.908Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:44:16.405Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:46:17.689Z",
+        "feature": "db",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:47:06.790Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:47:29.479Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:47:50.668Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:48:16.724Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:48:42.003Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:48:56.833Z",
+        "feature": "[agentId]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:49:17.252Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:49:34.768Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:49:41.750Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:49:48.200Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T04:50:09.516Z",
+        "feature": "conversations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:14:59.517Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:15:11.323Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:15:23.081Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:15:30.791Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:15:36.913Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:15:49.201Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:16:02.298Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:16:10.944Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:16:42.806Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:17:02.278Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-07T05:17:17.841Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:00:33.492Z",
+        "feature": "db",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:00:50.587Z",
+        "feature": "db",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:01:00.657Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:01:48.058Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:02:05.700Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:02:44.997Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:03:29.281Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:51:46.462Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T15:51:58.277Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:10:41.534Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:11:12.446Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:13:32.278Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:13:41.655Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:14:02.515Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:14:14.334Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:14:52.010Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:15:41.896Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:18:34.143Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:20:35.356Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:20:44.595Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:27:01.906Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T16:50:19.396Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T17:00:06.471Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T17:00:27.074Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T17:00:42.700Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T17:13:06.929Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-18T17:15:18.270Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-19T00:37:04.589Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-19T00:39:28.402Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-19T06:06:31.901Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-19T06:08:30.827Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-19T06:11:29.385Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-19T06:12:12.248Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:12:23.122Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:12:44.241Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:12:53.280Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:13:03.173Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:13:14.431Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:32:21.314Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:32:38.937Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:44:56.976Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:45:22.038Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:45:29.572Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T04:59:54.842Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:00:14.174Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:00:35.570Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:06:17.431Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:06:36.306Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:06:48.888Z",
+        "feature": "public",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:07:01.916Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:07:28.398Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:07:42.600Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:08:15.341Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:08:28.184Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:12:12.408Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:12:35.579Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:13:18.164Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:14:51.757Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:15:16.177Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:15:43.335Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:18:46.379Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:23:16.084Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:35:17.003Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:36:23.030Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:45:34.379Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:46:20.441Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:46:38.274Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:52:02.298Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T05:52:17.611Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:54:31.059Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:54:38.515Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:54:48.337Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:56:33.931Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:56:42.788Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:56:52.590Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:56:58.174Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:58:48.954Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:59:00.941Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:59:41.335Z",
+        "feature": "backfill-sheets",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T11:59:55.545Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T12:00:04.128Z",
+        "feature": "backfill-sheets",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T12:00:38.470Z",
+        "feature": "backfill-sheets",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T12:05:57.291Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T12:07:18.990Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T12:13:42.268Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T12:55:28.695Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:45:21.152Z",
+        "feature": "login",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:45:31.802Z",
+        "feature": "register",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:45:39.251Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:45:45.409Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:45:52.243Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:53:07.021Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:53:12.590Z",
+        "feature": "login",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:53:22.225Z",
+        "feature": "login",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:53:33.156Z",
+        "feature": "register",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T14:53:39.640Z",
+        "feature": "register",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:13:35.533Z",
+        "feature": "login",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:14:04.805Z",
+        "feature": "register",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:25:24.378Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:25:48.769Z",
+        "feature": "login",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:26:15.603Z",
+        "feature": "register",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:30:02.829Z",
+        "feature": "login",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T15:30:23.634Z",
+        "feature": "register",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T23:56:21.442Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-20T23:56:46.907Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T00:36:54.611Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T00:40:32.604Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T02:02:39.451Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T02:21:58.525Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T02:34:55.183Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T02:47:57.425Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T03:37:43.985Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T03:37:48.081Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T03:38:07.553Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T03:38:20.903Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T03:45:49.625Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T03:46:11.099Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T04:07:28.085Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T04:07:48.080Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T04:08:44.863Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T04:54:04.808Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:07:24.247Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:09:21.877Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:12:54.073Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:14:02.678Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:14:18.761Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:16:45.480Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:18:25.284Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:18:31.677Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:20:06.819Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:24:31.541Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:24:47.346Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:24:52.617Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:25:45.143Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-21T05:25:56.280Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T00:46:22.043Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T00:46:31.306Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T00:46:37.336Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T00:49:27.163Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T00:49:49.867Z",
+        "feature": "uploads",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:13:57.977Z",
+        "feature": "uploads",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:14:09.291Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:15:09.749Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:15:20.841Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:15:33.809Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:21:37.262Z",
+        "feature": "uploads",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:21:48.221Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:50:41.980Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:56:21.257Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T01:59:25.779Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T02:05:48.246Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T02:29:42.476Z",
+        "feature": "Startup",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T02:33:54.844Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-22T02:34:01.173Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:15:59.065Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:16:12.642Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:30:45.649Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:31:52.373Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:32:18.967Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:32:50.713Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:33:20.956Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:34:17.004Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:34:30.336Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T15:52:29.469Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:16:42.006Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:16:56.384Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:17:03.920Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:17:11.462Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:17:47.125Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:17:55.718Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:18:18.767Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:18:27.822Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:21:05.397Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:33:03.398Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:33:19.094Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:33:28.685Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:33:47.204Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:35:34.312Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:37:40.729Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:42:22.942Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:42:33.311Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:42:43.539Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:42:55.260Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:43:31.808Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:44:01.125Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:51:58.777Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-24T16:53:28.160Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:27:48.059Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:29:15.543Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:29:27.934Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:30:05.826Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:30:46.904Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:31:36.966Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T03:32:28.688Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:12:45.780Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:17:03.417Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:17:19.471Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:18:04.044Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:18:37.494Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:18:59.962Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:19:36.257Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:19:57.419Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:25:29.812Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:29:06.392Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:31:32.473Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:34:01.898Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:43:24.476Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:46:05.667Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:46:30.655Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:54:36.983Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:55:29.683Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:55:45.608Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:57:25.714Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T04:57:44.401Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T05:06:28.761Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T05:06:56.117Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T05:14:34.038Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T05:14:45.735Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T05:15:48.465Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-25T05:16:15.716Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:09:12.217Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:09:23.267Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:09:44.675Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:10:16.504Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:10:36.459Z",
+        "feature": "public",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:10:56.454Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:11:11.825Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:11:28.574Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:12:00.445Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-26T12:12:11.852Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T04:03:20.369Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T04:03:40.094Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T08:54:32.748Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T08:54:51.950Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T08:56:04.272Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T08:58:57.175Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T08:59:47.003Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:29:14.466Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:29:29.901Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:29:47.546Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:30:28.842Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:33:13.232Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:38:44.241Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:39:13.549Z",
+        "feature": "refresh",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:39:27.412Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:40:41.354Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T09:41:05.562Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T10:09:49.488Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T10:27:36.826Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T11:19:56.877Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T12:03:14.213Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T13:02:37.394Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T13:05:31.910Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T13:06:04.745Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T13:18:45.160Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T13:20:48.341Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T13:31:59.795Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T15:50:40.066Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:22:10.455Z",
+        "feature": "db",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:22:26.562Z",
+        "feature": "db",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:23:50.448Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:24:50.360Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:26:54.193Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:28:43.576Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:29:12.995Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:29:39.988Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:30:06.192Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:30:33.276Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:30:50.043Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:31:36.310Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:31:54.812Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:32:11.038Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:32:18.506Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:35:18.606Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:38:01.328Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:39:14.540Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:39:23.154Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-27T16:40:30.851Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T00:49:03.017Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T00:53:41.700Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T00:59:47.530Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T00:59:59.787Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:00:10.660Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:00:44.467Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:00:57.032Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:01:10.195Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:01:34.617Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:01:45.210Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:02:05.956Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:03:07.120Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:03:17.288Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:03:37.649Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T01:04:04.034Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T03:33:00.411Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T03:35:05.920Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T03:35:53.206Z",
+        "feature": "admin",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T03:37:55.584Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-28T03:38:45.183Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:48:06.660Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:49:11.220Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:50:44.613Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:53:14.593Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:53:40.450Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:54:53.646Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:56:48.132Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:57:07.503Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:57:23.747Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:58:29.580Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T00:59:36.979Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:00:45.993Z",
+        "feature": "limitations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:00:55.105Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:01:40.707Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:01:55.978Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:02:01.945Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:02:08.263Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T01:03:06.133Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:50:28.391Z",
+        "feature": "auth",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:51:25.232Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:51:33.521Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:51:39.774Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:53:13.421Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:53:38.521Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:54:56.818Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:55:06.502Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:56:25.616Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T06:59:05.883Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:05:01.620Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:05:09.539Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:05:15.766Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:05:47.364Z",
+        "feature": "public",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:06:22.461Z",
+        "feature": "public",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:06:28.993Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:06:38.013Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:20:22.052Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:26:38.908Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:42:07.033Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:50:54.060Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:51:10.389Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:52:01.354Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:54:38.500Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T07:55:59.853Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-29T09:43:44.245Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:08:44.106Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:09:03.148Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:09:22.791Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:12:05.988Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:13:43.438Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:13:56.406Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T10:14:33.717Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:11:52.462Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:14:18.160Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:20:14.642Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:20:47.651Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:23:12.441Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:24:40.175Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:26:52.428Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:27:30.386Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:29:41.350Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-30T14:30:06.627Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T15:22:35.072Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T15:25:37.382Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T15:51:27.390Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:01:37.109Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:02:56.016Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:25:28.787Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:28:56.928Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:30:25.556Z",
+        "feature": "snu-wiki-chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:50:16.120Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T16:55:36.829Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T17:14:13.217Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-05-31T17:16:50.584Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T01:32:53.613Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T01:33:10.872Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T01:50:36.729Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T01:51:14.647Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T02:03:35.814Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T04:15:31.556Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T04:25:40.585Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T04:30:38.122Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T07:21:00.665Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T08:41:01.924Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-01T08:42:48.118Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T01:03:34.934Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T02:29:09.119Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T02:30:02.075Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T02:30:45.398Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T02:31:17.447Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T03:57:44.149Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T03:59:28.716Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T04:03:18.079Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T04:08:38.726Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T04:09:09.251Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T04:18:52.988Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T04:27:16.045Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T06:21:16.675Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:14:11.319Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:33:36.421Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:33:49.230Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:34:34.395Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:50:28.788Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:55:54.989Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T07:56:31.013Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:03:44.351Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:20:23.891Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:20:43.432Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:20:56.912Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:21:07.529Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:21:40.540Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:29:20.048Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:29:35.664Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:30:49.509Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T09:54:59.696Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:39:13.436Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:40:40.472Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:42:02.652Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:42:15.655Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:45:02.757Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:53:10.964Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:53:34.193Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:57:57.654Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T12:58:18.493Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T15:44:46.294Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T15:45:11.182Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T15:45:55.689Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T15:46:09.276Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-02T15:46:50.206Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T03:24:03.554Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T03:28:06.096Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T04:04:45.907Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T04:06:17.572Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T04:23:03.412Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:26:33.009Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:27:39.918Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:27:46.448Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:28:16.562Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:28:57.581Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:29:13.998Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:38:26.981Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:39:00.367Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:39:13.440Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:40:04.329Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:40:13.167Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:40:42.241Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:40:48.041Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:40:52.488Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:41:01.938Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:54:10.324Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:54:17.159Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:54:22.925Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:54:50.665Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:54:56.133Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:55:05.094Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:55:14.622Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T05:55:24.482Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T06:02:23.823Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T06:46:00.224Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T06:52:53.041Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T06:58:23.518Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T06:58:50.500Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:01:55.300Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:02:02.539Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:02:16.695Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:02:23.486Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:02:34.578Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:03:36.490Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:04:32.343Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:06:55.137Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:07:01.840Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:07:11.781Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:07:21.440Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:08:04.143Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:08:23.779Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:13:52.879Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:38:26.408Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:38:31.685Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T07:38:49.849Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T08:05:43.389Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:21:30.485Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:29:19.576Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:38:50.216Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:39:50.435Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:39:55.689Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:40:11.694Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:41:17.781Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:42:31.381Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:42:41.544Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:45:53.755Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:54:19.779Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:54:33.336Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:54:41.921Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:54:47.132Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:54:50.780Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:55:02.663Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T09:55:12.578Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:02:10.692Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:18:33.513Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:18:50.636Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:19:00.608Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:19:22.370Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:33:00.502Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:33:19.409Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:37:17.582Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:38:00.504Z",
+        "feature": "embed",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:38:11.775Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:38:37.571Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:39:16.270Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:50:36.114Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:50:55.820Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:51:01.166Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:51:06.313Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T10:51:11.212Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:02:50.902Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:04:25.214Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:06:19.503Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:13:28.670Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:13:37.327Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:13:41.653Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:13:49.886Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:28:56.169Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:29:14.336Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:45:07.370Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T11:56:55.094Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:10:25.559Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:17:09.638Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:17:22.733Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:18:11.659Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:18:30.766Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:18:53.482Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:19:03.337Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:19:10.296Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:19:26.282Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:19:36.309Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:19:48.751Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:24:30.502Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T12:45:46.521Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:04:52.721Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:05:09.328Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:05:15.153Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:05:33.796Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:13:20.179Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:13:41.607Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:14:20.503Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:14:24.255Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:15:39.159Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:15:48.540Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:15:53.560Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:16:55.321Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:20:45.954Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:57:35.498Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:58:10.583Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T13:58:23.877Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T14:09:58.839Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:11:26.911Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:28:43.320Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:28:51.913Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:29:10.351Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:29:16.613Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:29:23.436Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:29:29.370Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-03T15:30:59.763Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:47:20.196Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:47:38.873Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:48:23.183Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:48:32.242Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:48:40.024Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:49:05.195Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:49:14.098Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T00:57:07.372Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:10:40.409Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:11:09.767Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:21:44.269Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:21:57.571Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:22:15.827Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:25:00.062Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:25:09.724Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:28:16.458Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T01:30:53.196Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T02:47:05.871Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T02:47:26.426Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T02:47:47.529Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T02:47:59.376Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T02:49:09.153Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:23:35.937Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:23:47.041Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:23:59.814Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:25:34.164Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:25:46.402Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:25:59.530Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:39:41.160Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:39:57.506Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:40:08.397Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:42:08.918Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:47:10.181Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:52:43.131Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:58:35.554Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T03:58:59.499Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T05:45:25.407Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T07:43:37.598Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T07:49:56.846Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T08:24:21.966Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T08:26:43.929Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T10:52:44.418Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T10:52:53.652Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T10:53:04.761Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T10:53:11.003Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T10:55:01.815Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T10:55:08.070Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T11:54:02.476Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-04T15:45:54.812Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T01:06:04.959Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T01:06:11.399Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T01:06:16.771Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T01:06:22.071Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T02:56:46.548Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T02:57:24.983Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T03:31:15.415Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T04:02:42.232Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T04:02:48.211Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T04:03:03.308Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T07:26:30.533Z",
+        "feature": "crawl",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T07:41:05.586Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T07:41:18.575Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T07:50:20.938Z",
+        "feature": "wiki",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T07:50:51.177Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T08:02:44.439Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T08:34:37.252Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T08:34:47.262Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T08:35:02.132Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T12:56:55.077Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T12:57:10.004Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-08T13:35:34.533Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T01:30:19.613Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T01:31:14.859Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T02:36:17.242Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T02:46:52.770Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T04:13:42.783Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T06:33:25.509Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T06:33:41.591Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T06:33:47.979Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T06:34:26.705Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T06:36:13.913Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T06:37:55.231Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T07:09:58.142Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:31:58.120Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:32:33.832Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:32:43.216Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:33:01.361Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:33:08.634Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:33:33.372Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:33:39.344Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:33:55.138Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:34:01.191Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:34:08.521Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:34:34.348Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:34:42.533Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:34:50.447Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:34:56.738Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:35:02.159Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:35:07.440Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:35:16.032Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:35:22.693Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T08:35:32.162Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:04:33.010Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:06:33.176Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:16:46.530Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:16:52.839Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:17:01.215Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:17:07.453Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:17:16.344Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:27:34.275Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:27:45.553Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:27:53.667Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:28:42.027Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T09:56:15.049Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T10:08:32.088Z",
+        "feature": "llm",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-06-09T10:09:16.638Z",
+        "feature": "crawl",
+        "phase": "do",
+        "action": "updated"
+      }
+    ],
+    "stateMachine": {
+      "defaultWorkflow": "default",
+      "activeWorkflows": {},
+      "totalTransitions": 0
+    },
+    "automation": {
+      "globalLevel": 2,
+      "trustScore": 40,
+      "pendingApprovals": 0,
+      "lastGateResult": null
+    },
+    "team": {
+      "enabled": true,
+      "stateFile": ".bkit/runtime/agent-state.json",
+      "eventsFile": ".bkit/runtime/agent-events.jsonl"
+    }
+  }
+}
