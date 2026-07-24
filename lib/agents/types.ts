@@ -2,7 +2,7 @@ import type { Role } from '@/lib/auth/roles';
 import type { GlobalChunk } from '@/lib/embed/global-retrieve';
 
 export type AgentType = 'wiki' | 'task';
-export type PageType = 'source' | 'topic' | 'entity' | 'synthesis' | 'fact' | 'stance' | 'overview';
+export type PageType = 'source' | 'topic' | 'entity' | 'synthesis' | 'fact' | 'stance' | 'overview' | 'policy_document';
 
 export interface AgentConfig {
   id: string;
@@ -155,6 +155,19 @@ export interface WikiOverview {
   sensitive: boolean;
 }
 
+export interface WikiDocument {
+  id: string;
+  title: string;
+  정책명: string;
+  분류: string;
+  제정일?: string;
+  개정일?: string;
+  소관?: string;
+  tags: string[];
+  content: string;
+  sensitive: boolean;
+}
+
 export interface WikiData {
   id: string;
   name: string;
@@ -165,6 +178,7 @@ export interface WikiData {
   facts: WikiFact[];
   stances: WikiStance[];
   overviews: WikiOverview[];
+  documents?: WikiDocument[];
   index: string;
 }
 

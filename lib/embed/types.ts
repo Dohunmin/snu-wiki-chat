@@ -8,7 +8,7 @@
  * - KeywordRankedChunk: WikiAgent의 기존 키워드 결과와 호환되는 인터페이스 (RRF 입력)
  */
 
-export type PageType = 'source' | 'fact' | 'stance' | 'overview' | 'topic' | 'entity';
+export type PageType = 'source' | 'fact' | 'stance' | 'overview' | 'topic' | 'entity' | 'policy_document';
 
 export interface ChunkMetadata {
   title: string;
@@ -20,6 +20,8 @@ export interface ChunkMetadata {
   yearsCovered?: string; // fact
   편?: string;          // overview
   date?: string;         // source
+  분류?: string;        // policy_document
+  제정일?: string;      // policy_document
 }
 
 /**
@@ -62,7 +64,7 @@ export interface VectorSearchResult {
  * RRF 융합에 필요한 최소 필드만 정의.
  */
 export interface KeywordRankedChunk {
-  type: 'source' | 'fact' | 'stance' | 'overview';
+  type: 'source' | 'fact' | 'stance' | 'overview' | 'policy_document';
   id: string;                  // page id
   title: string;
   chunk: string;

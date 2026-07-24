@@ -110,6 +110,28 @@ export function chunkifyWiki(wikiData: WikiData): EmbeddingChunk[] {
     }));
   }
 
+  // ─── policy_document: ## 헤더 분할 (전문/조항 등 섹션별) ──────
+  for (const d of (wikiData.documents ?? [])) {
+    const parts = splitIntoChunks(d.content);
+    parts.forEach((text, idx) => {
+      if (text.trim().length < MIN_CONTENT_LENGTH) return;
+      chunks.push(makeChunk({
+        wikiId: wikiData.id,
+        pageType: 'policy_document',
+        pageId: d.id,
+        chunkIdx: idx,
+        chunkText: `${d.정책명}\n분류: ${d.분류}\n${text}`,
+        sensitive: d.sensitive,
+        metadata: {
+          title: d.title,
+          pageType: 'policy_document',
+          분류: d.분류,
+          제정일: d.제정일,
+        },
+      }));
+    });
+  }
+
   // ─── topic: 통째 (이름 + 본문) ────────────────────────────────
   for (const t of wikiData.topics) {
     if (t.content.trim().length < MIN_CONTENT_LENGTH) continue;

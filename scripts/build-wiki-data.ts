@@ -87,6 +87,19 @@ interface WikiOverview {
   sensitive: boolean;
 }
 
+interface WikiDocument {
+  id: string;
+  title: string;
+  정책명: string;
+  분류: string;
+  제정일?: string;
+  개정일?: string;
+  소관?: string;
+  tags: string[];
+  content: string;
+  sensitive: boolean;
+}
+
 interface WikiData {
   id: string;
   name: string;
@@ -97,6 +110,7 @@ interface WikiData {
   facts: WikiFact[];
   stances: WikiStance[];
   overviews: WikiOverview[];
+  documents: WikiDocument[];
   index: string;
 }
 
@@ -179,6 +193,12 @@ const WIKI_MAP = [
     id: 'stat-yearbook',
     name: '통계 연보',
     folder: 'SNU_통계 연보_LLM_Wiki',
+    sensitiveTopics: [],
+  },
+  {
+    id: 'policy',
+    name: '규정·정책',
+    folder: 'SNU_규정정책_LLM_Wiki',
     sensitiveTopics: [],
   },
 ];
@@ -422,10 +442,33 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
     });
   }
 
+  // ─── Documents (policy_document) ───────────────────────────────
+  const documentsDir = path.join(wikiPath, 'wiki', 'documents');
+  const documents: WikiDocument[] = [];
+
+  for (const { id, content } of collectMdFiles(documentsDir)) {
+    const { meta, body } = parseFrontmatter(content);
+    if (meta.type !== 'policy_document') continue;
+
+    documents.push({
+      id,
+      title: extractTitle(body, id),
+      정책명: (meta['정책명'] as string) ?? extractTitle(body, id),
+      분류: (meta['분류'] as string) ?? '',
+      제정일: meta['제정일'] as string | undefined,
+      개정일: (meta['개정일'] as string | null) ?? undefined,
+      소관: meta['소관'] as string | undefined,
+      tags: (meta.tags as string[]) ?? [],
+      content: body,
+      sensitive: false,
+    });
+  }
+
   console.log(
     `  ✅ ${wikiConfig.name}: sources ${sources.length}개, topics ${topics.length}개, ` +
     `entities ${entities.length}개, syntheses ${syntheses.length}개, ` +
-    `facts ${facts.length}개, stances ${stances.length}개, overviews ${overviews.length}개`
+    `facts ${facts.length}개, stances ${stances.length}개, overviews ${overviews.length}개, ` +
+    `documents ${documents.length}개`
   );
 
   return {
@@ -438,6 +481,7 @@ function buildWikiData(wikiConfig: typeof WIKI_MAP[0]): WikiData {
     facts,
     stances,
     overviews,
+    documents,
     index: indexContent,
   };
 }
@@ -548,6 +592,13 @@ function updateAgentKeywords(
       if (tag.length >= 2) keywordSet.add(tag);
     }
   }
+  for (const d of (data.documents ?? [])) {
+    if (d.정책명.length >= 2) keywordSet.add(d.정책명);
+    if (d.분류.length >= 2) keywordSet.add(d.분류);
+    for (const tag of d.tags) {
+      if (tag.length >= 2) keywordSet.add(tag);
+    }
+  }
 
   agent.keywords = Array.from(keywordSet).slice(0, 200);
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
@@ -626,7 +677,7 @@ function buildCollegeWiki(org: ActiveOrg): WikiData {
 
   return {
     id: org.id, name: org.display_name,
-    sources, topics: [], entities, syntheses: [], facts, stances: [], overviews, index: '',
+    sources, topics: [], entities, syntheses: [], facts, stances: [], overviews, documents: [], index: '',
   };
 }
 
