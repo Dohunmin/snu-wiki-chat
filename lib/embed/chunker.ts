@@ -18,12 +18,59 @@ import type { WikiData } from '@/lib/agents/types';
 import type { EmbeddingChunk, ChunkMetadata, PageType } from './types';
 
 const MIN_CONTENT_LENGTH = 30;   // 30자 미만 청크는 임베딩 가치 낮음 (예: 빈 entity)
+const MIN_ARTICLE_MERGE = 100;   // 조문 청크 병합 하한 (splitIntoChunks 100자 규칙과 동일)
 
 /**
  * SHA-256 hash (증분 갱신용 — 같은 chunk_text면 재임베딩 스킵 가능).
  */
 function sha256(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex');
+}
+
+/**
+ * policy_document 전용 분할 — `## 장(章)` 뿐 아니라 `### 제N조` **조문 단위**까지 쪼갠다.
+ *
+ * 기존 splitIntoChunks는 `## `(h2)에서만 분할 → 정관 제2장 기관(8.5k자)에 27개 조문이,
+ * 학칙 제2·3장(각 17k자)에 47·53개 조문이 **한 청크로 뭉쳐** 제18조·제27조 같은 깊은 조문이
+ * rerank(1500자)/context-budget(4000자) 창 밖으로 잘려 LLM에 미도달 (0b baseline: truncLoss 2/9 확인).
+ *
+ * 규칙: `## ` 섹션으로 먼저 나눈 뒤, `### ` 조문이 있는 섹션은 조문 단위로 재분할하고
+ * 각 조문 청크에 소속 장(章) 헤더(`## 제N장 …`)를 prepend해 맥락·인용을 보존한다.
+ * 100자 미만 조문은 다음 조문과 병합. 조문 없는 섹션(개요·전문·부칙·AI가이드라인 등)은 통째 유지.
+ */
+export function splitPolicyIntoArticles(content: string): string[] {
+  const out: string[] = [];
+  const sections = content.split(/(?=^## )/m).filter((s) => s.trim());
+
+  for (const sec of sections) {
+    if (!/^### /m.test(sec)) {
+      // 조문(### 제N조) 없는 섹션 → 통째 (개요·전문·본문조항 인트로·부칙·AI가이드라인 등)
+      if (sec.trim().length >= MIN_CONTENT_LENGTH) out.push(sec.trim());
+      continue;
+    }
+    const chapterHeader = (sec.match(/^## .+$/m)?.[0] ?? '').trim(); // 각 조문에 prepend할 장 헤더
+    const withHeader = (body: string) => (chapterHeader ? `${chapterHeader}\n${body}` : body);
+    const subs = sec.split(/(?=^### )/m);
+
+    // subs[0] = 장 헤더 + 첫 조문 전 서문. 서문에 실체 있으면 별도 청크로 보존
+    const intro = subs[0].replace(/^## .+$/m, '').trim();
+    if (intro.length >= MIN_CONTENT_LENGTH) out.push(withHeader(intro));
+
+    // 조문들 — 100자 미만은 다음 조문과 병합
+    let pending = '';
+    for (let i = 1; i < subs.length; i++) {
+      const merged = pending ? `${pending}\n${subs[i].trim()}` : subs[i].trim();
+      if (merged.length >= MIN_ARTICLE_MERGE) {
+        out.push(withHeader(merged));
+        pending = '';
+      } else {
+        pending = merged;
+      }
+    }
+    if (pending.trim().length >= MIN_CONTENT_LENGTH) out.push(withHeader(pending.trim()));
+  }
+
+  return out.length > 0 ? out : [content];
 }
 
 /**
@@ -110,9 +157,9 @@ export function chunkifyWiki(wikiData: WikiData): EmbeddingChunk[] {
     }));
   }
 
-  // ─── policy_document: ## 헤더 분할 (전문/조항 등 섹션별) ──────
+  // ─── policy_document: ## 장 + ### 제N조 조문 단위 분할 (Step 1 — truncLoss 수정) ──────
   for (const d of (wikiData.documents ?? [])) {
-    const parts = splitIntoChunks(d.content);
+    const parts = splitPolicyIntoArticles(d.content);
     parts.forEach((text, idx) => {
       if (text.trim().length < MIN_CONTENT_LENGTH) return;
       chunks.push(makeChunk({
