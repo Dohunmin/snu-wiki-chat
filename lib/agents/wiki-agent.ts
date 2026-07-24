@@ -124,6 +124,12 @@ export class WikiAgent implements AgentPlugin {
     for (const f of (data.facts ?? [])) {
       if (queryWords.some(w => f.category.toLowerCase().includes(w))) return true;
     }
+    for (const d of (data.documents ?? [])) {
+      for (const field of [d.정책명, d.분류, ...asArr<string>(d.tags)]) {
+        const fl = field.toLowerCase();
+        if (queryWords.some(w => fl.includes(w) || w.includes(fl))) return true;
+      }
+    }
     return false;
   }
 
@@ -350,7 +356,7 @@ export class WikiAgent implements AgentPlugin {
         scoredChunks.length = 0;
         labeledItems.length = 0;
         for (const f of fused) {
-          if (f.type === 'source') {
+          if (f.type === 'source' || f.type === 'policy_document') {
             scoredChunks.push({
               type: 'source',
               title: f.title,
@@ -415,6 +421,7 @@ export class WikiAgent implements AgentPlugin {
       ...data.facts.map(f => f.id),
       ...(data.stances ?? []).map(s => s.id),
       ...(data.overviews ?? []).map(o => o.id),
+      ...(data.documents ?? []).map(d => d.id),
     ]);
     const filteredScored = scoredChunks.filter(c => validIds.has(c.id));
     const filteredLabeled = labeledItems.filter(l => validIds.has(l.id));
@@ -641,6 +648,15 @@ export class WikiAgent implements AgentPlugin {
       let score = queryWords.filter(w => cl.includes(w)).length;
       if (queryWords.some(w => o.편.toLowerCase().includes(w))) score += 3;
       if (score > 0) out.push({ type: 'overview', id: o.id, title: o.title, chunk: o.content, score, wikiId, meta: `편: ${o.편}` });
+    }
+    // policy_document: 조문 텍스트를 청크 단위로 스코어링(정확 조문·고유명사 recall)
+    for (const d of (data.documents ?? [])) {
+      const tagHit = asArr<string>(d.tags).some(t => { const tl = t.toLowerCase(); return queryWords.some(w => tl.includes(w) || w.includes(tl)); });
+      for (const chunk of splitIntoChunks(d.content)) {
+        let score = scoreChunk(chunk, queryWords);
+        if (tagHit) score += 1;
+        if (score > 0) out.push({ type: 'policy_document', id: d.id, title: d.정책명, chunk, score, wikiId, meta: `분류: ${d.분류}` });
+      }
     }
     return out.sort((a, b) => b.score - a.score).slice(0, limit);
   }
