@@ -1,0 +1,257 @@
+{
+  "_meta": {
+    "purpose": "라우팅-utilization eval 하네스(0b)용 gold 라벨. 각 쿼리의 정답 위키(+청크 힌트). scripts/eval-routing.ts가 소비.",
+    "howScored": "goldWikis = 라우터가 반드시 dispatch해야 하는 위키(id). goldChunkHint = 그 정답 청크의 본문에 반드시 존재하는 고유 부분문자열(조문번호/고유수치) — 최종 LLM 컨텍스트(contextMarkdown)에 이 문자열이 있으면 textHit. kind=chunk-labeled는 위키+청크 둘 다 채점, wiki-labeled는 위키만, abstention은 코퍼스에 정답이 없어 web fallback이 올바른 행동(true-negative probe, 집계 제외).",
+    "provenance": "코퍼스 fact 10건은 정찰+적대검증(corpusV, accurate=high)으로 data/*.json 실제 위치 확인. 실측 질문 16건은 gold-questions.json 실제 로그 + gold-labeling.md 사람검수 verdict 기반, likelyGoldWikis는 봇 실제 내부 인용에서 역산한 tight must-hit set(production routed_agents 아님).",
+    "reviewNote": "부트스트랩 후 검수 대상 — 각 항목의 goldWikis/goldChunkHint를 스팟체크하세요. 확장: scripts/select-eval-questions.ts로 DB에서 실측 질문 추가 가능. 현재 26건(정관·등록금·장학금·역대총장 필수 카테고리 전부 포함).",
+    "excludedFromNormalScoring": ["leesj (lensPersona+adminOnly)", "edu-trends (backgroundSource)", "fine-arts·grad-general (disabled)"],
+    "statusIsAlwaysContext": "status는 alwaysContext:true라 항상 주입됨 → dispatch됐다고 라우팅 성공 아님. gold가 status인 경우에만 유의미."
+  },
+  "labels": [
+    {
+      "id": "policy-jeongwan-02-mokjeok",
+      "query": "국립대학법인 서울대학교 정관에서 규정한 서울대학교의 목적은 무엇인가?",
+      "category": "정관",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제2조(목적",
+      "truncationRisk": "none",
+      "note": "정관 chunk[3] 제1장 총칙(480자, 제1~3조). 소형 청크 → 잘림 위험 없음. 경쟁: '정관' 키워드 ∈ {board,status,policy}."
+    },
+    {
+      "id": "policy-jeongwan-08-chongjang",
+      "query": "서울대학교 정관상 총장의 지위와 권한은 어떻게 규정되어 있나?",
+      "category": "정관",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제8조(총장)",
+      "truncationRisk": "low",
+      "note": "정관 chunk[4] 제2장 기관(8,530자) @952 → 1500자 rerank 창 안, 생존 예상."
+    },
+    {
+      "id": "policy-jeongwan-18-pyeonguiwon",
+      "query": "서울대학교 정관에서 평의원회는 어떻게 규정되어 있나?",
+      "category": "정관",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제18조(평의원회)",
+      "truncationRisk": "beyond-1500",
+      "note": "정관 chunk[4] @4496 → 1500자 창 밖. 저장된 chunk_text엔 있으나 rerank/budget 잘림 시 LLM 미노출 가능(finalWiki hit & textHit miss = 잘림손실 신호). 경쟁: '평의원회' ∈ {senate,status,policy}."
+    },
+    {
+      "id": "policy-jeongwan-27-janghak",
+      "query": "서울대학교 정관에 학생 장학·복지를 담당하는 위원회 규정이 있나?",
+      "category": "정관",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제27조(장학·복지위원회)",
+      "truncationRisk": "beyond-4000",
+      "note": "정관 chunk[4] @7581 → 1500·4000자 창 모두 밖. 현재 거대청크 granularity에선 사실상 LLM 비가시 → Step 1(제N조 sub-split) 강력 근거."
+    },
+    {
+      "id": "policy-hakchik-113-deungrok",
+      "query": "서울대학교 등록금심의위원회는 학칙상 어떻게 구성되나?",
+      "category": "등록금",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제113조(등록금심의위원회)",
+      "truncationRisk": "none",
+      "note": "학칙 chunk[7] 제5장 등록금(1,009자, 제112~117조) — 소형 청크. 등록금의 '규정/조문' 각도 → policy. (수치 각도는 stat-yearbook, 아래 별도.)"
+    },
+    {
+      "id": "policy-hakchik-13-buchongjang",
+      "query": "서울대학교 부총장은 어떤 종류가 있고 각 소관 업무는 무엇인가?",
+      "category": "기타-fact",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제13조(부총장)",
+      "truncationRisk": "none",
+      "note": "학칙 chunk[4] 제2장 조직(17,325자) @88 최상단 온전. (메모리의 '제13조 잘림'은 오류로 확인 — 제13조는 안 잘림, 잘리는 건 제30·48조 같은 깊은 조문.)"
+    },
+    {
+      "id": "stat-deungrokgeum-amount",
+      "query": "서울대학교 학부 등록금은 연간 얼마인가? (학교 평균 기준)",
+      "category": "등록금",
+      "kind": "chunk-labeled",
+      "goldWikis": ["stat-yearbook"],
+      "goldChunkHint": "6,058,798",
+      "truncationRisk": "none",
+      "note": "stat-yearbook 등록금장학금대출현황.fact(2,559자, whole-fact chunk). '6,058,798'(2025 학부 학교평균)은 전 data/*.json 유일. ⚠경쟁: '등록금' ∈ {finance,stat-yearbook}; 1인당 금액은 stat-yearbook에만."
+    },
+    {
+      "id": "stat-janghakgeum-amount",
+      "query": "서울대학교 교내·교외 장학금 수혜 규모(금액)는 얼마인가?",
+      "category": "장학금",
+      "kind": "chunk-labeled",
+      "goldWikis": ["stat-yearbook"],
+      "goldChunkHint": "18,213,373",
+      "truncationRisk": "none",
+      "note": "stat-yearbook 등록금장학금대출현황.fact. '18,213,373'(2024 교내 장학금, 천원)은 전 data/*.json 유일. ⚠'장학금'은 finance의 1번째 키워드이기도 함 → 라우터가 finance만 아니라 stat-yearbook fact를 올리는지 검증."
+    },
+    {
+      "id": "stat-jeonim-gyowon-count",
+      "query": "서울대학교 전임교원은 총 몇 명인가?",
+      "category": "기타-fact",
+      "kind": "chunk-labeled",
+      "goldWikis": ["stat-yearbook"],
+      "goldChunkHint": "교원 현황",
+      "truncationRisk": "none",
+      "note": "stat-yearbook 교원현황.fact(2,439자). ⚠status(alwaysContext)도 '교원' 키워드 보유 → 권위 headcount 테이블은 stat-yearbook에 있음."
+    },
+    {
+      "id": "abstain-yeokdae-chongjang",
+      "query": "서울대학교 역대 총장 명단(성함과 재임기간)을 알려줘",
+      "category": "역대총장",
+      "kind": "abstention",
+      "goldWikis": [],
+      "goldChunkHint": null,
+      "truncationRisk": "n/a",
+      "note": "⚠코퍼스에 역대총장 로스터 없음(history.json은 dangling wikilink만, 이장무·정운찬=0). 올바른 행동 = 내부 hit 없음 → web fallback/abstain. true-negative probe, 집계에서 제외하고 진단만."
+    },
+
+    {
+      "id": "real-senate-78-missing",
+      "query": "가장 최근 이슈면 평의원회 7,8차 자료들이 나와야하는거 아니니? 그런 자료 내용은 왜 하나도 없니",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["senate"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[2]. 봇이 평의원회 19기-7차·18기-8차 회의록 인용 성공. (대화 후속질문 → standalone 라우팅은 다를 수 있음.)"
+    },
+    {
+      "id": "real-ai-gradschool-timeline",
+      "query": "AI 대학원 설립 추진 경과와 의결 사항을 시간순으로 정리해줘",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["senate", "plan", "yhl-speeches"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[3]. 크로스위키 fact 체인: 평의원회 5·7차, 대학운영계획 실행과제11, 총장 신년사-2026."
+    },
+    {
+      "id": "real-bigyogwa-program",
+      "query": "서울대학교의 비교과 교육 프로그램에는 어떤 것들이 있나?",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["plan"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[4]. 단일위키 precision 테스트 — plan 실행과제1/3/7만, senate/board 불필요."
+    },
+    {
+      "id": "real-board-agenda",
+      "query": "이사회가 주로 다루는 안건은 어떤 것들이 있습니까?",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["board"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[6]. 이사회 예산·결산 의결 기록 2023-2026. 단일 지배위키."
+    },
+    {
+      "id": "real-senate-19gi-456",
+      "query": "평의원회 19기 4차 5차 6차 파일에 있지 않아?",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["senate"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[7]. 기록-존재 검색: 19기-4·5·6차서면심의 소스 노출 필요."
+    },
+    {
+      "id": "real-budget-expand-3ways",
+      "query": "총장이 사용할 수 있는 예산을 늘릴 방법은 1) 정부 출연금 증가, 2) 기부금 유치, 3) 연구비 수주 독려 이렇게 3개 인가? 그 외 방법은 없을까?",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["finance", "board", "plan"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[1](제안 wrapper로 약함). finance 재원 규모 + 평의원회/이사회 재정 기록. 멀티위키 finance recall."
+    },
+    {
+      "id": "real-sisu-flexibility",
+      "query": "시수 유연화에 대한 논의에 대한 근거 자료가 있나?",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["board", "vision"],
+      "goldChunkHint": null,
+      "note": "verdict=answerable[5] grounded-negative(가장 약함, near-gap). 이사회 2024-1차 교원 소속 유연화 + 중장기 연구트랙. 인접청크 탐지 테스트 — 신중 포함."
+    },
+    {
+      "id": "real-finance-5yr-structure",
+      "query": "서울대의 최근 5년간 재정 구조는 어떻게 변화했으며, 국고지원금·발전기금·산학협력수익의 비중은 어떻게 되나요?",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["finance"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[17]이나 수치 앵커 확고 — 전부 재무정보공시 재원구조분석. 단일 지배위키 precision 테스트."
+    },
+    {
+      "id": "real-deficit-2034",
+      "query": "2034년부터 세입·세출 격차 발생(60억원) → 2040년 적자 1,098억원 이라고 적혀있는데 왜 2034년부터 적자가 발생한다고 예측하는거지?",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["vision", "finance"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[15]. 앵커 수치 60억/1098억/2034/2040은 중장기발전계획 재정 chapter. vision(+finance) 필수."
+    },
+    {
+      "id": "real-postcorp-finance",
+      "query": "법인화 이후 서울대 재정 구조가 어떻게 변했나? 등록금 동결 기간 재원 구성 변화를 알려줘",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["finance"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[25]이나 순수 finance fact(등록금 동결·재원구성). 단일 지배위키."
+    },
+    {
+      "id": "real-2026-meetings",
+      "query": "26년 서울대 이사회랑 평의원회 회의 기록 알려줘",
+      "category": "real-answerable",
+      "kind": "wiki-labeled",
+      "goldWikis": ["senate", "board"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[54]이나 사실상 순수 기록 검색 — 2026 이사회+평의원회 회의록. 2위키 hit 테스트."
+    },
+    {
+      "id": "real-2040-vision-2025tasks",
+      "query": "서울대 2040 비전 내용 중 2025년 서울대 주요 시행과제로 실행된 것은?",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["vision", "plan"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[31]. 2040비전(vision) × 대학운영계획 시행과제(plan) 교차 — 두 정답위키 동시노출 테스트."
+    },
+    {
+      "id": "real-teaching-load-basis",
+      "query": "현재 서울대학교 전임교원의 연간 교과목 담당 시수는 어떤 근거로 결정되는가?",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["senate"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[33]. 평의원회 19기-4차 책임시수 관리체계 + 18기-13차 인사규정. senate 확정 타깃."
+    },
+    {
+      "id": "real-fundraising-strategy",
+      "query": "현재 서울대 펀드레이징 전략이나 재정 확충 방향을 알려줘",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["finance", "board"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[28]. finance 재원확충 + 발전재단/기부금 기록. 지배위키 finance(+board 재정의결)."
+    },
+    {
+      "id": "real-finance-urgent-improve",
+      "query": "서울대 재무 중에서 어떤 부분을 가장 시급하게 개선해야 할까?",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["finance"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[50](제안 wrapper)이나 진단은 finance 적자전망/비용구조 fact 기반. finance recall 테스트."
+    },
+    {
+      "id": "real-tenure-strictness",
+      "query": "서울대 교수들 정년보장 심사 기준을 더욱 엄격하게 해야 한다는 논의가 있었나?",
+      "category": "real-opinion-anchored",
+      "kind": "wiki-labeled",
+      "goldWikis": ["senate", "board"],
+      "goldChunkHint": null,
+      "note": "opinion-grounded[29]이나 논의-존재 검색: 평의원회/이사회 정년보장·교원인사 심의 기록. senate/board 확정 타깃."
+    }
+  ]
+}
