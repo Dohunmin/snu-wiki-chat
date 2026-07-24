@@ -9,7 +9,7 @@ interface WikiMeta {
   id: string;
   name: string;
   group?: string | null;
-  counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number };
+  counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number; documents: number };
 }
 
 export default function WikiPageClient() {

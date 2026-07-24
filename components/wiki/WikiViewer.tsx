@@ -49,7 +49,7 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
       .then(r => r.json())
       .then(data => {
         type WikiItem = { id: string; title?: string; name?: string; query?: string; content: string; [key: string]: unknown };
-        const ALL_TYPES = ['sources', 'facts', 'stances', 'overviews', 'topics', 'entities', 'syntheses'];
+        const ALL_TYPES = ['sources', 'facts', 'stances', 'overviews', 'topics', 'entities', 'syntheses', 'documents'];
 
         const findItem = (type: string): WikiItem | undefined =>
           (data[type] as WikiItem[] | undefined)?.find(i => i.id === selected.itemId);

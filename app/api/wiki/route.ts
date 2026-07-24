@@ -38,6 +38,7 @@ export async function GET() {
           facts: (data.facts ?? []).length,
           stances: (data.stances ?? []).length,
           overviews: (data.overviews ?? []).length,
+          documents: (data.documents ?? []).length,
         },
       };
     })

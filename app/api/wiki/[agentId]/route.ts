@@ -89,6 +89,7 @@ export async function GET(
     facts: facts.map(f => ({ id: f.id, title: f.title, category: f.category, yearsCovered: f.yearsCovered, unit: f.unit, tags: f.tags, content: f.content })),
     stances: stances.map(s => ({ id: s.id, title: s.title, holder: s.holder, topic: s.topic, tags: s.tags, content: s.content })),
     overviews: (data.overviews ?? []).map(o => ({ id: o.id, title: o.title, 편: o.편, 시기: o.시기, tags: o.tags, content: o.content })),
+    documents: (data.documents ?? []).map(d => ({ id: d.id, title: d.title, 정책명: d.정책명, 분류: d.분류, 제정일: d.제정일, tags: d.tags, content: d.content })),
     liveBoards,
   });
 }

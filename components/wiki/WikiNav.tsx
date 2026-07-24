@@ -6,7 +6,7 @@ interface WikiMeta {
   id: string;
   name: string;
   group?: string | null;
-  counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number };
+  counts: { sources: number; topics: number; entities: number; syntheses: number; facts: number; stances: number; overviews: number; documents: number };
 }
 
 interface WikiNavProps {
@@ -23,6 +23,7 @@ const TABS = [
   { key: 'facts', label: '팩트', color: 'bg-orange-100 text-orange-700' },
   { key: 'stances', label: '입장', color: 'bg-pink-100 text-pink-700' },
   { key: 'overviews', label: '개요', color: 'bg-teal-100 text-teal-700' },
+  { key: 'documents', label: '문서', color: 'bg-slate-100 text-slate-700' },
 ] as const;
 
 // 거버넌스 위키는 위키별 색, 단과대/대학원은 그룹 색.
@@ -71,6 +72,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
         facts: data.facts ?? [],
         stances: data.stances ?? [],
         overviews: data.overviews ?? [],
+        documents: data.documents ?? [],
       },
     }));
     setLoading(null);
@@ -101,6 +103,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
               (wiki.counts.facts ?? 0) > 0 ? `팩트 ${wiki.counts.facts}` : null,
               (wiki.counts.stances ?? 0) > 0 ? `입장 ${wiki.counts.stances}` : null,
               (wiki.counts.overviews ?? 0) > 0 ? `개요 ${wiki.counts.overviews}` : null,
+              (wiki.counts.documents ?? 0) > 0 ? `문서 ${wiki.counts.documents}` : null,
             ].filter(Boolean).join(' · ') || '준비 중'}
           </p>
         </div>
