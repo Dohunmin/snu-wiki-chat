@@ -19,13 +19,13 @@
 |------|------|------------------|
 | Framework | Next.js 15 (App Router) | [next.config.ts](next.config.ts), [app/layout.tsx](app/layout.tsx) |
 | Styling | Tailwind CSS v4 | [postcss.config.mjs](postcss.config.mjs), [app/globals.css](app/globals.css) |
-| LLM | `@anthropic-ai/sdk` — `claude-sonnet-4-6`, `MAX_TOKENS=16000` | [lib/llm/client.ts](lib/llm/client.ts) (17 lines) |
+| LLM | `@anthropic-ai/sdk` — `claude-sonnet-4-6`, `MAX_TOKENS=12000` (LLM_MODEL_LIGHT=`claude-haiku-4-5`) | [lib/llm/client.ts](lib/llm/client.ts) (20 lines) |
 | DB | `@vercel/postgres`(Neon) + **pgvector** + Drizzle ORM | [lib/db/schema.ts](lib/db/schema.ts), [lib/db/client.ts](lib/db/client.ts) (`drizzle-orm/vercel-postgres`), [drizzle.config.ts](drizzle.config.ts) |
 | 임베딩/벡터검색 | Voyage `voyage-4-large`(1024d) + pgvector + RRF | [lib/embed/](lib/embed/) — §18 |
 | 한계 추적 | DBSCAN/ANN 클러스터링(pgvector) + Sonnet 평가 | [lib/limitations/](lib/limitations/) — §18 |
 | 외부 연동 | Google Sheets 질의로그 (RS256 JWT) | [lib/google-sheets.ts](lib/google-sheets.ts) — §18 |
 | Auth | NextAuth v5 (Credentials, JWT 세션) | [lib/auth/config.ts](lib/auth/config.ts), [middleware.ts](middleware.ts) |
-| Build script | tsx | [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (503 lines), [scripts/build-embeddings.ts](scripts/build-embeddings.ts) |
+| Build script | tsx | [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (754 lines), [scripts/build-embeddings.ts](scripts/build-embeddings.ts) |
 | 패키지 | `package.json` | [package.json](package.json) |
 
 ---
@@ -49,8 +49,11 @@
 | yhl-speeches | 유홍림총장연설 | [data/yhl-speeches.json](data/yhl-speeches.json) | — |
 | finance | 재무정보공시 | [data/finance.json](data/finance.json) | — |
 | leesj | 이석재 후보 | [data/leesj.json](data/leesj.json) | `adminOnly + lensPersona`, `personaId: "leesj"` |
+| edu-trends | AI 시대 교육 담론과 동향 | [data/edu-trends.json](data/edu-trends.json) | `backgroundSource: true` (배경 소스 — 일반 라우팅 제외, 배경 게이트로만 주입) |
+| stat-yearbook | 통계 연보 | [data/stat-yearbook.json](data/stat-yearbook.json) | — (fact 25) |
+| policy | 규정·정책 | [data/policy.json](data/policy.json) | — (policy_document 4: 정관·학칙·시행령·AI가이드라인) |
 
-**Cross-wiki 개념 인덱스**: [data/concept-index.json](data/concept-index.json) (3,951개)
+**Cross-wiki 개념 인덱스**: [data/concept-index.json](data/concept-index.json) (현재 85개 — buildConceptIndex가 wikis≥2 OR linkedPages≥3 필터라 동적 변동)
 - 빌드 위치: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (lensPersona 위키는 제외 — `395d21f` 커밋)
 - 로딩 위치: [lib/agents/router.ts:60-70](lib/agents/router.ts#L60-L70) (`getConceptIndex`, 캐시됨)
 
@@ -63,8 +66,8 @@
 - **생성**: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) `buildCollegeWiki` + `ensureCollegeAgent` — active 조직마다 `data/{org.id}.json` + agent 항목(`group: '단과대'|'대학원'`) 자동 생성. **조직 추가 = yaml `active` 플래그만 → O(1)**.
 - **라우팅**: 기존 wiki_id 메커니즘 그대로. `group` 위키가 선택되면 [lib/agents/answer-class.ts](lib/agents/answer-class.ts) `classifyAnswerClass`로 **AnswerClass(1~4)** 산출 → `RoutingResult.answerClass`/`.college`. AnswerClass 3(연락처·통계)/4(최신공지)는 chat 핸들러가 분기(structured_facts/live_cache). ⚠️ **AnswerClass(답변 방식 분류)는 권한 등급 tier1/tier2와 무관** — 과거 둘 다 'tier'라 혼동돼 2026-06-10 `AnswerClass`로 분리.
 - **크롤**: [lib/crawl/](lib/crawl/) (8개 사이트 엔진 어댑터) → 크롤 Tier1/2 `.md` 생성(raw HTML는 `raw/html/`에 원본 보존) → 위 빌드 파이프라인. (lib/crawl의 `Tier`는 크롤 콘텐츠 깊이로, 위 AnswerClass와 같은 1~4 의미축이나 별도 모듈.) cleanser는 콘텐츠셀렉터+밀도기반선택(readability-lite)+반복블록 메뉴제거로 nav/메뉴 걸러냄.
-- **AnswerClass 3/4** (`lib/agents/structured.ts`, 앱 DB): 3=`structured_facts`(연락처·통계, TTL 90일), 4=`live_cache`(최신공지, TTL 6h). chat route가 `routing.answerClass===3|4 && routing.college`일 때 직답(`streamDirectAnswer`, LLM 0토큰). 미스/만료→AnswerClass 1 degrade.
-- Phase 1 active: `eng`·`humanities`·`social`·`science`. Phase 2~4는 yaml `active` 전환으로 확장.
+- **AnswerClass 3/4** (`lib/agents/structured.ts`, 앱 DB): 3=`structured_facts`(연락처·통계, TTL 90일), 4=`live_cache`(최신공지, TTL 26h — 크롤 시 override, schema 기본 6h). chat route가 `routing.answerClass===3|4 && routing.college`일 때 직답(`streamDirectAnswer`, LLM 0토큰). 미스/만료→AnswerClass 1 degrade.
+- active 조직: `colleges.yaml` `active:true` 기준 — 현재 **27개**(fine-arts 제외 전부; `grad-general`은 agents.config에서 disabled). agents.config 총 40 에이전트(38 enabled).
 
 ### 2.2 웹검색 — `webEnabled` 기반 (policy + admin·tier1의 fact·lens). C안=모델 자기판단
 
@@ -80,7 +83,7 @@
 
 ## 3. 라우팅 엔진
 
-**파일**: [lib/agents/router.ts](lib/agents/router.ts) (171 lines)
+**파일**: [lib/agents/router.ts](lib/agents/router.ts) (390 lines)
 **진입 함수**: `routeQuery(query, userRole)` — [router.ts:106](lib/agents/router.ts#L106)
 
 ### 3.1 상수 (router.ts:15-19)
@@ -90,7 +93,7 @@ MIN_ABSOLUTE_SCORE = 3       // 절대 점수 하한
 RELATIVE_THRESHOLD = 0.4     // 1위 점수 대비 비율
 MAX_WIKIS = 6                // 한 번에 호출할 최대 위키 수
 ALWAYS_CONTEXT_CAP = 5       // alwaysContext 위키의 chunk cap
-TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
+TOTAL_CHUNK_BUDGET = 22      // 전체 chunk 예산 (가중분배 — 상위 위키 우대, B-2)
 ```
 
 ### 3.2 단계별 흐름
@@ -111,7 +114,7 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 
 ## 4. WikiAgent — 청크 추출 & 스코어링
 
-**파일**: [lib/agents/wiki-agent.ts](lib/agents/wiki-agent.ts) (327 lines)
+**파일**: [lib/agents/wiki-agent.ts](lib/agents/wiki-agent.ts) (663 lines)
 **진입 함수**: `getContext(query, role, isGlobal, options)` — [wiki-agent.ts:96](lib/agents/wiki-agent.ts#L96)
 
 ### 4.1 상수 / 헬퍼
@@ -169,7 +172,7 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 
 | 함수 | 위치 | 역할 |
 |------|------|------|
-| `buildSystemPrompt(contexts, userRole)` | [prompts.ts:5-74](lib/llm/prompts.ts#L5-L74) | P1~P5 원칙 (할루시네이션 금지, 인라인 출처, 테마별 구조화, 교차 확인, 한계 인정) + 페이지 타입 활용 가이드 + 답변 길이 원칙. tier2면 sensitiveWarning 추가 |
+| `buildSystemPrompt`/`buildSystemPromptParts` | [lib/llm/prompts.ts](lib/llm/prompts.ts) (358 lines) | **P0~P9 (+P4-b)** 원칙 (할루시네이션 금지·인라인 출처·구조화·교차확인·한계인정 등) + SYSTEM_PROMPT_STABLE 분리 + 페이지타입 가이드. buildAgentLoopSystemPrompt/buildPolicySystemPrompt 등 별도 export |
 | `buildUserMessage(query, contexts)` | [prompts.ts:76-82](lib/llm/prompts.ts#L76-L82) | `### [위키명] 관련 자료` 헤더로 컨텍스트 묶음 + 질문 |
 | `buildLensSystemPrompt(contexts, persona, userRole)` | [prompts.ts:88-114](lib/llm/prompts.ts#L88-L114) | 일반 프롬프트 + Lens 적용 5원칙 + stance 자료 블록 + insufficient 경고 |
 | `buildLensUserMessage` | [prompts.ts:120-127](lib/llm/prompts.ts#L120-L127) | 현재는 `buildUserMessage`와 동일 (향후 확장 지점) |
@@ -254,22 +257,23 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 
 ## 11. 데이터 모델
 
-### 11.1 위키 JSON 페이지 타입 — 7가지
+### 11.1 위키 JSON 페이지 타입 — 8가지
 
-**타입 정의**: [lib/agents/types.ts](lib/agents/types.ts)
+**타입 정의**: [lib/agents/types.ts](lib/agents/types.ts) (`PageType` union = types.ts:5)
 
-| 타입 | 인터페이스 | 위치 | 설명 |
-|------|----------|------|------|
-| source | `WikiSource` | [types.ts:51-60](lib/agents/types.ts#L51-L60) | 회의록·계획서 1건 |
-| topic | `WikiTopic` | [types.ts:62-69](lib/agents/types.ts#L62-L69) | 주제별 색인 |
-| entity | `WikiEntity` | [types.ts:71-79](lib/agents/types.ts#L71-L79) | 인물·기구 |
-| synthesis | `WikiSynthesis` | [types.ts:81-89](lib/agents/types.ts#L81-L89) | 저장된 Q&A |
-| fact | `WikiFact` | [types.ts:91-103](lib/agents/types.ts#L91-L103) | 정형 통계·재무 |
-| stance | `WikiStance` | [types.ts:105-114](lib/agents/types.ts#L105-L114) | 인물 입장·발언 (lens 핵심) |
-| overview | `WikiOverview` | [types.ts:116-125](lib/agents/types.ts#L116-L125) | 편(章) 단위 개요 |
+| 타입 | 인터페이스 | 설명 |
+|------|----------|------|
+| source | `WikiSource` | 회의록·계획서 1건 |
+| topic | `WikiTopic` | 주제별 색인 |
+| entity | `WikiEntity` | 인물·기구 |
+| synthesis | `WikiSynthesis` | 저장된 Q&A |
+| fact | `WikiFact` | 정형 통계·재무 |
+| stance | `WikiStance` | 인물 입장·발언 (lens 핵심) |
+| overview | `WikiOverview` | 편(章) 단위 개요 |
+| **policy_document** | `WikiDocument` (types.ts:158-169) | **규정·정책 본문 전문**(정관·학칙·시행령·AI가이드라인 조문 원문). `WikiData.documents[]`. chunker가 `##` 헤더로 분할 |
 
-전체 `WikiData` 구조: [types.ts:127-138](lib/agents/types.ts#L127-L138)
-`ConceptIndex` 구조: [types.ts:140-152](lib/agents/types.ts#L140-L152)
+전체 `WikiData` 구조: types.ts:171-183 (`documents?: WikiDocument[]` 포함).
+※ 개별 인터페이스 라인 앵커는 파일 변경으로 이동 가능 — union(types.ts:5)이 권위.
 
 ### 11.2 DB 테이블 (Drizzle)
 
@@ -283,12 +287,19 @@ TOTAL_CHUNK_BUDGET = 30      // 전체 chunk 예산
 | `uploads` | [schema.ts:34-44](lib/db/schema.ts#L34-L44) | agentId, fileName, content, status (pending\|approved\|rejected), reviewedBy |
 | `syntheses` | [schema.ts:46-56](lib/db/schema.ts#L46-L56) | query, answeredAt, routedTo, content (채팅 저장 답변) |
 | `sensitiveTopics` | [schema.ts:58-64](lib/db/schema.ts#L58-L64) | agentId, topic, createdBy |
+| `chunk_embeddings` | schema.ts:70-82 | wikiId, pageType, pageId, chunkText, **embedding** `vector(1024)`, sensitive, metadata, contentHash (RAG 임베딩) |
+| `structured_facts` | schema.ts ~ | 단과대/대학원 Tier3 구조화 fact (TTL 90d) |
+| `live_cache` | schema.ts ~ | Tier4 게시판 캐시 (TTL 26h override) |
+| `limitation_questions` | schema.ts:87-106 | 한계답변 추적: question, answer, wiki, limitation, embedding, clusterId |
+| `limitation_clusters` | schema.ts:109-114 | 한계답변 DBSCAN 클러스터 라벨 |
+
+> **총 11 테이블** (위 6 + chunk_embeddings·structured_facts·live_cache·limitation_questions·limitation_clusters).
 
 ---
 
 ## 12. 빌드 파이프라인 (Obsidian → JSON)
 
-**파일**: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (573 lines)
+**파일**: [scripts/build-wiki-data.ts](scripts/build-wiki-data.ts) (754 lines). 추출: sources/topics/entities/facts/stances/overviews/**documents(policy_document)**. WIKI_MAP=12 위키.
 **실행**: `npm run wiki:build`
 
 처리 내용:

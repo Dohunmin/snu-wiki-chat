@@ -1,5 +1,8 @@
 # Design: Multi-Wiki Integration
 
+> ⚠️ **2026-07-24 정합성 주의**: 역사적 설계 문서(4→8 위키 단계). 이후 레지스트리가 WIKI_MAP 12 / 에이전트 40으로 성장. 현행 권위 = data/agents.config.json / CLAUDE.md.
+
+
 > **Feature**: multi-wiki-integration
 > **Date**: 2026-05-06
 > **Phase**: Design
