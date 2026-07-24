@@ -559,6 +559,11 @@
         "id": "19기-4차"
       },
       {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-9차"
+      },
+      {
         "wiki": "board",
         "type": "entity",
         "id": "김우진"
@@ -587,6 +592,11 @@
         "wiki": "board",
         "type": "source",
         "id": "2026-1차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-4차"
       }
     ]
   },
@@ -669,6 +679,11 @@
         "wiki": "senate",
         "type": "source",
         "id": "19기-7차"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-10차"
       },
       {
         "wiki": "board",
@@ -799,6 +814,21 @@
         "wiki": "board",
         "type": "source",
         "id": "2026-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-5차"
       }
     ]
   },
@@ -827,6 +857,11 @@
         "wiki": "senate",
         "type": "source",
         "id": "19기-8차서면심의"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-10차"
       }
     ]
   },
@@ -863,6 +898,11 @@
         "id": "19기-7차"
       },
       {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-10차"
+      },
+      {
         "wiki": "board",
         "type": "entity",
         "id": "안동환"
@@ -881,6 +921,11 @@
         "wiki": "board",
         "type": "source",
         "id": "2026-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-3차"
       }
     ]
   },
@@ -1110,6 +1155,11 @@
         "wiki": "senate",
         "type": "source",
         "id": "19기-8차서면심의"
+      },
+      {
+        "wiki": "senate",
+        "type": "source",
+        "id": "19기-10차"
       }
     ]
   },
@@ -1403,6 +1453,21 @@
         "wiki": "board",
         "type": "source",
         "id": "2026-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-5차"
       }
     ]
   },
@@ -3681,6 +3746,21 @@
         "wiki": "board",
         "type": "source",
         "id": "2026-2차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-3차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-4차"
+      },
+      {
+        "wiki": "board",
+        "type": "source",
+        "id": "2026-5차"
       }
     ]
   },
@@ -3785,6 +3865,100 @@
         "wiki": "plan",
         "type": "source",
         "id": "2026-섹션3-추진성과및기본방향"
+      }
+    ]
+  },
+  "조직": {
+    "wikis": [
+      "status",
+      "stat-yearbook"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "status",
+        "type": "fact",
+        "id": "조직도-개요.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "기구표.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "대학본부-행정조직.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "대학원-구성.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "부속시설등.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "연구시설-목록.fact"
+      }
+    ]
+  },
+  "통계": {
+    "wikis": [
+      "status",
+      "science",
+      "business",
+      "human-ecology",
+      "gsph",
+      "dent",
+      "mba",
+      "gsiat"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "status",
+        "type": "fact",
+        "id": "현황.fact"
+      },
+      {
+        "wiki": "science",
+        "type": "fact",
+        "id": "facts"
+      },
+      {
+        "wiki": "business",
+        "type": "fact",
+        "id": "facts"
+      },
+      {
+        "wiki": "human-ecology",
+        "type": "fact",
+        "id": "facts"
+      },
+      {
+        "wiki": "gsph",
+        "type": "fact",
+        "id": "facts"
+      },
+      {
+        "wiki": "dent",
+        "type": "fact",
+        "id": "facts"
+      },
+      {
+        "wiki": "mba",
+        "type": "fact",
+        "id": "facts"
+      },
+      {
+        "wiki": "gsiat",
+        "type": "fact",
+        "id": "facts"
       }
     ]
   },
@@ -4030,6 +4204,146 @@
         "wiki": "finance",
         "type": "fact",
         "id": "주체별-운영수익.fact"
+      }
+    ]
+  },
+  "교직원": {
+    "wikis": [
+      "stat-yearbook"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "교원-1인당학생수와확보율.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "교원현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "신규전임교원.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "외국인전임교원.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "조교및교사현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "직원현황.fact"
+      }
+    ]
+  },
+  "교육": {
+    "wikis": [
+      "stat-yearbook"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "교원강의담당현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "학생교류수학현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "학생규모별강좌수현황.fact"
+      }
+    ]
+  },
+  "연구": {
+    "wikis": [
+      "stat-yearbook"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "논문저역서실적.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "연구비수혜현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "특허기술이전연구소현황.fact"
+      }
+    ]
+  },
+  "재정": {
+    "wikis": [
+      "stat-yearbook"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "등록금장학금대출현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "재정현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "학생1인당교육비현황.fact"
+      }
+    ]
+  },
+  "학생": {
+    "wikis": [
+      "stat-yearbook"
+    ],
+    "aliases": [],
+    "linkedPages": [
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "신입생현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "외국인학생현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "재적생현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "졸업생현황.fact"
+      },
+      {
+        "wiki": "stat-yearbook",
+        "type": "fact",
+        "id": "중도탈락현황.fact"
       }
     ]
   }
