@@ -96,6 +96,28 @@ export async function globalTopK(
   // rerank 활성 시 관련도 desc 정렬 (protected는 아래 split에서 무조건 포함 보장).
   if (rerankScore) all.sort((a, b) => (b.rerankScore ?? -1) - (a.rerankScore ?? -1));
 
+  // 2.7 절대임계 per-wiki anti-starvation floor (Step 3):
+  //   각 위키의 최고 similarity 청크가 절대임계 이내면 그 top-1을 protected로 승격 → RRF/finalK/budget 컷 면제.
+  //   → 큰 위키의 후보 도배·키워드-RRF 강등에도 관련 위키가 dispatch 보장(0b 진단: policy가 벡터 #1~2인데도
+  //   finalK 컷서 탈락하던 문제). 가장 가까운 ≤MAX 위키만 승격(과-dispatch 방지). 아무 위키도 임계 밖이면
+  //   0개 승격 → 내부 관련자료 없음의 올바른 신호(web fallback 유지). GLOBAL_FLOOR_DIST=0으로 비활성.
+  const floorDist = Number(process.env.GLOBAL_FLOOR_DIST ?? '0.48');
+  const floorMax = Number(process.env.GLOBAL_FLOOR_MAX_WIKIS ?? '4');
+  if (floorDist > 0 && floorMax > 0) {
+    const floorSim = 1 - floorDist;
+    const bestPerWiki = new Map<string, GlobalChunk>();
+    for (const c of all) {
+      if (c.similarity === undefined) continue;
+      const cur = bestPerWiki.get(c.wikiId);
+      if (!cur || c.similarity > (cur.similarity ?? -1)) bestPerWiki.set(c.wikiId, c);
+    }
+    const leaders = [...bestPerWiki.values()]
+      .filter((c) => (c.similarity ?? -1) >= floorSim)
+      .sort((a, b) => (b.similarity ?? -1) - (a.similarity ?? -1))
+      .slice(0, floorMax);
+    for (const c of leaders) c.protected = true;
+  }
+
   // 3. similarity floor — 무관 청크(벡터만 가깝고 무관) 방어 (§8.1).
   //    면제: protected(큐레이션) / 키워드 강매칭(kwScore≥강) / similarity 없음(키워드-only=벡터신호 부재≠무관).
   const survives = (c: GlobalChunk) =>
