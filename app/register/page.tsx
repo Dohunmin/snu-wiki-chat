@@ -37,14 +37,14 @@ export default function RegisterPage() {
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px 14px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid #e5e7eb',
     borderRadius: '6px',
-    backgroundColor: '#fafafa',
-    fontSize: '13px',
-    color: '#333',
+    backgroundColor: '#f9fafb',
+    fontSize: '14px',
+    color: '#1f2937',
     outline: 'none',
     boxSizing: 'border-box',
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
+    transition: 'border-color 0.15s ease, background-color 0.15s ease',
   };
 
   return (
@@ -53,16 +53,16 @@ export default function RegisterPage() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#c4c4c4',
-      fontFamily: "'Helvetica Neue', Arial, sans-serif",
+      background: 'linear-gradient(180deg, #f7f8fa 0%, #eef0f4 100%)',
       padding: '20px',
     }}>
       <div style={{
         backgroundColor: '#ffffff',
         width: '340px',
-        padding: '40px 35px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        padding: '44px 36px',
+        borderRadius: '10px',
+        border: '1px solid #f0f1f3',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.06)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -71,12 +71,11 @@ export default function RegisterPage() {
 
         <h2 style={{
           textAlign: 'center',
-          fontWeight: 400,
+          fontWeight: 600,
           fontSize: '22px',
-          color: '#1a1a1a',
+          color: '#111827',
           marginBottom: '28px',
-          letterSpacing: '0.5px',
-          fontFamily: "'Georgia', 'Times New Roman', serif",
+          letterSpacing: '-0.3px',
         }}>Sign Up</h2>
 
         <form onSubmit={handleSubmit}>
@@ -88,8 +87,8 @@ export default function RegisterPage() {
               placeholder="이름"
               required
               style={inputStyle}
-              onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
-              onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
+              onFocus={e => { e.target.style.borderColor = '#26365f'; e.target.style.backgroundColor = '#fff'; }}
+              onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
             />
           </div>
 
@@ -101,8 +100,8 @@ export default function RegisterPage() {
               placeholder="이메일"
               required
               style={inputStyle}
-              onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
-              onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
+              onFocus={e => { e.target.style.borderColor = '#26365f'; e.target.style.backgroundColor = '#fff'; }}
+              onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
             />
           </div>
 
@@ -115,13 +114,13 @@ export default function RegisterPage() {
               required
               minLength={8}
               style={{ ...inputStyle, paddingRight: '40px' }}
-              onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
-              onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
+              onFocus={e => { e.target.style.borderColor = '#26365f'; e.target.style.backgroundColor = '#fff'; }}
+              onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
             />
             <button
               type="button"
               onClick={() => setShowPassword(v => !v)}
-              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9a9a9a', fontSize: '14px', padding: 0 }}
+              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '14px', padding: 0 }}
             >
               {showPassword ? '🙈' : '👁'}
             </button>
@@ -134,16 +133,17 @@ export default function RegisterPage() {
               type="submit"
               disabled={loading}
               style={{
-                padding: '10px 48px',
-                backgroundColor: loading ? '#555' : '#1a1a1a',
+                padding: '12px 48px',
+                backgroundColor: loading ? '#a5b4fc' : '#26365f',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '4px',
-                fontSize: '11px',
+                borderRadius: '6px',
+                fontSize: '13px',
                 fontWeight: 600,
-                letterSpacing: '1.5px',
+                letterSpacing: '0.3px',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
+                transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
               }}
             >
               {loading ? '신청 중...' : 'SUBMIT'}
@@ -151,7 +151,7 @@ export default function RegisterPage() {
           </div>
         </form>
 
-        <Link href="/login" style={{ display: 'block', textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#888', textDecoration: 'none' }}>
+        <Link href="/login" style={{ display: 'block', textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#6b7280', textDecoration: 'none' }}>
           이미 계정이 있으신가요? 로그인
         </Link>
       </div>

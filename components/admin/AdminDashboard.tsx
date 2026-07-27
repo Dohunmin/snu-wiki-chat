@@ -117,10 +117,10 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-900">관리자 대시보드</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-gray-900">관리자 대시보드</h1>
         <div className="flex items-center gap-4 text-sm">
-          <a href="/admin/limitations" className="text-gray-600 hover:text-gray-900">한계 답변 추적</a>
-          <a href="/" className="text-blue-600 hover:underline">채팅으로 돌아가기</a>
+          <a href="/admin/limitations" className="text-gray-600 hover:text-gray-900 transition-colors">한계 답변 추적</a>
+          <a href="/" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors">채팅으로 돌아가기</a>
         </div>
       </header>
 
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
         {/* 사용자 현황 */}
         <div className="grid grid-cols-4 gap-4">
           {(['admin', 'tier1', 'tier2', 'pending'] as Role[]).map(role => (
-            <div key={role} className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+            <div key={role} className="bg-white rounded-md border border-gray-100 shadow-sm p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">{counts[role]}</p>
               <p className="text-xs text-gray-500 mt-1">{ROLE_LABELS[role]}</p>
             </div>
@@ -137,17 +137,17 @@ export default function AdminDashboard() {
 
         {/* 승인 대기 */}
         <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">
+          <h2 className="text-sm font-semibold tracking-tight text-gray-700 mb-3">
             승인 대기 ({pendingUsers.length}명)
           </h2>
           {pendingUsers.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 text-center text-sm text-gray-400">
+            <div className="bg-white rounded-md border border-gray-100 shadow-sm p-6 text-center text-sm text-gray-400">
               승인 대기 중인 사용자가 없습니다
             </div>
           ) : (
             <div className="space-y-2">
               {pendingUsers.map(u => (
-                <div key={u.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
+                <div key={u.id} className="bg-white rounded-md border border-gray-100 shadow-sm p-4 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{u.name}</p>
                     <p className="text-xs text-gray-400">{u.email}</p>
@@ -159,28 +159,28 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => handleApprove(u.id, 'admin')}
                       disabled={actionLoading === u.id + 'admin'}
-                      className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                      className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50"
                     >
                       관리자 승인
                     </button>
                     <button
                       onClick={() => handleApprove(u.id, 'tier1')}
                       disabled={actionLoading === u.id + 'tier1'}
-                      className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                      className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
                     >
                       1순위 승인
                     </button>
                     <button
                       onClick={() => handleApprove(u.id, 'tier2')}
                       disabled={actionLoading === u.id + 'tier2'}
-                      className="px-3 py-1.5 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                      className="px-3 py-1.5 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50"
                     >
                       2순위 승인
                     </button>
                     <button
                       onClick={() => handleReject(u.id)}
                       disabled={actionLoading === u.id + 'reject'}
-                      className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-lg hover:bg-red-50 disabled:opacity-50"
+                      className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-md hover:bg-red-50 transition-colors disabled:opacity-50"
                     >
                       거부
                     </button>
@@ -193,15 +193,15 @@ export default function AdminDashboard() {
 
         {/* 업로드된 자료 */}
         <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">
+          <h2 className="text-sm font-semibold tracking-tight text-gray-700 mb-3">
             업로드된 자료 ({uploads.length}건)
           </h2>
           {uploads.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 text-center text-sm text-gray-400">
+            <div className="bg-white rounded-md border border-gray-100 shadow-sm p-6 text-center text-sm text-gray-400">
               업로드된 자료가 없습니다
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
@@ -212,9 +212,9 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-100">
                   {uploads.map(u => (
-                    <tr key={u.id} className="hover:bg-gray-50">
+                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 font-medium text-gray-900 max-w-[180px] truncate">{u.fileName}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{AGENT_LABELS[u.agentId] ?? u.agentId}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{u.userName ?? u.userEmail ?? '-'}</td>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                         <a
                           href={`/api/admin/uploads/${u.id}`}
                           download={u.fileName}
-                          className="px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-700"
+                          className="px-3 py-1.5 bg-gray-900 text-white text-xs rounded-md hover:bg-gray-700 transition-colors"
                         >
                           다운로드
                         </a>
@@ -240,10 +240,10 @@ export default function AdminDashboard() {
 
         {/* 활성 사용자 */}
         <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">
+          <h2 className="text-sm font-semibold tracking-tight text-gray-700 mb-3">
             활성 사용자 ({activeUsers.length}명)
           </h2>
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
@@ -255,13 +255,13 @@ export default function AdminDashboard() {
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100">
                 {activeUsers.map(u => (
-                  <tr key={u.id} className="hover:bg-gray-50">
+                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
                     <td className="px-4 py-3 text-gray-500">{u.email}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${
                         u.role === 'admin' ? 'bg-purple-50 text-purple-600' :
                         u.role === 'tier1' ? 'bg-blue-50 text-blue-600' :
                         'bg-gray-50 text-gray-600'
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
                           onChange={async e => {
                             await handleApprove(u.id, e.target.value as 'admin' | 'tier1' | 'tier2');
                           }}
-                          className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
+                          className="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-600 transition-colors"
                         >
                           <option value="admin">관리자</option>
                           <option value="tier1">1순위</option>
@@ -293,14 +293,14 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleResetPassword(u.id, u.name)}
                               disabled={actionLoading === u.id + 'reset'}
-                              className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs rounded-lg hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
+                              className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 text-xs rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 whitespace-nowrap"
                             >
                               비번 초기화
                             </button>
                             <button
                               onClick={() => handleDelete(u.id, u.name)}
                               disabled={actionLoading === u.id + 'delete'}
-                              className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-lg hover:bg-red-50 disabled:opacity-50 whitespace-nowrap"
+                              className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs rounded-md hover:bg-red-50 transition-colors disabled:opacity-50 whitespace-nowrap"
                             >
                               삭제
                             </button>

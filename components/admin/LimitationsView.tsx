@@ -134,10 +134,10 @@ export function LimitationsView() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      <header className="bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <Link href="/admin" className="text-sm text-gray-400 hover:text-gray-700">← 관리자</Link>
-          <h1 className="text-lg font-semibold text-gray-900">한계 답변 추적</h1>
+          <Link href="/admin" className="text-sm text-gray-400 hover:text-gray-700 transition-colors">← 관리자</Link>
+          <h1 className="text-lg font-semibold tracking-tight text-gray-900">한계 답변 추적</h1>
         </div>
         <div className="flex items-center gap-3">
           {data && (
@@ -148,7 +148,7 @@ export function LimitationsView() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-700 disabled:bg-gray-300"
+            className="px-3.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md shadow-sm hover:bg-gray-700 disabled:bg-gray-300 transition-colors"
           >
             {refreshing && batchInfo
               ? `갱신 중... batch ${batchInfo.batchNum} (${batchInfo.totalProcessed}건)`
@@ -159,7 +159,7 @@ export function LimitationsView() {
 
       <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
         {/* 요약 + 필터 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-wrap items-center gap-4">
+        <div className="bg-white rounded-md border border-gray-100 shadow-sm p-5 flex flex-wrap items-center gap-4">
           {data && (
             <div className="flex gap-6 text-sm">
               <span>
@@ -192,16 +192,16 @@ export function LimitationsView() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="🔍 질문·발췌 검색"
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 w-52 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="text-xs border border-gray-200 rounded-md px-3 py-1.5 w-52 transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="text-xs text-gray-400 hover:text-gray-700">✕</button>
+              <button onClick={() => setSearch('')} className="text-xs text-gray-400 hover:text-gray-700 transition-colors">✕</button>
             )}
             <label className="text-xs text-gray-500 ml-2">위키</label>
             <select
               value={wikiFilter}
               onChange={e => setWikiFilter(e.target.value)}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+              className="text-xs border border-gray-200 rounded-md px-2 py-1.5 transition-colors hover:border-gray-300"
             >
               <option value="">전체</option>
               {wikiOptions.map(w => (
@@ -212,7 +212,7 @@ export function LimitationsView() {
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as SortBy)}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+              className="text-xs border border-gray-200 rounded-md px-2 py-1.5 transition-colors hover:border-gray-300"
             >
               <option value="rate">한계율</option>
               <option value="limited">한계 건수</option>
@@ -222,7 +222,7 @@ export function LimitationsView() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          <div className="rounded-md border border-amber-200 bg-amber-50 shadow-sm px-4 py-3 text-sm text-amber-700">
             {error}
           </div>
         )}
@@ -246,7 +246,7 @@ export function LimitationsView() {
         {/* 클러스터 섹션 */}
         {clusters.length > 0 && (
           <section>
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">
+            <h2 className="text-sm font-semibold tracking-tight text-gray-700 mb-3">
               📊 클러스터된 주제 ({clusters.length}개) <span className="text-xs text-gray-400 font-normal">— 복수 질문, 우선순위 신호</span>
             </h2>
             <div className="space-y-2">
@@ -265,7 +265,7 @@ export function LimitationsView() {
         {/* outlier 섹션 */}
         {outliers.length > 0 && (
           <section>
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">
+            <h2 className="text-sm font-semibold tracking-tight text-gray-700 mb-3">
               📌 단일 질문 — 한계 답변 ({outliers.reduce((s, o) => s + o.questions.length, 0)}건)
               <span className="text-xs text-gray-400 font-normal"> — 위키별로 그룹</span>
             </h2>
@@ -294,16 +294,16 @@ function ClusterCard({ cluster, expanded, onToggle }: { cluster: LimitationClust
   const wikiBadge = WIKI_COLORS[cluster.wiki] ?? 'bg-gray-50 text-gray-700 border-gray-200';
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100">
-      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 rounded-xl">
-        <span className={`shrink-0 px-2 py-0.5 text-xs rounded-md border ${wikiBadge}`}>
+    <div className="bg-white rounded-md border border-gray-100 shadow-sm transition-shadow hover:shadow-md">
+      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center gap-3 text-left rounded-md transition-colors hover:bg-gray-50">
+        <span className={`shrink-0 px-2.5 py-0.5 text-xs rounded-md border ${wikiBadge}`}>
           {WIKI_LABELS[cluster.wiki] ?? cluster.wiki}
         </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-800 font-medium truncate">{cluster.label}</span>
             {(cluster.newCount ?? 0) > 0 && (
-              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-500 text-white">🆕 NEW {cluster.newCount}</span>
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-blue-600 text-white">🆕 NEW {cluster.newCount}</span>
             )}
           </div>
           {/* 펼치기 전 대표 한계 발췌 1줄 미리보기 */}
@@ -334,16 +334,16 @@ function ClusterCard({ cluster, expanded, onToggle }: { cluster: LimitationClust
 function OutlierCard({ group, expanded, onToggle }: { group: OutlierGroup; expanded: boolean; onToggle: () => void }) {
   const wikiBadge = WIKI_COLORS[group.wiki] ?? 'bg-gray-50 text-gray-700 border-gray-200';
   return (
-    <div className="bg-white rounded-xl border border-gray-100">
-      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 rounded-xl">
-        <span className={`shrink-0 px-2 py-0.5 text-xs rounded-md border ${wikiBadge}`}>
+    <div className="bg-white rounded-md border border-gray-100 shadow-sm transition-shadow hover:shadow-md">
+      <button onClick={onToggle} className="w-full px-4 py-3 flex items-center gap-3 text-left rounded-md transition-colors hover:bg-gray-50">
+        <span className={`shrink-0 px-2.5 py-0.5 text-xs rounded-md border ${wikiBadge}`}>
           {WIKI_LABELS[group.wiki] ?? group.wiki}
         </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-800">단일 질문 — 한계 답변 {group.questions.length}건</span>
             {(group.newCount ?? 0) > 0 && (
-              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-500 text-white">🆕 NEW {group.newCount}</span>
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-blue-600 text-white">🆕 NEW {group.newCount}</span>
             )}
           </div>
           {/* 펼치기 전 대표 한계 발췌 1줄 미리보기 */}
@@ -374,16 +374,16 @@ function QuestionRow({ q }: {
   return (
     <div className="text-xs">
       <div className="flex items-start gap-2">
-        <span className="shrink-0 mt-0.5 w-2 h-2 rounded-full bg-red-400" />
+        <span className="shrink-0 mt-0.5 w-2 h-2 rounded-md bg-red-400" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             {q.isNew && (
-              <span className="shrink-0 px-1 py-0.5 text-[10px] font-bold rounded bg-blue-500 text-white">🆕 NEW</span>
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-blue-600 text-white">🆕 NEW</span>
             )}
             <p className="text-gray-800 font-medium">{q.question}</p>
           </div>
           {q.limitationExcerpt && (
-            <p className="mt-1 px-2 py-1 bg-amber-50 border border-amber-100 rounded text-amber-800 whitespace-pre-line">
+            <p className="mt-1 px-2.5 py-1.5 bg-amber-50 border border-amber-100 rounded-md text-amber-800 whitespace-pre-line">
               ⚠️ {q.limitationExcerpt}
             </p>
           )}

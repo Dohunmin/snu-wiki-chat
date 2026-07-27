@@ -99,8 +99,8 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
     const synth = selectedSynth ? dbSyntheses.find(s => s.id === selectedSynth) : null;
     return (
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-64 border-r border-gray-200 overflow-y-auto">
-          <div className="px-4 py-3 border-b border-gray-100 text-sm font-medium text-gray-700">채팅 Synthesis</div>
+        <div className="w-64 border-r border-gray-200/70 overflow-y-auto">
+          <div className="px-4 py-3 border-b border-gray-100 text-sm font-semibold tracking-tight text-gray-700">채팅 Synthesis</div>
           {dbSyntheses.length === 0 && (
             <div className="px-4 py-3 text-xs text-gray-400">저장된 synthesis가 없습니다</div>
           )}
@@ -108,7 +108,7 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
             <button
               key={s.id}
               onClick={() => setSelectedSynth(s.id)}
-              className={`w-full text-left px-4 py-3 border-b border-gray-50 text-xs hover:bg-gray-50 ${selectedSynth === s.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
+              className={`w-full text-left px-4 py-3 border-b border-gray-50 text-xs transition-colors hover:bg-gray-50 ${selectedSynth === s.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
             >
               <div className="font-medium truncate">{s.query}</div>
               <div className="text-gray-400 mt-0.5">{s.answeredAt}</div>
@@ -118,10 +118,10 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
         <div className="flex-1 overflow-y-auto p-6">
           {synth ? (
             <div className="md-body max-w-3xl">
-              <h1 className="text-xl font-semibold mb-4">{synth.query}</h1>
+              <h1 className="text-xl font-semibold tracking-tight mb-4">{synth.query}</h1>
               <div className="flex gap-2 mb-4 flex-wrap">
                 {synth.routedTo?.map(r => (
-                  <span key={r} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">{r}</span>
+                  <span key={r} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md">{r}</span>
                 ))}
                 <span className="text-xs text-gray-400">{synth.answeredAt}</span>
               </div>
@@ -140,7 +140,7 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
     return (
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-3xl">
-          <h1 className="text-xl font-semibold text-gray-900 mb-1">📰 최신 공지·뉴스</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-gray-900 mb-1">📰 최신 공지·뉴스</h1>
           <p className="text-xs text-gray-400 mb-4">게시판 캐시(자동 갱신, 일 2회) · 항목 클릭 시 원문으로 이동</p>
           {liveBoards.length === 0 && (
             <div className="text-gray-400 text-sm">갱신된 공지·뉴스가 없습니다. (크롤 미실행 또는 만료)</div>
@@ -148,18 +148,18 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
           {liveBoards.map(b => (
             <section key={b.board} className="mb-6">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <h2 className="text-sm font-semibold text-gray-700">
+                <h2 className="text-sm font-semibold tracking-tight text-gray-700">
                   {b.board === 'notice' ? '📌 공지' : b.board === 'news' ? '🗞️ 뉴스' : b.board}
                 </h2>
                 <span className="text-xs text-gray-400">{b.items.length}건</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${b.fresh ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-md ${b.fresh ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                   {b.fresh ? '✓ 신선' : '⚠ 갱신 지연'} · {relTime(b.fetchedAt)}
                 </span>
               </div>
-              <ul className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
+              <ul className="divide-y divide-gray-100 border border-gray-100 rounded-md shadow-sm overflow-hidden">
                 {b.items.map((it, i) => (
                   <li key={i}>
-                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="block px-4 py-2.5 hover:bg-gray-50">
+                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="block px-4 py-2.5 transition-colors hover:bg-gray-50">
                       <span className="text-sm text-gray-700 line-clamp-2">{it.title}</span>
                       {it.date && <span className="text-xs text-gray-400 mt-0.5 block">{it.date}</span>}
                     </a>
@@ -177,15 +177,15 @@ export default function WikiViewer({ selected }: WikiViewerProps) {
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-3xl">
-        <h1 className="text-xl font-semibold text-gray-900 mb-3">{title}</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-gray-900 mb-3">{title}</h1>
         {Object.keys(meta).length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {/* tags/topics가 배열이 아닐 수 있음(단과대 빌드가 빈값을 "" 문자열로 내보냄) → Array.isArray 가드로 .map 크래시 방지 */}
             {(Array.isArray(meta.tags) ? meta.tags as string[] : []).map(t => (
-              <span key={t} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{t}</span>
+              <span key={t} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md">{t}</span>
             ))}
             {(Array.isArray(meta.topics) ? meta.topics as string[] : []).map(t => (
-              <span key={t} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">{t}</span>
+              <span key={t} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md">{t}</span>
             ))}
             {meta.date != null && <span className="text-xs text-gray-400">{String(meta.date)}</span>}
             {meta.answeredAt != null && <span className="text-xs text-gray-400">{String(meta.answeredAt)}</span>}

@@ -35,7 +35,7 @@ const WIKI_COLORS: Record<string, string> = {
   history: 'border-l-orange-500',
   status: 'border-l-teal-500',
   'yhl-speeches': 'border-l-rose-500',
-  finance: 'border-l-indigo-500',
+  finance: 'border-l-[#26365f]',
   leesj: 'border-l-fuchsia-500',
 };
 const GROUP_COLOR: Record<string, string> = {
@@ -88,7 +88,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
   }
 
   const renderCard = (wiki: WikiMeta) => (
-    <div key={wiki.id} className={`rounded-xl border border-gray-200 overflow-hidden border-l-4 ${colorFor(wiki)}`}>
+    <div key={wiki.id} className={`rounded-md border border-gray-100 shadow-sm overflow-hidden border-l-4 ${colorFor(wiki)}`}>
       <button
         onClick={() => expand(wiki.id)}
         className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 text-left bg-white"
@@ -131,10 +131,10 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(p => ({ ...p, [wiki.id]: tab.key }))}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
                   getTab(wiki) === tab.key
                     ? tab.color
-                    : 'text-gray-500 bg-white border border-gray-200 hover:bg-gray-100'
+                    : 'text-gray-500 bg-white border border-gray-200/70 hover:bg-gray-50'
                 }`}
               >
                 {tab.label}
@@ -186,10 +186,10 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
     if (list.length === 0) return null;
     const open = openGroups[title];
     return (
-      <div className={`rounded-xl border border-gray-200 overflow-hidden border-l-4 ${border}`}>
+      <div className={`rounded-md border border-gray-100 shadow-sm overflow-hidden border-l-4 ${border}`}>
         <button
           onClick={() => setOpenGroups(p => ({ ...p, [title]: !p[title] }))}
-          className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 text-left bg-white"
+          className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 text-left bg-white transition-colors"
         >
           <div>
             <span className="text-sm font-semibold text-gray-800">{icon} {title}</span>
@@ -208,7 +208,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="px-5 py-4 border-b border-gray-200">
+      <div className="px-5 py-4 border-b border-gray-100">
         <p className="text-xs text-gray-400 mt-0.5">위키를 클릭해 소스·팩트·입장 등을 탐색하세요</p>
       </div>
 
@@ -216,7 +216,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
         {/* 거버넌스 — 항상 펼침 */}
         {governance.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-500 tracking-wide px-2">거버넌스</p>
+            <p className="text-xs font-semibold text-gray-500 tracking-wide px-2">거버넌스</p>
             {governance.map(renderCard)}
           </div>
         )}
@@ -226,7 +226,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
         {renderGroupCard('대학원', grads, 'border-l-violet-500', '🎓')}
 
         {/* 채팅 Synthesis */}
-        <div className="rounded-xl border border-gray-200 overflow-hidden border-l-4 border-l-rose-400">
+        <div className="rounded-md border border-gray-100 shadow-sm overflow-hidden border-l-4 border-l-rose-400">
           <button
             onClick={() => onSelect('chat', 'syntheses', '__list')}
             className={`w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors ${
@@ -237,7 +237,7 @@ export default function WikiNav({ wikis, selected, onSelect }: WikiNavProps) {
               <span className="text-sm font-semibold text-gray-800">채팅 Synthesis</span>
               <p className="text-xs text-gray-400 mt-0.5">저장된 Q&A 모음</p>
             </div>
-            <span className="text-xs px-2 py-1 bg-rose-100 text-rose-600 rounded-full">DB</span>
+            <span className="text-xs px-2 py-1 bg-rose-100 text-rose-600 rounded-md">DB</span>
           </button>
         </div>
       </div>

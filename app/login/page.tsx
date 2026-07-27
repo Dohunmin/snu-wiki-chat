@@ -30,14 +30,14 @@ export default function LoginPage() {
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px 14px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid #e5e7eb',
     borderRadius: '6px',
-    backgroundColor: '#fafafa',
-    fontSize: '13px',
-    color: '#333',
+    backgroundColor: '#f9fafb',
+    fontSize: '14px',
+    color: '#1f2937',
     outline: 'none',
     boxSizing: 'border-box',
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
+    transition: 'border-color 0.15s ease, background-color 0.15s ease',
   };
 
   return (
@@ -46,16 +46,15 @@ export default function LoginPage() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#c4c4c4',
-      fontFamily: "'Helvetica Neue', Arial, sans-serif",
+      backgroundColor: '#f5f6f8',
       padding: '20px',
     }}>
       <div style={{
         backgroundColor: '#ffffff',
         width: '340px',
         padding: '40px 35px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        borderRadius: '10px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.06)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,12 +63,11 @@ export default function LoginPage() {
 
         <h2 style={{
           textAlign: 'center',
-          fontWeight: 400,
+          fontWeight: 600,
           fontSize: '22px',
           color: '#1a1a1a',
           marginBottom: '28px',
-          letterSpacing: '0.5px',
-          fontFamily: "'Georgia', 'Times New Roman', serif",
+          letterSpacing: '-0.01em',
         }}>Log in</h2>
 
         <form onSubmit={handleSubmit}>
@@ -81,8 +79,8 @@ export default function LoginPage() {
               placeholder="아이디"
               required
               style={inputStyle}
-              onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
-              onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
+              onFocus={e => { e.target.style.borderColor = '#26365f'; e.target.style.backgroundColor = '#fff'; }}
+              onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
             />
           </div>
 
@@ -94,13 +92,13 @@ export default function LoginPage() {
               placeholder="비밀번호"
               required
               style={{ ...inputStyle, paddingRight: '40px' }}
-              onFocus={e => { e.target.style.borderColor = '#1a1a1a'; e.target.style.backgroundColor = '#fff'; }}
-              onBlur={e => { e.target.style.borderColor = '#d9d9d9'; e.target.style.backgroundColor = '#fafafa'; }}
+              onFocus={e => { e.target.style.borderColor = '#26365f'; e.target.style.backgroundColor = '#fff'; }}
+              onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.backgroundColor = '#f9fafb'; }}
             />
             <button
               type="button"
               onClick={() => setShowPassword(v => !v)}
-              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9a9a9a', fontSize: '14px', padding: 0 }}
+              style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9a9a9a', fontSize: '14px', padding: 0, transition: 'color 0.15s ease' }}
             >
               {showPassword ? '🙈' : '👁'}
             </button>
@@ -113,16 +111,16 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               style={{
-                padding: '10px 48px',
-                backgroundColor: loading ? '#555' : '#1a1a1a',
+                padding: '11px 48px',
+                backgroundColor: loading ? '#a5b4fc' : '#26365f',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '4px',
-                fontSize: '11px',
+                borderRadius: '6px',
+                fontSize: '13px',
                 fontWeight: 600,
-                letterSpacing: '1.5px',
+                letterSpacing: '0.5px',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                transition: 'background-color 0.15s ease',
               }}
             >
               {loading ? '로그인 중...' : 'SUBMIT'}
@@ -130,7 +128,7 @@ export default function LoginPage() {
           </div>
         </form>
 
-        <Link href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#888', textDecoration: 'none' }}>
+        <Link href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#6b7280', textDecoration: 'none' }}>
           계정이 없으신가요? 가입 신청
         </Link>
       </div>

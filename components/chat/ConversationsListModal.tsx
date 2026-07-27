@@ -41,14 +41,14 @@ export function ConversationsListModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[70vh] mt-8"
+        className="bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 w-full max-w-md mx-4 flex flex-col max-h-[70vh] mt-8"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-800">{title} ({conversations.length}개)</h2>
+          <h2 className="text-sm font-semibold tracking-tight text-gray-800">{title} ({conversations.length}개)</h2>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 text-base"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 text-base"
           >
             ✕
           </button>
@@ -62,26 +62,26 @@ export function ConversationsListModal({
 
             const rowBg = isCurrent
               ? variant === 'mine'
-                ? 'bg-blue-50 border-l-blue-400'
+                ? 'bg-[#f2ece7] border-l-[#b5623f]'
                 : 'bg-amber-50 border-l-amber-400'
               : isLens
               ? 'bg-emerald-50 hover:bg-emerald-100 border-l-emerald-400'
-              : 'border-l-transparent hover:bg-gray-100';
+              : 'border-l-transparent hover:bg-gray-50';
 
             const titleClass = isCurrent
               ? variant === 'mine'
-                ? 'text-blue-700 font-medium'
+                ? 'text-[#8a4a2f] font-medium'
                 : 'text-amber-700 font-medium'
               : 'text-gray-600';
 
             return (
               <div
                 key={conv.id}
-                className={`group flex items-center rounded-lg border-l-2 transition-colors ${rowBg}`}
+                className={`group flex items-center rounded-md border-l-2 transition-colors ${rowBg}`}
               >
                 <button
                   onClick={() => onSelect(conv.id)}
-                  className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm flex items-center gap-1.5 ${titleClass}`}
+                  className={`min-w-0 flex-1 truncate px-4 py-3 text-left text-sm flex items-center gap-1.5 ${titleClass}`}
                 >
                   {isLens && <span className="text-xs shrink-0">🎯</span>}
                   <span className="truncate">{conv.title ?? '(제목 없음)'}</span>
@@ -89,7 +89,7 @@ export function ConversationsListModal({
                 {onDelete && (
                   <button
                     onClick={(e) => onDelete(conv.id, e)}
-                    className="mr-1.5 hidden shrink-0 rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 group-hover:flex"
+                    className="mr-1.5 hidden shrink-0 rounded-md p-1 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-400 group-hover:flex"
                     title="삭제"
                   >
                     <TrashIconSmall />

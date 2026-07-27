@@ -20,7 +20,7 @@ export default function PendingActions() {
       <button
         type="button"
         onClick={() => router.refresh()}
-        className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+        className="rounded-md border border-gray-100 shadow-sm px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:shadow-md"
       >
         승인 상태 새로고침
       </button>
@@ -28,7 +28,7 @@ export default function PendingActions() {
         type="button"
         onClick={handleLogout}
         disabled={loading}
-        className="rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50"
+        className="rounded-md px-3 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50"
       >
         {loading ? '로그아웃 중...' : '로그아웃'}
       </button>

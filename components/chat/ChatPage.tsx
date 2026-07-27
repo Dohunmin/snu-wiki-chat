@@ -449,7 +449,7 @@ export default function ChatPage({ user }: { user: User }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white text-gray-900">
+    <div className="flex h-screen overflow-hidden bg-[#f5f6f8] text-slate-900">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
@@ -460,12 +460,12 @@ export default function ChatPage({ user }: { user: User }) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-gray-50 border-r border-gray-200
+        fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-[#ffffff] border-r border-[#e6e8ee]
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:relative md:translate-x-0 md:flex
       `}>
-        <div className="flex h-14 items-center gap-2.5 px-4 border-b border-gray-200">
+        <div className="flex h-16 items-center gap-2.5 px-5 border-b border-[#e6e8ee]">
           <img src="/snu-logo.png" alt="SNU" className="h-7 w-7 shrink-0 object-contain" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-gray-900">SNU 거버넌스 위키</p>
@@ -476,14 +476,14 @@ export default function ChatPage({ user }: { user: User }) {
         <div className="px-3 pt-3 pb-1 flex flex-col gap-1">
           <button
             onClick={newConversation}
-            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm font-semibold bg-gradient-to-r from-[#26365f] to-[#26365f] text-white shadow-[0_8px_20px_rgba(38, 54, 95,0.28)] hover:brightness-105 transition"
           >
             <PlusIcon />
             새 대화
           </button>
           <Link
             href="/wiki"
-            className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm font-medium text-gray-700 hover:bg-[#e6e8ee] transition-colors"
           >
             <BookIcon />
             위키 탐색
@@ -493,7 +493,7 @@ export default function ChatPage({ user }: { user: User }) {
               href="/knowledge-map.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+              className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm font-medium text-gray-700 hover:bg-[#e6e8ee] transition-colors"
             >
               <MapIcon />
               지식 지형도
@@ -518,9 +518,9 @@ export default function ChatPage({ user }: { user: User }) {
                     return (
                       <div
                         key={conv.id}
-                        className={`group flex items-center rounded-lg transition-colors border-l-2 ${
+                        className={`group flex items-center rounded-md transition-colors border-l-2 ${
                           isCurrent
-                            ? 'bg-blue-50 border-l-blue-400'
+                            ? 'bg-[#eaedf4] border-l-[#26365f]'
                             : isLens
                             ? 'bg-emerald-50 hover:bg-emerald-100 border-l-emerald-400'
                             : 'border-l-transparent hover:bg-gray-100'
@@ -528,8 +528,8 @@ export default function ChatPage({ user }: { user: User }) {
                       >
                         <button
                           onClick={() => loadConversation(conv.id)}
-                          className={`min-w-0 flex-1 truncate px-3 py-2.5 text-left text-sm flex items-center gap-1.5 ${
-                            isCurrent ? 'text-blue-700 font-medium' : 'text-gray-600'
+                          className={`min-w-0 flex-1 truncate px-3.5 py-3 text-left text-sm flex items-center gap-1.5 ${
+                            isCurrent ? 'text-[#1a2647] font-medium' : 'text-gray-600'
                           }`}
                         >
                           {isLens && <span className="text-xs shrink-0">🎯</span>}
@@ -537,7 +537,7 @@ export default function ChatPage({ user }: { user: User }) {
                         </button>
                         <button
                           onClick={(e) => deleteConversation(conv.id, e)}
-                          className="mr-1.5 hidden shrink-0 rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 group-hover:flex"
+                          className="mr-1.5 hidden shrink-0 rounded-md p-1 text-gray-300 hover:bg-red-50 hover:text-red-400 transition-colors group-hover:flex"
                           title="삭제"
                         >
                           <TrashIcon />
@@ -549,7 +549,7 @@ export default function ChatPage({ user }: { user: User }) {
                 {conversations.length > CONV_PREVIEW && (
                   <button
                     onClick={() => setShowMyConvsModal(true)}
-                    className="mt-1 w-full px-3 py-1.5 text-left text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="mt-1 w-full px-3 py-1.5 text-left text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     전체 보기 ({conversations.length}개) ▼
                   </button>
@@ -591,7 +591,7 @@ export default function ChatPage({ user }: { user: User }) {
                       return (
                         <div
                           key={conv.id}
-                          className={`rounded-lg transition-colors border-l-2 ${
+                          className={`rounded-md transition-colors border-l-2 ${
                             isCurrent ? 'bg-amber-50 border-l-amber-400' : 'border-l-transparent hover:bg-gray-100'
                           }`}
                         >
@@ -609,7 +609,7 @@ export default function ChatPage({ user }: { user: User }) {
                     {publicConvs.length > PUBLIC_PREVIEW && (
                       <button
                         onClick={() => setShowPublicConvsModal(true)}
-                        className="mt-1 w-full px-3 py-1.5 text-left text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="mt-1 w-full px-3 py-1.5 text-left text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
                       >
                         전체 보기 ({publicConvs.length}개) ▼
                       </button>
@@ -622,23 +622,23 @@ export default function ChatPage({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="border-t border-gray-200 p-3 space-y-0.5">
+        <div className="border-t border-gray-100 p-3 space-y-0.5">
           {canUpload(user.role) && (
             <button
               onClick={openUpload}
-              className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+              className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <UploadIcon />
               자료 업로드
             </button>
           )}
           {canAccessAdmin(user.role) && (
-            <a href="/admin" className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+            <a href="/admin" className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
               <SettingsIcon />
               관리자
             </a>
           )}
-          <a href="/account" className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+          <a href="/account" className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -647,7 +647,7 @@ export default function ChatPage({ user }: { user: User }) {
           </a>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-sm text-gray-500 hover:bg-gray-100 transition-colors"
+            className="flex h-10 w-full items-center gap-2.5 rounded-md px-3 text-sm text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <LogoutIcon />
             로그아웃
@@ -657,11 +657,11 @@ export default function ChatPage({ user }: { user: User }) {
 
       {/* Main */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4 md:px-8">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#e6e8ee] px-5 md:px-8">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 md:hidden"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 transition-colors md:hidden"
               aria-label="메뉴 열기"
             >
               <HamburgerIcon />
@@ -673,7 +673,7 @@ export default function ChatPage({ user }: { user: User }) {
 
         {notice && (
           <div className="mx-auto mt-3 w-full max-w-3xl px-5 md:px-8">
-            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
+            <div className="rounded-md border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
               {notice}
             </div>
           </div>
@@ -687,8 +687,8 @@ export default function ChatPage({ user }: { user: User }) {
           ) : messages.length === 0 ? (
             <WelcomePanel onPickQuestion={sendMessage} />
           ) : (
-            <div className="w-full py-8 flex justify-center px-6">
-              <div className="w-full max-w-2xl flex flex-col gap-6">
+            <div className="w-full py-12 flex justify-center px-6">
+              <div className="w-full max-w-2xl flex flex-col gap-10">
                 {messages.map((msg, i) => (
                   <MessageBubble
                     key={msg.id}
@@ -713,18 +713,18 @@ export default function ChatPage({ user }: { user: User }) {
             </button>
           </div>
         )}
-        <div className={`shrink-0 border-t border-gray-200 bg-white py-5 flex justify-center px-6 ${isReadOnly ? 'hidden' : ''}`}>
+        <div className={`shrink-0 py-6 flex justify-center px-6 ${isReadOnly ? 'hidden' : ''}`}>
           <div className="w-full max-w-2xl">
             {/* Lens 자료 부족 알림 */}
             {lensInsufficient && (
-              <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 ⚠️ <strong>{lensInsufficient}</strong>의 명시적 입장 자료가 이 주제에 대해 없습니다. 일반 자료 기반으로 답변되었습니다.
               </div>
             )}
 
             {/* 활성 모드 배지 */}
             {chatMode.startsWith('lens:') && (
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs">
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs">
                 <span>🎯</span>
                 <span className="font-medium text-emerald-700">
                   {LENS_PERSONAS.find(p => p.id === chatMode.slice(5))?.displayName ?? chatMode.slice(5)} 시각으로 분석
@@ -739,13 +739,13 @@ export default function ChatPage({ user }: { user: User }) {
               </div>
             )}
 
-            <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
+            <div className="flex items-center gap-2 rounded-lg border border-[#e6e8ee] bg-white px-3 py-2.5 shadow-[0_2px_16px_rgba(0,0,0,0.04)] focus-within:border-slate-300 focus-within:shadow-[0_6px_24px_rgba(0,0,0,0.07)] transition-all">
               {/* 통합 + 메뉴 (자료 업로드 + 모드 전환) */}
               <div ref={modeMenuRef} className="relative shrink-0 flex h-8 items-center">
                 <button
                   type="button"
                   onClick={() => setModeMenuOpen(o => !o)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
                   title="옵션"
                   aria-label="옵션 메뉴 열기"
                 >
@@ -753,7 +753,7 @@ export default function ChatPage({ user }: { user: User }) {
                 </button>
 
                 {modeMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-2 w-72 rounded-xl border border-gray-200 bg-white shadow-lg py-1.5 z-20">
+                  <div className="absolute bottom-full left-0 mb-2 w-72 rounded-md border border-gray-100 bg-white shadow-lg py-1.5 z-20">
                     <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">응답 모드</div>
                     <button
                       onClick={() => { setChatMode('normal'); setModeMenuOpen(false); }}
@@ -796,7 +796,7 @@ export default function ChatPage({ user }: { user: User }) {
                               {isActive && <span className="text-emerald-600">✓</span>}
                               후보 lens 모드 ({persona.displayName})
                               {!canLens && (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">1차 접근 이상</span>
+                                <span className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-md">1차 접근 이상</span>
                               )}
                             </div>
                             <p className="text-xs text-gray-500 mt-0.5">{persona.displayName} 시각으로 자료 분석</p>
@@ -838,7 +838,7 @@ export default function ChatPage({ user }: { user: User }) {
               <button
                 onClick={() => (loading ? stopGeneration() : sendMessage())}
                 disabled={!loading && !input.trim()}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#26365f] to-[#26365f] text-white shadow-[0_8px_18px_rgba(38, 54, 95,0.3)] transition hover:brightness-110 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                 title={loading ? '중지' : '전송'}
                 aria-label={loading ? '생성 중지' : '전송'}
               >
@@ -948,10 +948,10 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
+      <form onSubmit={handleSubmit} className="w-full max-w-lg rounded-md bg-white p-6 shadow-lg ring-1 ring-gray-900/5">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold text-gray-900">자료 업로드</h2>
-          <button type="button" onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="닫기">
+          <button type="button" onClick={onClose} className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors" aria-label="닫기">
             <CloseIcon />
           </button>
         </div>
@@ -962,7 +962,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
             <select
               value={agentId}
               onChange={e => setAgentId(e.target.value as typeof agentId)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             >
               {AGENT_OPTIONS.map(option => (
                 <option key={option.id} value={option.id}>{option.label}</option>
@@ -976,7 +976,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
               type="file"
               accept=".md,.txt,.json,.csv,.pdf,.docx,.hwp,.xlsx"
               onChange={handleFileChange}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:text-gray-700"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:text-gray-700"
             />
           </div>
 
@@ -986,7 +986,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
               <input
                 value={fileName}
                 onChange={e => setFileName(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -994,7 +994,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
 
           {/* 선택된 파일 정보 */}
           {content && (
-            <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-sm text-gray-600">
+            <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2.5 text-sm text-gray-600">
               <span className="text-base">{isBinary ? '📎' : '📄'}</span>
               <span className="flex-1 truncate">{fileName}</span>
               <span className="text-xs text-gray-400">{fileSize}</span>
@@ -1009,7 +1009,7 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 rows={6}
-                className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full resize-none rounded-md border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           )}
@@ -1018,13 +1018,13 @@ function UploadModal({ onClose, onUploaded }: { onClose: () => void; onUploaded:
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
+          <button type="button" onClick={onClose} className="rounded-md px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
             취소
           </button>
           <button
             type="submit"
             disabled={loading || !fileName.trim() || !content}
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
           >
             {loading ? '업로드 중...' : '업로드'}
           </button>
@@ -1038,16 +1038,16 @@ function WelcomePanel({ onPickQuestion }: { onPickQuestion: (question: string) =
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
       <div className="w-full max-w-3xl flex flex-col items-center text-center">
-        <h2 className="text-3xl font-semibold text-gray-900">무엇을 확인할까요?</h2>
-        <p className="mt-2.5 text-base leading-relaxed text-gray-500">
+        <h2 className="text-[32px] font-bold tracking-tight text-slate-900">무엇을 확인할까요?</h2>
+        <p className="mt-2.5 text-base leading-relaxed text-slate-500">
           서울대 거버넌스 자료를 바탕으로 질문에 답합니다.
         </p>
-        <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="mt-8 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
           {EXAMPLE_QUESTIONS.map(q => (
             <button
               key={q}
               onClick={() => onPickQuestion(q)}
-              className="rounded-2xl border border-gray-200 bg-white px-10 py-6 text-center text-base text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm leading-relaxed whitespace-nowrap"
+              className="rounded-md border border-[#e6e8ee] bg-white px-5 py-4 text-left text-[15px] text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md transition-all shadow-sm leading-relaxed"
             >
               {q}
             </button>
@@ -1088,7 +1088,7 @@ function SynthesisSaveButton({ message, userQuery }: { message: Message; userQue
   }
 
   if (saved) return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3.5 py-1.5 text-sm text-green-600">
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 border border-green-200 px-3.5 py-1.5 text-sm text-green-600">
       위키에 저장됨
     </span>
   );
@@ -1096,7 +1096,7 @@ function SynthesisSaveButton({ message, userQuery }: { message: Message; userQue
     <button
       onClick={save}
       disabled={saving}
-      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-sm text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-md bg-[#26365f] px-4 py-1.5 text-sm font-medium text-white shadow-[0_6px_16px_rgba(38, 54, 95,0.28)] hover:bg-[#1a2647] transition-colors"
     >
       {saving ? '저장 중...' : '위키에 저장'}
     </button>
@@ -1128,10 +1128,10 @@ function CopyAnswerButton({ content }: { content: string }) {
   return (
     <button
       onClick={copy}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-md border px-3.5 py-1.5 text-sm transition-colors ${
         copied
           ? 'border-green-200 bg-green-50 text-green-600'
-          : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600'
+          : 'border-gray-200 bg-white text-gray-500 hover:border-[#7f8db0] hover:bg-[#eaedf4] hover:text-[#26365f]'
       }`}
       title="인용 표시를 제외한 답변 본문을 복사합니다"
     >
@@ -1145,7 +1145,7 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-blue-600 px-6 py-4 text-base leading-relaxed text-white">
+        <div className="max-w-[80%] whitespace-pre-wrap break-words rounded-lg rounded-tr-sm bg-gradient-to-br from-[#26365f] to-[#26365f] px-5 py-3.5 text-[15px] leading-relaxed text-white shadow-[0_8px_20px_rgba(38, 54, 95,0.28)]">
           {message.content}
         </div>
       </div>
@@ -1155,11 +1155,11 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
   if (message.error) {
     return (
       <div className="flex gap-3">
-        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-500">
+        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-100 text-xs font-bold text-red-500">
           !
         </div>
         <div className="min-w-0 flex-1">
-          <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+          <div className="rounded-md border border-red-100 bg-red-50 px-4 py-3">
             <p className="text-base font-medium text-red-700 mb-1">응답 오류</p>
             <p className="text-base text-red-600 leading-relaxed whitespace-pre-wrap">{message.content}</p>
           </div>
@@ -1169,13 +1169,16 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
   }
 
   return (
-    <div className="flex gap-3">
-      <div className="mt-0.5 h-7 w-7 shrink-0" />
+    <div className="flex gap-4">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#eaedf4] ring-1 ring-[#d3dae9]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/snu-logo.png" alt="" className="h-5 w-5 object-contain" />
+      </div>
       <div className="min-w-0 flex-1 pt-0.5">
         {message.agentNames && message.agentNames.length > 0 && (
           <div className="mb-2.5 flex flex-wrap gap-1.5">
             {message.agentNames.map(name => (
-              <span key={name} className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+              <span key={name} className="rounded-md bg-[#eaedf4] px-2.5 py-1 text-xs font-semibold text-[#1a2647]">
                 {name}
               </span>
             ))}
@@ -1191,7 +1194,7 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
                     return (
                       <Link
                         href={href}
-                        className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors no-underline mx-0.5"
+                        className="inline-flex items-center rounded-md border border-[#c8d0e2] bg-[#eaedf4] px-2 py-0.5 text-xs font-medium text-[#26365f] hover:bg-[#dbe1ee] transition-colors no-underline mx-0.5"
                       >
                         {children}
                       </Link>
@@ -1206,13 +1209,13 @@ function MessageBubble({ message, userQuery = '' }: { message: Message; userQuer
           ) : null}
           {message.streaming && !message.content && (
             <span className="inline-flex gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="h-1.5 w-1.5 rounded-md bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="h-1.5 w-1.5 rounded-md bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="h-1.5 w-1.5 rounded-md bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
             </span>
           )}
           {message.streaming && message.content && (
-            <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse rounded-full bg-gray-400 align-middle" />
+            <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse rounded-md bg-gray-400 align-middle" />
           )}
         </div>
         {!message.streaming && !message.error && message.content && (
