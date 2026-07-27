@@ -154,13 +154,32 @@ export async function embedBatched(
 
 /**
  * 단일 텍스트 임베딩 (편의 함수, 주로 검색 시 사용).
+ *
+ * 프로세스-로컬 캐시: 임베딩은 (text, inputType)에 대해 결정론적이므로 같은 쿼리를
+ * 반복 임베딩하지 않는다. 한 요청의 라우팅에서 semanticRoutingHints 1회 + dispatch된
+ * 위키마다 searchVector 1회씩 동일 쿼리를 1+N회 재임베딩하던 것을 1회로 합친다
+ * (semantic이 먼저 await→캐시 적재 후 per-wiki 병렬검색이 히트). 결과는 byte-identical.
+ * in-flight Promise를 캐시해 병렬 레이스도 dedup, 실패 시 evict해 재시도 가능.
+ * bounded FIFO(누수 방지). embedBatched(빌드 배치 경로)는 캐시 안 씀 — 무영향.
  */
-export async function embedOne(
+const EMBED_ONE_CACHE_MAX = 512;
+const _embedOneCache = new Map<string, Promise<number[]>>();
+
+export function embedOne(
   text: string,
   inputType: 'document' | 'query' = 'query',
 ): Promise<number[]> {
-  const [emb] = await embedBatched([text], inputType);
-  return emb;
+  const key = `${inputType}:${text}`;
+  const hit = _embedOneCache.get(key);
+  if (hit) return hit;
+
+  const p = embedBatched([text], inputType).then(([emb]) => emb);
+  p.catch(() => _embedOneCache.delete(key));   // 실패한 Promise는 캐시서 제거 → 다음 호출 재시도
+  if (_embedOneCache.size >= EMBED_ONE_CACHE_MAX) {
+    _embedOneCache.delete(_embedOneCache.keys().next().value as string);   // 가장 오래된 것 evict
+  }
+  _embedOneCache.set(key, p);
+  return p;
 }
 
 // ─── Stage-2 리랭커 (rag 감사 rank1 — cross-encoder 진짜 관련도 재채점) ───
