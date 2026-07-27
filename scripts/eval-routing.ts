@@ -60,6 +60,7 @@ const NO_RERANK = argv.includes('--no-rerank');
 const WITH_BG = argv.includes('--with-background');
 const LIMIT = Number(getArg('--limit', '0')) || 0;
 const ROLE = (getArg('--role', 'admin') as Role);
+const GOLD_PATH = getArg('--gold', 'scripts/routing-gold.json')!;
 
 // ── per-call 환경 토글 (정찰: 전부 함수 바디에서 per-call read) ────────────────
 if (NO_RERANK) process.env.RERANK_ENABLED = 'false'; // 두 rerank 단계 모두 OFF
@@ -138,7 +139,7 @@ const avg = (sum: number, den: number) => (den === 0 ? '—' : (sum / den).toFix
 
 // ── 메인 ──────────────────────────────────────────────────────────────────
 async function main() {
-  const goldPath = 'scripts/routing-gold.json';
+  const goldPath = GOLD_PATH;
   const gold: GoldLabel[] = JSON.parse(fs.readFileSync(goldPath, 'utf-8')).labels;
   const labels = LIMIT ? gold.slice(0, LIMIT) : gold;
   const scorableN = labels.filter((g) => g.goldWikis.length > 0).length;
@@ -231,10 +232,11 @@ async function main() {
     }
   }
 
-  const outPath = 'scripts/eval-routing.out.md';
+  const tag = GOLD_PATH.includes('routing-gold.json') ? '' : '-' + (GOLD_PATH.split('/').pop() || '').replace(/\.json$/, '').replace(/^routing-gold-?/, '');
+  const outPath = `scripts/eval-routing${tag}.out.md`;
   fs.writeFileSync(outPath, out.join('\n'), 'utf-8');
 
-  const resultsPath = 'scripts/eval-routing.results.json';
+  const resultsPath = `scripts/eval-routing${tag}.results.json`;
   fs.writeFileSync(resultsPath, JSON.stringify({
     meta: { at: null, paths: PATHS, role: ROLE, noRerank: NO_RERANK, withBackground: WITH_BG, scorableN, chunkN },
     aggregate: aggAll, byCategory: aggCat, perQuery,

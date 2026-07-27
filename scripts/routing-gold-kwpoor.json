@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "purpose": "키워드-poor 의미쿼리 gold — gold 위키의 라우팅 키워드를 하나도 안 쓰고 자연/구어로 표현한 policy·stat 질문. legacy(키워드-first)가 의미쿼리서 무너지는지 vs global(retrieve-first, floor)이 이기는지 판정용.",
+    "integrity": "각 query는 goldWikis의 어떤 키워드도 substring으로 포함하지 않아야 함(scripts로 검증). 그래야 legacy는 semanticRoutingHints/concept 신호에만 의존 → 진짜 의미라우팅 테스트.",
+    "note": "정답 청크는 Step1 재임베딩된 조문/ fact 청크. hint는 기존 코퍼스 검증본과 동일."
+  },
+  "labels": [
+    {
+      "id": "kw-policy-janghakbokji",
+      "query": "가정 형편이 어려운 이들을 금전적으로 돕는 상설 기구가 서울대 최고 규범에 명시돼 있나?",
+      "category": "kwpoor-policy",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제27조(장학·복지위원회)",
+      "note": "제27조 장학·복지위. '장학금·위원회·정관·규정·학생' 등 policy 키워드 회피(금전적/상설 기구/최고 규범)."
+    },
+    {
+      "id": "kw-policy-mokjeok",
+      "query": "서울대가 애초에 무슨 뜻을 품고 세워진 곳인지 그 취지가 어디에 적혀 있어?",
+      "category": "kwpoor-policy",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제2조(목적",
+      "note": "정관 제2조 목적. '정관·규정·법인·설립·목적' 회피(뜻을 품고 세워진/취지)."
+    },
+    {
+      "id": "kw-policy-pyeonguiwon",
+      "query": "학교 구성원을 대표해 운영의 큰 방향을 함께 논의하는 상설 협의체의 근거가 어디 있어?",
+      "category": "kwpoor-policy",
+      "kind": "chunk-labeled",
+      "goldWikis": ["policy"],
+      "goldChunkHint": "제18조(평의원회)",
+      "note": "정관 제18조 평의원회. '평의원회·정관·규정·심의·위원회·교직원' 회피(구성원 대표/논의/협의체). ⚠senate로 갈 여지 있음(그 자체가 관찰 포인트)."
+    },
+    {
+      "id": "kw-stat-jeonim",
+      "query": "서울대에서 정규직으로 가르치는 선생님이 모두 몇 분이야?",
+      "category": "kwpoor-stat",
+      "kind": "chunk-labeled",
+      "goldWikis": ["stat-yearbook"],
+      "goldChunkHint": "교원 현황",
+      "note": "전임교원 수. '교원·전임교원·교수·통계' 회피(정규직/가르치는 선생님). ⚠status(alwaysContext)도 교원 보유."
+    },
+    {
+      "id": "kw-stat-deungrok",
+      "query": "서울대를 4년 다니면 해마다 얼마씩 내야 해?",
+      "category": "kwpoor-stat",
+      "kind": "chunk-labeled",
+      "goldWikis": ["stat-yearbook"],
+      "goldChunkHint": "6,058,798",
+      "note": "학부 연간 등록금. '등록금·계열별등록금·입학금·학부·과정·통계' 회피(4년 다니면/해마다 내야)."
+    },
+    {
+      "id": "kw-stat-janghak",
+      "query": "형편이 어려운 이들에게 학교가 보태준 돈이 모두 얼마야?",
+      "category": "kwpoor-stat",
+      "kind": "chunk-labeled",
+      "goldWikis": ["stat-yearbook"],
+      "goldChunkHint": "18,213,373",
+      "note": "장학금 수혜 규모. '장학금·교내장학금·지원금·통계' 회피(형편 어려운/보태준 돈)."
+    }
+  ]
+}
