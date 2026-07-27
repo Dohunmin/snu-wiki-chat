@@ -126,6 +126,29 @@ export default function ChatPage({ user }: { user: User }) {
   const userScrolledUp = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
+  // 사이드바 폭 조절 (데스크톱) — 경계 핸들 드래그. 모바일 슬라이드에는 영향 없음.
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const resizingRef = useRef(false);
+  function startSidebarResize(e: React.MouseEvent) {
+    e.preventDefault();
+    resizingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (ev: MouseEvent) => {
+      if (!resizingRef.current) return;
+      setSidebarWidth(Math.min(Math.max(ev.clientX, 208), 420));
+    };
+    const onUp = () => {
+      resizingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }
+
   const [chatMode, setChatMode] = useState<string>('normal');
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const [lensInsufficient, setLensInsufficient] = useState<string | null>(null);
@@ -459,8 +482,10 @@ export default function ChatPage({ user }: { user: User }) {
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-[#ffffff] border-r border-[#e6e8ee]
+      <aside
+        style={{ width: sidebarWidth }}
+        className={`
+        fixed inset-y-0 left-0 z-30 w-64 shrink-0 flex flex-col bg-[#ffffff] border-r border-[#e6e8ee] md:border-r-0
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:relative md:translate-x-0 md:flex
@@ -654,6 +679,19 @@ export default function ChatPage({ user }: { user: User }) {
           </button>
         </div>
       </aside>
+
+      {/* 사이드바 폭 조절 핸들 (데스크톱 전용) — 드래그로 폭 조절, 더블클릭 시 기본폭(256) 복원 */}
+      <div
+        onMouseDown={startSidebarResize}
+        onDoubleClick={() => setSidebarWidth(256)}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="사이드바 폭 조절"
+        title="드래그하여 폭 조절 · 더블클릭 시 기본값"
+        className="hidden md:block relative w-1.5 shrink-0 cursor-col-resize group"
+      >
+        <span className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-[#e6e8ee] transition-all group-hover:w-0.5 group-hover:bg-[#26365f]/50" />
+      </div>
 
       {/* Main */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
