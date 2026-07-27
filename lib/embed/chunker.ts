@@ -19,6 +19,8 @@ import type { EmbeddingChunk, ChunkMetadata, PageType } from './types';
 
 const MIN_CONTENT_LENGTH = 30;   // 30자 미만 청크는 임베딩 가치 낮음 (예: 빈 entity)
 const MIN_ARTICLE_MERGE = 100;   // 조문 청크 병합 하한 (splitIntoChunks 100자 규칙과 동일)
+const FACT_SPLIT_MIN = 1500;     // 이보다 큰 fact만 ### 섹션 단위로 분할 (작은 단일주제 fact는 통째 유지)
+const FACT_MERGE_MIN = 200;      // fact 섹션 병합 하한
 
 /**
  * SHA-256 hash (증분 갱신용 — 같은 chunk_text면 재임베딩 스킵 가능).
@@ -74,6 +76,32 @@ export function splitPolicyIntoArticles(content: string): string[] {
 }
 
 /**
+ * fact 전용 분할 — 큰 다주제 fact를 `### 하위섹션` 단위로 쪼갠다.
+ *
+ * 등록금장학금대출현황.fact(2,559자: 등록금+장학금+대출)·교원현황.fact(2,439자: 총괄+대학별) 등이
+ * 통째 임베딩되면 임베딩이 다주제로 희석돼 특정 수치(6,058,798 등)가 focused 쿼리와 멀어짐
+ * (0b 진단: stat fact d=0.587, legacy·global 양쪽 textHit 실패). `### ` 섹션으로 쪼개 focused화.
+ *
+ * `## 내용` 앞머리(출처·정의)는 head 청크로 보존, 각 `### ` 섹션은 별도 청크(호출부가 제목+카테고리 prefix 부착).
+ * FACT_SPLIT_MIN 미만이거나 `### ` 없는 단일주제 fact는 통째 유지(작은 표 분할 시 의미손실 방지).
+ */
+export function splitFactIntoSubsections(content: string): string[] {
+  if (content.length < FACT_SPLIT_MIN || !/^### /m.test(content)) return [content];
+  const parts = content.split(/(?=^### )/m);
+  const out: string[] = [];
+  const head = parts[0].trim();                    // # 제목 + ## 내용(출처·단위·정의)
+  if (head.length >= MIN_CONTENT_LENGTH) out.push(head);
+  let pending = '';
+  for (const s of parts.slice(1)) {
+    const merged = pending ? `${pending}\n${s.trim()}` : s.trim();
+    if (merged.length >= FACT_MERGE_MIN) { out.push(merged); pending = ''; }
+    else pending = merged;
+  }
+  if (pending.trim().length >= MIN_CONTENT_LENGTH) out.push(pending.trim());
+  return out.length > 0 ? out : [content];
+}
+
+/**
  * 위키 데이터 1개를 임베딩 청크 배열로 변환.
  * embedding 필드는 빈 배열로 시작 (voyage 호출 후 채움).
  */
@@ -101,23 +129,27 @@ export function chunkifyWiki(wikiData: WikiData): EmbeddingChunk[] {
     });
   }
 
-  // ─── fact: 통째 (제목 + 카테고리 + 본문) ─────────────────────
+  // ─── fact: 큰 다주제 fact는 ### 섹션 단위 분할, 작은 건 통째 (제목 + 카테고리 prefix) ──────
   for (const f of (wikiData.facts ?? [])) {
     if (f.content.trim().length < MIN_CONTENT_LENGTH) continue;
-    chunks.push(makeChunk({
-      wikiId: wikiData.id,
-      pageType: 'fact',
-      pageId: f.id,
-      chunkIdx: 0,
-      chunkText: `${f.title}\n카테고리: ${f.category}\n${f.content}`,
-      sensitive: f.sensitive,
-      metadata: {
-        title: f.title,
+    const parts = splitFactIntoSubsections(f.content);
+    parts.forEach((sub, idx) => {
+      if (sub.trim().length < MIN_CONTENT_LENGTH) return;
+      chunks.push(makeChunk({
+        wikiId: wikiData.id,
         pageType: 'fact',
-        category: f.category,
-        yearsCovered: f.yearsCovered,
-      },
-    }));
+        pageId: f.id,
+        chunkIdx: idx,
+        chunkText: `${f.title}\n카테고리: ${f.category}\n${sub}`,
+        sensitive: f.sensitive,
+        metadata: {
+          title: f.title,
+          pageType: 'fact',
+          category: f.category,
+          yearsCovered: f.yearsCovered,
+        },
+      }));
+    });
   }
 
   // ─── stance: 통째 (제목 + 발언자 + 주제 + 본문) ──────────────
